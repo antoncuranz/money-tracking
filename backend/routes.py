@@ -1,6 +1,6 @@
 from backend.clients.teller import TellerClient
 from backend.models import *
-from flask import abort, Blueprint
+from flask import abort, Blueprint, request
 from peewee import *
 
 from backend.service.actual_service import ActualService
@@ -25,6 +25,23 @@ def get_transactions(account_id):
     return list(Transaction.select().where(Transaction.account == account_id).order_by(-Transaction.date).dicts())
 
 
+@api.put("/api/accounts/<account_id>/transactions/<tx_id>")
+def update_transaction(account_id, tx_id):
+    try:
+        amount_eur_str = request.args.get("amount_eur")
+        amount_eur = None if not amount_eur_str else int(amount_eur_str)
+        transaction = Transaction.get((Transaction.id == tx_id) & (Transaction.account == account_id))
+    except DoesNotExist:
+        abort(404)
+    except (ValueError, TypeError):
+        abort(400)
+
+    transaction.amount_eur = amount_eur
+    transaction.save()
+
+    return "", 200
+
+
 @api.post("/api/import/<account_id>")
 def import_transactions(account_id, transaction_service: TransactionService, conversion_service: ConversionService):
     try:
@@ -32,9 +49,17 @@ def import_transactions(account_id, transaction_service: TransactionService, con
     except DoesNotExist:
         abort(404)
 
-    transaction_service.import_transactions(account)
+    access_token = request.args.get("access_token")
+    if access_token is not None:
+        account.teller_access_token = access_token
+        account.save()
 
-    conversion_service.add_missing_eur_amounts()
+    try:
+        transaction_service.import_transactions(account)
+    except TransactionService.MfaRequiredException:
+        return "", 418
+
+    conversion_service.add_missing_eur_amounts(account)
 
     return "", 204
 

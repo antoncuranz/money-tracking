@@ -22,28 +22,27 @@ class ActualService:
 
     def create_actual_transaction(self, tx):
         return {
-            # "account": actual_account_id,
             "date": str(tx.date),
-            "amount": tx.amount_eur,  # TODO
-            "payee_name": tx.description,
-            "imported_payee": tx.description,
+            "amount": -tx.amount_eur,
+            "payee_name": tx.counterparty,
+            "imported_payee": tx.counterparty,
             "category": Config.actual_other_category,
-            "notes": "Imported using API",
+            "notes": tx.description,
             "imported_id": tx.teller_id,
-            "cleared": True,
+            "cleared": False,
             "subtransactions": [
                 {
-                    "amount": tx.amount_eur,
+                    "amount": -tx.amount_eur,
                     "category": Config.actual_other_category,
                     "notes": "Original value in EUR"
                 },
                 {
-                    "amount": 0,  # TODO
+                    "amount": 0,
                     "category": Config.actual_fee_category,
                     "notes": "Effective FX fees"
                 },
                 {
-                    "amount": 0,  # TODO
+                    "amount": 0,
                     "category": Config.actual_fee_category,
                     "notes": "Currency Risk"
                 }

@@ -21,7 +21,7 @@ def configure(binder):
 
 
 db.connect()
-db.create_tables([Account, Transaction])
+db.create_tables([Account, Transaction, Deposit, Exchange, ExchangedWith, PaidWith, ExchangeRate])
 
 app = Flask(__name__)
 app.register_blueprint(api)

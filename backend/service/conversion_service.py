@@ -8,8 +8,12 @@ class ConversionService:
     def __init__(self):
         pass
 
-    def add_missing_eur_amounts(self):
-        transactions = Transaction.select().where(Transaction.amount_eur.is_null())
+    def add_missing_eur_amounts(self, account):
+        transactions = Transaction.select().where((Transaction.account == account.id) & (Transaction.amount_eur.is_null()))
+        if len(transactions) > 15:
+            print("Too many transactions!")
+            return
+
         conversion_rates = self.get_conversion_rates([str(tx.date) for tx in transactions])
 
         for tx in transactions:
@@ -17,8 +21,7 @@ class ConversionService:
             tx.save()
 
     def get_conversion_rates(self, dates):
-        return dict(zip(dates, [1 for date in dates]))  # TODO
-        # return dict(zip(dates, [self.get_conversion_rate(date) for date in dates]))
+        return dict(zip(dates, [self.get_conversion_rate(date) for date in dates]))
 
     def get_conversion_rate(self, date):
         url = "https://www.mastercard.de/settlement/currencyrate/conversion-rate"
