@@ -18,7 +18,6 @@ class ActualService:
         for tx in transactions:
             response = self.actual.import_transactions(account.actual_id, [self.create_actual_transaction(tx)])
             tx.actual_id = response["data"]["added"][0]
-            tx.status_enum = Transaction.Status.IMPORTED
             tx.save()
 
     def create_actual_transaction(self, tx):

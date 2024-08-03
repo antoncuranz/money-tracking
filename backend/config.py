@@ -11,3 +11,6 @@ class Config:
 
     actual_fee_category = os.getenv("ACTUAL_CAT_FEES", "ff41dcbd-5962-4b32-b3fe-ce9d63cf9c25")
     actual_other_category = os.getenv("ACTUAL_CAT_OTHER", "7e179c86-50cd-4f9e-86dd-d085dfa21a10")
+
+    ibkr_host = os.getenv("IBKR_HOST", "localhost")
+    ibkr_port = os.getenv("IBKR_PORT", "5000")

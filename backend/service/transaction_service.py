@@ -64,8 +64,10 @@ class TransactionService:
 
         if not created:
             Transaction.update(args) \
-                .where((Transaction.status != Transaction.Status.IMPORTED.value) & (Transaction.teller_id == id)) \
+                .where((Transaction.status != Transaction.Status.PAID.value) & (Transaction.teller_id == id)) \
                 .execute()
+            # TODO: update Actual transactions?
+            # Actual tx will be updated when payment is processed?
 
     def make_transaction_args(self, tx, account_id):
         return {

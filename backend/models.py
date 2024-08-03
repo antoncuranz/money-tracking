@@ -22,6 +22,41 @@ class Account(BaseModel):
     institution = CharField()
 
 
+class Payment(BaseModel):
+    id = AutoField()
+    account = ForeignKeyField(Account, backref="transactions")
+    teller_id = CharField(unique=True)
+    actual_id = CharField(null=True)
+    date = DateField(default=datetime.date.today)
+    counterparty = CharField()
+    description = CharField()
+    category = CharField()
+    amount_usd = IntegerField()
+    amount_eur = IntegerField(null=True)
+    processed = BooleanField(default=False)
+
+
+class Exchange(BaseModel):
+    id = AutoField()
+    actual_id = CharField(null=True)
+    date = DateField(default=datetime.date.today)
+    amount_usd = IntegerField()
+    amount_eur = IntegerField()
+    exchange_rate = DecimalField()  # needs to be IBKR rate
+
+    # optional, if available:
+    # exchange_fee_eur = IntegerField(null=True)
+
+
+class ExchangePayment(BaseModel):
+    class Meta:
+        primary_key = CompositeKey("exchange", "payment")
+
+    exchange = ForeignKeyField(Exchange)
+    payment = ForeignKeyField(Payment)
+    amount = IntegerField()
+
+
 class Transaction(BaseModel):
     id = AutoField()
     account = ForeignKeyField(Account, backref="transactions")
@@ -34,6 +69,9 @@ class Transaction(BaseModel):
     amount_usd = IntegerField()
     amount_eur = IntegerField(null=True)
     status = IntegerField()
+    payment = ForeignKeyField(Payment, backref="transactions", null=True)
+    ccy_risk = IntegerField(null=True)
+    fx_fees = IntegerField(null=True)
 
     @property
     def status_enum(self):
@@ -48,9 +86,8 @@ class Transaction(BaseModel):
 
     class Status(Enum):
         PENDING = 1
-        POSTED = 2
-        IMPORTED = 3
-        PAID = 4
+        POSTED = 2  # only state in which amount_eur can be modified
+        PAID = 3
 
 
 class Credit(BaseModel):
@@ -73,48 +110,13 @@ class CreditTransaction(BaseModel):
     amount = IntegerField()
 
 
-class Exchange(BaseModel):
-    id = AutoField()
-    actual_id = CharField(null=True)
-    date = DateField(default=datetime.date.today)
-    amount_usd = IntegerField()
-    amount_eur = IntegerField()
-
-    # optional, if available:
-    # exchange_fee_eur = IntegerField(null=True)
-    # exchange_rate = IntegerField(null=True)  # needs to be IBKR rate
-
-
-class Payment(BaseModel):
-    id = AutoField()
-    account = ForeignKeyField(Account, backref="transactions")
-    teller_id = CharField(unique=True)
-    actual_id = CharField(null=True)
-    date = DateField(default=datetime.date.today)
-    counterparty = CharField()
-    description = CharField()
-    category = CharField()
-    amount_usd = IntegerField()
-    amount_eur = IntegerField(null=True)
-    processed = BooleanField(default=False)
-
-
-class ExchangePayment(BaseModel):
-    class Meta:
-        primary_key = CompositeKey("exchange", "payment")
-
-    exchange = ForeignKeyField(Exchange)
-    payment = ForeignKeyField(Payment)
-    amount = IntegerField()
-
-
 class ExchangeRate(BaseModel):
     class Meta:
         primary_key = CompositeKey("date", "source")
 
     date = DateField(default=datetime.date.today)
     source = IntegerField()
-    exchange_rate = IntegerField()
+    exchange_rate = DecimalField()
 
     @property
     def source_enum(self):

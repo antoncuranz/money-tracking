@@ -5,6 +5,7 @@ from backend.models import *
 from backend.service.actual_service import ActualService
 from backend.service.balance_service import BalanceService
 from backend.service.conversion_service import ConversionService
+from backend.service.payment_service import PaymentService
 from backend.service.transaction_service import TransactionService
 
 api = Blueprint("api", __name__)
@@ -104,10 +105,7 @@ def get_balance_total(balance_service: BalanceService):
 
 @api.get("/api/balance/posted")
 def get_balance_posted():
-    transactions = Transaction.select().where(
-        (Transaction.status == Transaction.Status.POSTED.value) |
-        (Transaction.status == Transaction.Status.IMPORTED.value)
-    )
+    transactions = Transaction.select().where(Transaction.status == Transaction.Status.POSTED.value)
 
     balance = 0
     for tx in transactions:
@@ -233,10 +231,10 @@ def update_exchange(exchange_id, balance_service: BalanceService):
 
 
 @api.post("/api/accounts/<account_id>/payments/<payment_id>")
-def process_payment(account_id, payment_id):
+def process_payment(account_id, payment_id, payment_service: PaymentService):
     try:
-        transactions = request.args.get("transactions")
-        transactions = [] if not transactions else [int(n) for n in transactions.split(",")]
+        # transactions = request.args.get("transactions")
+        # transactions = [] if not transactions else [int(n) for n in transactions.split(",")]
         payment = Payment.get(
             (Payment.id == payment_id) &
             (Payment.account == account_id)
@@ -246,6 +244,6 @@ def process_payment(account_id, payment_id):
     except (ValueError, TypeError):
         abort(400)
 
-    # TODO: big_brain_service.process_payment(payment, transactions)
+    payment_service.process_payment(payment)
 
     return "not yet implemented", 500

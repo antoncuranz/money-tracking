@@ -1,6 +1,7 @@
 import datetime
 import ibind
 import urllib3
+from flask_injector import inject
 
 urllib3.disable_warnings()
 
@@ -12,8 +13,9 @@ SELL_USD = "BUY"
 
 
 class IbkrClient:
-    def __init__(self, port="5000"):
-        self._client = ibind.IbkrClient(port=port)
+    @inject
+    def __init__(self, host, port):
+        self._client = ibind.IbkrClient(host=host, port=port)
         self._account_id = self._get_account_id()
 
         if not self._client.check_health():

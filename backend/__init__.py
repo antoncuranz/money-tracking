@@ -7,19 +7,27 @@ from backend.routes import api
 from backend.service.actual_service import ActualService
 from backend.service.balance_service import BalanceService
 from backend.service.conversion_service import ConversionService
+from backend.service.payment_service import PaymentService
 from backend.service.transaction_service import TransactionService
 
 
 def configure(binder):
     teller = TellerClient(Config.teller_cert)
     actual = ActualClient(Config.actual_api_key, Config.actual_sync_id)
+    # ibkr = IbkrClient(Config.ibkr_host, Config.ibkr_port)
 
     binder.bind(TellerClient, to=teller, scope=singleton)
     binder.bind(ActualClient, to=actual, scope=singleton)
+    # binder.bind(IbkrClient, to=ibkr, scope=singleton)
+
+    balance_service = BalanceService()
+    conversion_service = ConversionService()
+
     binder.bind(TransactionService, to=TransactionService(teller), scope=singleton)
     binder.bind(ActualService, to=ActualService(actual), scope=singleton)
-    binder.bind(ConversionService, to=ConversionService(), scope=singleton)
-    binder.bind(BalanceService, to=BalanceService(), scope=singleton)
+    binder.bind(ConversionService, to=conversion_service, scope=singleton)
+    binder.bind(BalanceService, to=balance_service, scope=singleton)
+    binder.bind(PaymentService, to=PaymentService(balance_service, conversion_service, actual), scope=singleton)
 
 
 db.connect()
