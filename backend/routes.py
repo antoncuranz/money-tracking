@@ -3,6 +3,7 @@ from flask import abort, Blueprint, request
 from backend.clients.teller import TellerClient
 from backend.models import *
 from backend.service.actual_service import ActualService
+from backend.service.balance_service import BalanceService
 from backend.service.conversion_service import ConversionService
 from backend.service.transaction_service import TransactionService
 
@@ -26,8 +27,8 @@ def get_transactions(account_id):
 
 @api.get("/api/accounts/<account_id>/credits")
 def get_credits(account_id):
-    query = Credit.select(Credit, ExchangePayment) \
-        .left_outer_join(ExchangePayment) \
+    query = Credit.select(Credit, CreditTransaction) \
+        .left_outer_join(CreditTransaction) \
         .where(Credit.account == account_id).order_by(-Credit.date).dicts()
 
     credits = {}
@@ -43,17 +44,58 @@ def get_credits(account_id):
     return list(credits.values())
 
 
+@api.put("/api/accounts/<account_id>/credits/<credit_id>")
+def update_credit(account_id, credit_id, balance_service: BalanceService):
+    try:
+        amount = int(request.args.get("amount"))
+        transaction_id = int(request.args.get("transaction"))
+
+        Transaction.get(
+            (Transaction.id == transaction_id) &
+            (Transaction.account == account_id) &
+            (Transaction.status != Transaction.Status.PENDING.value) &
+            (Transaction.status != Transaction.Status.PAID.value)
+        )
+        credit = Credit.get((Credit.id == credit_id) & (Credit.account == account_id))
+    except DoesNotExist:
+        abort(404)
+    except (ValueError, TypeError):
+        abort(400)
+
+    if amount == 0:
+        CreditTransaction.delete().where(
+            (CreditTransaction.credit == credit_id) &
+            (CreditTransaction.transaction == transaction_id)
+        ).execute()
+        return "", 204
+
+    if balance_service.calc_credit_remaining(credit) < amount:
+        raise Exception(f"Error: Credit {credit_id} has not enough balance!")
+
+    model, created = CreditTransaction.get_or_create(
+        credit_id=credit_id,
+        transaction_id=transaction_id,
+        defaults={"amount": amount}
+    )
+
+    if not created:
+        model.amount = amount
+        model.save()
+
+    return "", 204
+
+
 @api.get("/api/accounts/<account_id>/payments")
 def get_payments(account_id):
     return list(Payment.select().where(Payment.account == account_id).order_by(-Payment.date).dicts())
 
 
 @api.get("/api/balance/total")
-def get_balance_total():
+def get_balance_total(balance_service: BalanceService):
     balance = Transaction.select(fn.SUM(Transaction.amount_usd)) \
         .where(Transaction.status != Transaction.Status.PAID.value).scalar()
 
-    balance -= calc_balance_exchanged()
+    balance -= balance_service.calc_balance_exchanged()
     return str(balance), 200
 
 
@@ -73,34 +115,9 @@ def get_balance_pending():
     return str(balance), 200
 
 
-def calc_balance_exchanged():
-    balance = 0
-
-    for exchange in Exchange.select():
-        exchange_balance = exchange.amount_usd
-
-        query = ExchangePayment.select(ExchangePayment, Payment) \
-            .join(Payment).where(ExchangePayment.exchange == exchange)
-
-        for exchange_payment in query:
-            if exchange_payment.amount is None:
-                exchange_balance += exchange_payment.payment.amount_usd
-            else:
-                exchange_balance += exchange_payment.amount
-                if exchange_payment.amount > exchange_payment.payment.amount_usd:
-                    raise Exception(f"Error: ExchangePayment amount is larger than the amount of its payment!")
-
-        if exchange_balance < 0:
-            raise Exception(f"Error: Exchange balance for exchange id {exchange.id} is negative!")
-
-        balance += exchange_balance
-
-    return balance
-
-
 @api.get("/api/balance/exchanged")
-def get_balance_exchanged():
-    balance = calc_balance_exchanged()
+def get_balance_exchanged(balance_service: BalanceService):
+    balance = balance_service.calc_balance_exchanged()
     return str(balance), 200
 
 

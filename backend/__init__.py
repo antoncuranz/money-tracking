@@ -5,6 +5,7 @@ from backend.clients.actual import ActualClient
 from backend.clients.teller import TellerClient
 from backend.routes import api
 from backend.service.actual_service import ActualService
+from backend.service.balance_service import BalanceService
 from backend.service.conversion_service import ConversionService
 from backend.service.transaction_service import TransactionService
 
@@ -18,10 +19,11 @@ def configure(binder):
     binder.bind(TransactionService, to=TransactionService(teller), scope=singleton)
     binder.bind(ActualService, to=ActualService(actual), scope=singleton)
     binder.bind(ConversionService, to=ConversionService(), scope=singleton)
+    binder.bind(BalanceService, to=BalanceService(), scope=singleton)
 
 
 db.connect()
-db.create_tables([Account, Transaction, Credit, ExchangePayment, Payment, Exchange, ExchangePayment, ExchangeRate])
+db.create_tables([Account, Transaction, Credit, CreditTransaction, ExchangePayment, Payment, Exchange, ExchangePayment, ExchangeRate])
 
 app = Flask(__name__)
 app.register_blueprint(api)

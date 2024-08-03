@@ -70,7 +70,7 @@ class CreditTransaction(BaseModel):
 
     credit = ForeignKeyField(Credit)
     transaction = ForeignKeyField(Transaction)
-    amount = IntegerField(null=True)
+    amount = IntegerField()
 
 
 class Exchange(BaseModel):
@@ -104,7 +104,7 @@ class ExchangePayment(BaseModel):
 
     exchange = ForeignKeyField(Exchange)
     payment = ForeignKeyField(Payment)
-    amount = IntegerField(null=True)
+    amount = IntegerField()
 
 
 class ExchangeRate(BaseModel):
