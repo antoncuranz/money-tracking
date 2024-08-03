@@ -8,6 +8,7 @@ import {useToast} from "@/components/ui/use-toast.ts";
 import {useEffect, useState} from "react";
 import TransactionTable from "@/components/TransactionTable.tsx";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
+import ExchangeDialog from "@/components/ExchangeDialog.tsx";
 
 const ExchangePage = () => {
 
@@ -23,12 +24,7 @@ const ExchangePage = () => {
               </TabsList>
             </Tabs>
             <div className="ml-auto flex items-center gap-2">
-              <Button size="sm" className="h-8 gap-1">
-                <Coins className="h-3.5 w-3.5"/>
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Add Exchange
-                </span>
-              </Button>
+              <ExchangeDialog/>
               <Button size="sm" className="h-8 gap-1">
                 <DraftingCompass className="h-3.5 w-3.5"/>
                 <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -63,7 +59,7 @@ const ExchangePage = () => {
               </CardContent>
             </Card>
           </div>
-          <Card>
+          <Card className="mt-2">
             <CardHeader className="pb-0">
               <CardTitle>Exchanges</CardTitle>
               <CardDescription/>
@@ -71,9 +67,17 @@ const ExchangePage = () => {
             <CardContent>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="mt-2">
             <CardHeader className="pb-0">
-              <CardTitle>Deposits</CardTitle>
+              <CardTitle>Payments</CardTitle>
+              <CardDescription/>
+            </CardHeader>
+            <CardContent>
+            </CardContent>
+          </Card>
+          <Card className="mt-2">
+            <CardHeader className="pb-0">
+              <CardTitle>Credits</CardTitle>
               <CardDescription/>
             </CardHeader>
             <CardContent>

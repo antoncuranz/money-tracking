@@ -10,8 +10,9 @@ import {useEffect, useState} from "react";
 import TransactionTable from "@/components/TransactionTable.tsx";
 
 const ImportPage = () => {
-  const [newTransactions, setNewTransactions] = useState([]);
-  const [importedTransactions, setImportedTransactions] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [credits, setCredits] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [accounts, setAccounts] = useState([])
   const [currentAccount, setCurrentAccount] = useState(-1)
 
@@ -43,16 +44,22 @@ const ImportPage = () => {
   }
 
   useEffect(() => {
-    getTransactions()
+    updateData()
   }, [currentAccount]);
-  async function getTransactions() {
+  async function updateData() {
     if (currentAccount < 0) return
 
     const txResponse = await fetch("/api/accounts/" + currentAccount + "/transactions")
     const transactions = await txResponse.json()
+    setTransactions(transactions.filter(tx => tx.status != 3))
 
-    setNewTransactions(transactions.filter(tx => tx.status != 3))
-    setImportedTransactions(transactions.filter(tx => tx.status == 3))
+    const creditResponse = await fetch("/api/accounts/" + currentAccount + "/credits")
+    const credits = await creditResponse.json()
+    setCredits(credits.filter(c => c.transactions.length == 0))
+
+    const paymentsResponse = await fetch("/api/accounts/" + currentAccount + "/payments")
+    const payments = await paymentsResponse.json()
+    setPayments(payments.filter(p => !p.exchange))
   }
 
   async function onTellerButtonClick(accessToken?: string) {
@@ -64,16 +71,16 @@ const ImportPage = () => {
     if (!accessToken && response.status == 418) // if mfa required: authorize and try again!
       openTeller()
 
-    await getTransactions()
+    await updateData()
   }
 
   async function onActualButtonClick() {
     await fetch("/api/actual/" + currentAccount, {method: "POST"})
-    await getTransactions()
+    await updateData()
   }
 
   async function onSaveButtonClick() {
-    for (const tx of newTransactions) {
+    for (const tx of transactions) {
       const amount = tx["amount_eur"] ? tx["amount_eur"] : "";
       const response = await fetch("/api/accounts/" + currentAccount + "/transactions/" + tx["id"] + "?amount_eur=" + amount, {method: "PUT"})
       if (response.status != 200) {
@@ -84,12 +91,12 @@ const ImportPage = () => {
   }
 
   function updateTransactionAmount(txId: string, newAmount: number|null) {
-    let transactionToUpdate = newTransactions.find(tx => tx["id"] == txId)
+    let transactionToUpdate = transactions.find(tx => tx["id"] == txId)
     if (!transactionToUpdate)
       return;
 
     transactionToUpdate["amount_eur"] = newAmount
-    setNewTransactions(newTransactions.map(tx => tx["id"] == txId ? transactionToUpdate : tx))
+    setTransactions(transactions.map(tx => tx["id"] == txId ? transactionToUpdate : tx))
   }
 
   return (<>
@@ -111,7 +118,7 @@ const ImportPage = () => {
                   Teller Connect
                 </span>
               </Button>
-              <Button size="sm" className="h-8 gap-1" onClick={onActualButtonClick} disabled={currentAccount < 0}>
+              <Button size="sm" className="h-8 gap-1" onClick={onActualButtonClick} disabled={currentAccount < 0 || credits.length > 0}>
                 <Import className="h-3.5 w-3.5"/>
                 <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                   Actual Import
@@ -131,17 +138,25 @@ const ImportPage = () => {
               <CardDescription/>
             </CardHeader>
             <CardContent>
-              <TransactionTable transactions={newTransactions} updateTransactionAmount={updateTransactionAmount} readonly={false}/>
+              <TransactionTable transactions={transactions} updateTransactionAmount={updateTransactionAmount} readonly={false}/>
             </CardContent>
           </Card>
-          <Card className="mt-8">
+          <Card className="mt-2">
             <CardHeader className="pb-0">
-              <CardTitle>Imported Transactions</CardTitle>
+              <CardTitle>Open Credits</CardTitle>
               <CardDescription/>
             </CardHeader>
             <CardContent>
-              {/*TODO: only show last 10? transactions here*/}
-              <TransactionTable transactions={importedTransactions}/>
+              <TransactionTable transactions={credits}/>
+            </CardContent>
+          </Card>
+          <Card className="mt-2">
+            <CardHeader className="pb-0">
+              <CardTitle>New Payments</CardTitle>
+              <CardDescription/>
+            </CardHeader>
+            <CardContent>
+              <TransactionTable transactions={payments}/>
             </CardContent>
           </Card>
         </main>

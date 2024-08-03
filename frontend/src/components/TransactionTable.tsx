@@ -18,7 +18,9 @@ const TransactionTable = ({transactions, updateTransactionAmount=null, readonly=
           <TableHead>Description</TableHead>
           <TableHead style={{width: "200px"}}>Category</TableHead>
           <TableHead style={{width: "200px", textAlign: "right"}}>Amount (USD)</TableHead>
-          <TableHead style={{width: "200px", textAlign: "right"}}>Amount (EUR)</TableHead>
+          {transactions.length > 0 && transactions[0]["amount_eur"] &&
+            <TableHead style={{width: "200px", textAlign: "right"}}>Amount (EUR)</TableHead>
+          }
           <TableHead style={{width: "50px"}}>
             <span className="sr-only">Status</span>
           </TableHead>

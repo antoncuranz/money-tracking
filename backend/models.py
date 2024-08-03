@@ -24,7 +24,7 @@ class Account(BaseModel):
 
 class Transaction(BaseModel):
     id = AutoField()
-    account = ForeignKeyField(Account, backref='transactions')
+    account = ForeignKeyField(Account, backref="transactions")
     teller_id = CharField(unique=True)
     actual_id = CharField(null=True)
     date = DateField(default=datetime.date.today)
@@ -50,37 +50,61 @@ class Transaction(BaseModel):
         PENDING = 1
         POSTED = 2
         IMPORTED = 3
+        PAID = 4
+
+
+class Credit(BaseModel):
+    id = AutoField()
+    account = ForeignKeyField(Account, backref="credits")
+    teller_id = CharField(unique=True)
+    date = DateField(default=datetime.date.today)
+    counterparty = CharField()
+    description = CharField()
+    category = CharField()
+    amount_usd = IntegerField()
+
+
+class CreditTransaction(BaseModel):
+    class Meta:
+        primary_key = CompositeKey("credit", "transaction")
+
+    credit = ForeignKeyField(Credit)
+    transaction = ForeignKeyField(Transaction)
+    amount = IntegerField(null=True)
 
 
 class Exchange(BaseModel):
     id = AutoField()
+    actual_id = CharField(null=True)
     date = DateField(default=datetime.date.today)
     amount_usd = IntegerField()
     amount_eur = IntegerField()
 
     # optional, if available:
-    exchange_fee_eur = IntegerField(null=True)
-    exchange_rate = IntegerField(null=True)  # needs to be IBKR rate
+    # exchange_fee_eur = IntegerField(null=True)
+    # exchange_rate = IntegerField(null=True)  # needs to be IBKR rate
 
 
-class Deposit(BaseModel):
+class Payment(BaseModel):
     id = AutoField()
-    account = ForeignKeyField(Account, backref='transactions')
+    account = ForeignKeyField(Account, backref="transactions")
     teller_id = CharField(unique=True)
+    actual_id = CharField(null=True)
     date = DateField(default=datetime.date.today)
+    counterparty = CharField()
+    description = CharField()
+    category = CharField()
     amount_usd = IntegerField()
+    amount_eur = IntegerField(null=True)
 
 
-class ExchangedWith(BaseModel):
-    exchange = ForeignKeyField(Exchange, backref="exchanges")
-    deposit = ForeignKeyField(Deposit, backref="transactions")
-    amount_usd = IntegerField(null=True)
+class ExchangePayment(BaseModel):
+    class Meta:
+        primary_key = CompositeKey("exchange", "payment")
 
-
-class PaidWith(BaseModel):
-    deposit = ForeignKeyField(Deposit, backref="transactions")
-    transaction = ForeignKeyField(Transaction, backref="deposits")
-    amount_usd = IntegerField(null=True)  # should rarely be non-null (only for statement credits/bonusses)
+    exchange = ForeignKeyField(Exchange)
+    payment = ForeignKeyField(Payment)
+    amount = IntegerField(null=True)
 
 
 class ExchangeRate(BaseModel):
