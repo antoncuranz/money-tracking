@@ -16,7 +16,8 @@ class ActualService:
             (Transaction.account == account.id))
 
         for tx in transactions:
-            self.actual.import_transactions(account.actual_id, [self.create_actual_transaction(tx)])
+            response = self.actual.import_transactions(account.actual_id, [self.create_actual_transaction(tx)])
+            tx.actual_id = response["data"]["added"][0]
             tx.status_enum = Transaction.Status.IMPORTED
             tx.save()
 

@@ -1,7 +1,9 @@
 import requests
+from flask_injector import inject
 
 
 class ActualClient:
+    @inject
     def __init__(self, api_key, budget_sync_id, base_url="http://localhost:5007"):
         self.api_key = api_key
         self.budget_sync_id = budget_sync_id
@@ -32,7 +34,7 @@ class ActualClient:
 
         response = requests.post(url, headers=headers, json=payload)
 
-        if response.status_code == 201:
+        if response.status_code == 200 or response.status_code == 201:
             return response.json()
         else:
             response.raise_for_status()
