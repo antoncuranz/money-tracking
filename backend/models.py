@@ -96,6 +96,7 @@ class Payment(BaseModel):
     category = CharField()
     amount_usd = IntegerField()
     amount_eur = IntegerField(null=True)
+    processed = BooleanField(default=False)
 
 
 class ExchangePayment(BaseModel):

@@ -50,7 +50,7 @@ def update_credit(account_id, credit_id, balance_service: BalanceService):
         amount = int(request.args.get("amount"))
         transaction_id = int(request.args.get("transaction"))
 
-        Transaction.get(
+        tx = Transaction.get(
             (Transaction.id == transaction_id) &
             (Transaction.account == account_id) &
             (Transaction.status != Transaction.Status.PENDING.value) &
@@ -71,6 +71,9 @@ def update_credit(account_id, credit_id, balance_service: BalanceService):
 
     if balance_service.calc_credit_remaining(credit) < amount:
         raise Exception(f"Error: Credit {credit_id} has not enough balance!")
+
+    if balance_service.calc_transaction_remaining(tx) < amount:
+        raise Exception(f"Error: Transaction {transaction_id} has not enough balance!")
 
     model, created = CreditTransaction.get_or_create(
         credit_id=credit_id,
@@ -101,10 +104,19 @@ def get_balance_total(balance_service: BalanceService):
 
 @api.get("/api/balance/posted")
 def get_balance_posted():
-    balance = Transaction.select(fn.SUM(Transaction.amount_usd)).where(
+    transactions = Transaction.select().where(
         (Transaction.status == Transaction.Status.POSTED.value) |
         (Transaction.status == Transaction.Status.IMPORTED.value)
-    ).scalar()
+    )
+
+    balance = 0
+    for tx in transactions:
+        amount = tx.amount_usd
+        for ct in CreditTransaction.select().where(CreditTransaction.transaction == tx.id):
+            amount += ct.amount
+
+        balance += amount
+
     return str(balance), 200
 
 
@@ -170,3 +182,70 @@ def import_transactions_to_actual(account_id, actual_service: ActualService):
     actual_service.import_transactions(account)
 
     return "", 204
+
+
+@api.post("/api/exchanges")
+def post_exchange():
+    model = Exchange.create(**request.json)
+    return str(model.id), 200
+
+
+@api.put("/api/exchanges/<exchange_id>")
+def update_exchange(exchange_id, balance_service: BalanceService):
+    try:
+        amount = int(request.args.get("amount"))
+        payment_id = int(request.args.get("payment"))
+
+        payment = Payment.get(
+            (Payment.id == payment_id) &
+            (Payment.processed is False)
+        )
+        exchange = Exchange.get(Exchange.id == exchange_id)
+    except DoesNotExist:
+        abort(404)
+    except (ValueError, TypeError):
+        abort(400)
+
+    if amount == 0:
+        ExchangePayment.delete().where(
+            (ExchangePayment.exchange == exchange_id) &
+            (ExchangePayment.payment == payment_id)
+        ).execute()
+        return "", 204
+
+    if balance_service.calc_exchange_remaining(exchange) < amount:
+        raise Exception(f"Error: Exchange {exchange_id} has not enough balance!")
+
+    if balance_service.calc_payment_remaining(payment) < amount:
+        raise Exception(f"Error: Exchange {exchange_id} has not enough balance!")
+
+    model, created = ExchangePayment.get_or_create(
+        exchange_id=exchange_id,
+        payment_id=payment_id,
+        defaults={"amount": amount}
+    )
+
+    if not created:
+        model.amount = amount
+        model.save()
+
+    return "", 204
+
+
+@api.post("/api/accounts/<account_id>/payments/<payment_id>")
+def process_payment(account_id, payment_id):
+    try:
+        transactions = request.args.get("transactions")
+        transactions = [] if not transactions else [int(n) for n in transactions.split(",")]
+        payment = Payment.get(
+            (Payment.id == payment_id) &
+            (Payment.account == account_id)
+        )
+    except DoesNotExist:
+        abort(404)
+    except (ValueError, TypeError):
+        abort(400)
+
+    # TODO: big_brain_service.process_payment(payment, transactions)
+
+    return "not yet implemented", 500
