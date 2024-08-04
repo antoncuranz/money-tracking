@@ -1,24 +1,28 @@
 import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {Check, Clock} from "lucide-react";
 import AmountInput from "@/components/AmountInput.tsx";
+import {formatAmount} from "@/components/util.ts";
 
 interface Props {
   transaction: any,
   updateTransactionAmount?: (txId: string, newAmount) => void,
   readonly?: boolean,
+  showAmountEur?: boolean,
 }
 
-const TransactionRow = ({transaction, updateTransactionAmount, readonly=true}: Props) => {
-
-  function formatAmount(amount: number|null): string {
-    if (!amount) return ""
-    const sign = amount < 0 ? "-" : ""
-    return sign + Math.abs(amount / 100 >> 0).toString().padStart(1, "0") + "," + Math.abs(amount % 100).toString().padStart(2, "0")
-  }
+const TransactionRow = ({transaction, updateTransactionAmount, readonly=true, showAmountEur=false}: Props) => {
 
   function updateAmount(newAmount) {
     if (updateTransactionAmount)
       updateTransactionAmount(transaction["id"], newAmount)
+  }
+
+  function isCreditApplied() {
+    return  transaction["credittransaction_set"] != null && transaction["credittransaction_set"].length > 0
+  }
+
+  function calculateCredit() {
+    return transaction["credittransaction_set"].map(ct => ct["amount"]).reduce((a, b) => a + b, 0)
   }
 
   return (
@@ -28,9 +32,15 @@ const TransactionRow = ({transaction, updateTransactionAmount, readonly=true}: P
       <TableCell>{transaction["description"]}</TableCell>
       <TableCell>{transaction["category"]}</TableCell>
       <TableCell style={{textAlign: "right"}}>
-        {formatAmount(transaction["amount_usd"])}
+        { isCreditApplied() ?
+          <>
+            <span className="line-through mr-1">{formatAmount(transaction["amount_usd"])}</span>
+            <span style={{color: "green"}}>{formatAmount(transaction["amount_usd"] - calculateCredit())}</span>
+          </>
+          : formatAmount(transaction["amount_usd"])
+        }
       </TableCell>
-      {transaction["amount_eur"] &&
+      { showAmountEur &&
         <TableCell style={{textAlign: "right"}}>
           {readonly ?
             <>{formatAmount(transaction["amount_eur"])}</>

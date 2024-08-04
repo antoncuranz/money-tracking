@@ -5,9 +5,10 @@ interface Props {
   transactions: any[],
   updateTransactionAmount?: (txId: string, newAmount) => void,
   readonly?: boolean,
+  showAmountEur?: boolean,
 }
 
-const TransactionTable = ({transactions, updateTransactionAmount=null, readonly=true}: Props) => {
+const TransactionTable = ({transactions, updateTransactionAmount=null, readonly=true, showAmountEur=false}: Props) => {
 
   return (
     <Table>
@@ -18,7 +19,7 @@ const TransactionTable = ({transactions, updateTransactionAmount=null, readonly=
           <TableHead>Description</TableHead>
           <TableHead style={{width: "200px"}}>Category</TableHead>
           <TableHead style={{width: "200px", textAlign: "right"}}>Amount (USD)</TableHead>
-          {transactions.length > 0 && transactions[0]["amount_eur"] &&
+          { showAmountEur &&
             <TableHead style={{width: "200px", textAlign: "right"}}>Amount (EUR)</TableHead>
           }
           <TableHead style={{width: "50px"}}>
@@ -28,7 +29,7 @@ const TransactionTable = ({transactions, updateTransactionAmount=null, readonly=
       </TableHeader>
       <TableBody>
         {transactions.map(tx =>
-          <TransactionRow key={tx["id"]} transaction={tx} readonly={readonly} updateTransactionAmount={updateTransactionAmount}/>
+          <TransactionRow key={tx["id"]} transaction={tx} readonly={readonly} showAmountEur={showAmountEur} updateTransactionAmount={updateTransactionAmount}/>
         )}
       </TableBody>
     </Table>

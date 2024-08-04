@@ -6,16 +6,23 @@ from backend.service.balance_service import BalanceService
 balances = Blueprint("balances", __name__, url_prefix="/api/balance")
 
 
-@balances.get("/total")
-def get_balance_total(balance_service: BalanceService):
-    balance = Transaction.select(fn.SUM(Transaction.amount_usd)) \
-        .where(Transaction.status != Transaction.Status.PAID.value).scalar()
+@balances.get("")
+def get_balances(balance_service: BalanceService):
+    posted = get_balance_posted()
+    pending = get_balance_pending()
+    credits = get_balance_credits(balance_service)
+    exchanged = balance_service.calc_balance_exchanged()
+    total = posted + pending - credits - exchanged
 
-    balance -= balance_service.calc_balance_exchanged()
-    return str(balance), 200
+    return {
+        "total": total,
+        "posted": posted,
+        "pending": pending,
+        "credits": credits,
+        "exchanged": exchanged
+    }
 
 
-@balances.get("/posted")
 def get_balance_posted():
     transactions = Transaction.select().where(Transaction.status == Transaction.Status.POSTED.value)
 
@@ -23,21 +30,23 @@ def get_balance_posted():
     for tx in transactions:
         amount = tx.amount_usd
         for ct in CreditTransaction.select().where(CreditTransaction.transaction == tx.id):
-            amount += ct.amount
+            amount -= ct.amount
 
         balance += amount
 
-    return str(balance), 200
+    return balance
 
 
-@balances.get("/pending")
 def get_balance_pending():
-    balance = Transaction.select(fn.SUM(Transaction.amount_usd)) \
+    return Transaction.select(fn.SUM(Transaction.amount_usd)) \
         .where(Transaction.status == Transaction.Status.PENDING.value).scalar()
-    return str(balance), 200
 
 
-@balances.get("/exchanged")
-def get_balance_exchanged(balance_service: BalanceService):
-    balance = balance_service.calc_balance_exchanged()
-    return str(balance), 200
+def get_balance_credits(balance_service: BalanceService):
+    credits = Credit.select()
+
+    balance = 0
+    for credit in credits:
+        balance += balance_service.calc_credit_remaining(credit)
+
+    return balance

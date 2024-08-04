@@ -8,6 +8,7 @@ import {useToast} from "@/components/ui/use-toast.ts";
 import {useTellerConnect} from 'teller-connect-react';
 import {useEffect, useState} from "react";
 import TransactionTable from "@/components/TransactionTable.tsx";
+import PaymentTable from "@/components/PaymentTable.tsx";
 
 const ImportPage = () => {
   const [transactions, setTransactions] = useState([]);
@@ -55,7 +56,8 @@ const ImportPage = () => {
 
     const creditResponse = await fetch("/api/accounts/" + currentAccount + "/credits")
     const credits = await creditResponse.json()
-    setCredits(credits.filter(c => c.transactions.length == 0))
+    // setCredits(credits.filter(c => c.transactions.length == 0))
+    setCredits(credits)
 
     const paymentsResponse = await fetch("/api/accounts/" + currentAccount + "/payments")
     const payments = await paymentsResponse.json()
@@ -81,7 +83,7 @@ const ImportPage = () => {
 
   async function onSaveButtonClick() {
     for (const tx of transactions) {
-      const amount = tx["amount_eur"] ? tx["amount_eur"] : "";
+      const amount = tx["amount_eur"] == null ? "" : tx["amount_eur"];
       const response = await fetch("/api/accounts/" + currentAccount + "/transactions/" + tx["id"] + "?amount_eur=" + amount, {method: "PUT"})
       if (response.status != 200) {
         toast({title: "Error updating transaction " + tx["id"]})
@@ -132,33 +134,39 @@ const ImportPage = () => {
               </Button>
             </div>
           </div>
-          <Card>
-            <CardHeader className="pb-0">
-              <CardTitle>New Transactions</CardTitle>
-              <CardDescription/>
-            </CardHeader>
-            <CardContent>
-              <TransactionTable transactions={transactions} updateTransactionAmount={updateTransactionAmount} readonly={false}/>
-            </CardContent>
-          </Card>
-          <Card className="mt-2">
-            <CardHeader className="pb-0">
-              <CardTitle>Open Credits</CardTitle>
-              <CardDescription/>
-            </CardHeader>
-            <CardContent>
-              <TransactionTable transactions={credits}/>
-            </CardContent>
-          </Card>
-          <Card className="mt-2">
-            <CardHeader className="pb-0">
-              <CardTitle>New Payments</CardTitle>
-              <CardDescription/>
-            </CardHeader>
-            <CardContent>
-              <TransactionTable transactions={payments}/>
-            </CardContent>
-          </Card>
+          { payments.length > 0 &&
+            <Card className="mb-2">
+              <CardHeader className="pb-0">
+                <CardTitle>Payments</CardTitle>
+                <CardDescription/>
+              </CardHeader>
+              <CardContent>
+                <PaymentTable payments={payments}/>
+              </CardContent>
+            </Card>
+          }
+          { credits.length > 0 &&
+            <Card className="mb-2">
+              <CardHeader className="pb-0">
+                <CardTitle>Credits</CardTitle>
+                <CardDescription/>
+              </CardHeader>
+              <CardContent>
+                <TransactionTable transactions={credits}/>
+              </CardContent>
+            </Card>
+          }
+          { transactions.length > 0 &&
+            <Card className="mb-2">
+              <CardHeader className="pb-0">
+                <CardTitle>Transactions</CardTitle>
+                <CardDescription/>
+              </CardHeader>
+              <CardContent>
+                <TransactionTable transactions={transactions} updateTransactionAmount={updateTransactionAmount} readonly={false} showAmountEur={true}/>
+              </CardContent>
+            </Card>
+          }
         </main>
       </div>
   </>

@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react'
 import {Input} from "@/components/ui/input.tsx";
 import {useToast} from "@/components/ui/use-toast.ts";
+import {formatAmount} from "@/components/util.ts";
 
 interface Props {
   amount: number,
@@ -18,12 +19,6 @@ const AmountInput = ({amount, setAmount, className = ""}: Props) => {
 
   function updateAmount() {
     setStringAmount(formatAmount(amount))
-  }
-
-  function formatAmount(amount: number | null): string {
-    if (!amount) return ""
-    const sign = amount < 0 ? "-" : ""
-    return sign + Math.abs(amount / 100 >> 0).toString().padStart(1, "0") + "," + Math.abs(amount % 100).toString().padStart(2, "0")
   }
 
   function onBlur(event: any) {

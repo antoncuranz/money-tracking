@@ -1,18 +1,35 @@
 import './App.css'
-import {Button} from "@/components/ui/button.tsx";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
-import {Plug, Import, Save, AlertCircle, Coins, Calculator, DraftingCompass} from 'lucide-react';
-
+import {AlertCircle} from 'lucide-react';
 import {useToast} from "@/components/ui/use-toast.ts";
 import {useEffect, useState} from "react";
-import TransactionTable from "@/components/TransactionTable.tsx";
-import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
+import {Alert, AlertDescription} from "@/components/ui/alert.tsx";
 import ExchangeDialog from "@/components/ExchangeDialog.tsx";
+import ExchangeTable from "@/components/ExchangeTable.tsx";
+import PaymentTable from "@/components/PaymentTable.tsx";
+import {formatAmount} from "@/components/util.ts";
 
 const ExchangePage = () => {
-
+  const [exchanges, setExchanges] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [balances, setBalances] = useState({});
   const { toast } = useToast();
+
+  useEffect(() => {
+    initData()
+  }, []);
+  async function initData() {
+    let response = await fetch("/api/exchanges")
+    response = await response.json()
+    setExchanges(response as any[])
+
+    response = await fetch("/api/accounts/2/payments") // FIXME
+    response = await response.json()
+    setPayments(response as any[])
+
+    setBalances(await (await fetch("/api/balance")).json())
+  }
 
   return (<>
       <div className="flex flex-col sm:gap-4 sm:py-4">
@@ -25,31 +42,22 @@ const ExchangePage = () => {
             </Tabs>
             <div className="ml-auto flex items-center gap-2">
               <ExchangeDialog/>
-              <Button size="sm" className="h-8 gap-1">
-                <DraftingCompass className="h-3.5 w-3.5"/>
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Calculate Fees
-                </span>
-              </Button>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <Card>
               <CardHeader className="pb-0">
-                <CardTitle>150,00</CardTitle>
+                <CardTitle>{formatAmount(balances["total"])}</CardTitle>
                 <CardDescription>
-                  <span className="text-lg">1000,00 + 50,00</span> pending <span
-                  className="text-lg">- 900,00</span> exchanged
+                  <span className="text-lg">{formatAmount(balances["posted"])} + {formatAmount(balances["pending"])}</span> pending
+                  <span className="text-lg"> - {formatAmount(balances["credits"])}</span> credits
+                  <span className="text-lg"> - {formatAmount(balances["exchanged"])}</span> exchanged
                 </CardDescription>
               </CardHeader>
               <CardContent/>
             </Card>
             <Card>
               <CardHeader className="pb-0">
-                {/*<CardTitle>150,00</CardTitle>*/}
-                {/*<CardDescription>*/}
-                {/*  <span className="text-lg">1000,00 + 50,00</span> pending <span className="text-lg">- 900,00</span> exchanged*/}
-                {/*</CardDescription>*/}
               </CardHeader>
               <CardContent>
                 <Alert variant="destructive">
@@ -65,6 +73,7 @@ const ExchangePage = () => {
               <CardDescription/>
             </CardHeader>
             <CardContent>
+              <ExchangeTable exchanges={exchanges}/>
             </CardContent>
           </Card>
           <Card className="mt-2">
@@ -73,14 +82,7 @@ const ExchangePage = () => {
               <CardDescription/>
             </CardHeader>
             <CardContent>
-            </CardContent>
-          </Card>
-          <Card className="mt-2">
-            <CardHeader className="pb-0">
-              <CardTitle>Credits</CardTitle>
-              <CardDescription/>
-            </CardHeader>
-            <CardContent>
+              <PaymentTable payments={payments} showAccount={true}/>
             </CardContent>
           </Card>
         </main>

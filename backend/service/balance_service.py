@@ -12,17 +12,18 @@ class BalanceService:
         balance = 0
 
         for exchange in Exchange.select():
-            balance += self.calc_exchange_remaining(exchange)
+            balance += self.calc_exchange_remaining(exchange, include_not_processed=True)
 
         return balance
 
-    def calc_exchange_remaining(self, exchange: Exchange):
+    def calc_exchange_remaining(self, exchange: Exchange, include_not_processed=False):
         balance = exchange.amount_usd
 
         query = ExchangePayment.select().where(ExchangePayment.exchange == exchange)
 
         for exchange_payment in query:
-            balance -= exchange_payment.amount
+            if not include_not_processed or exchange_payment.payment.processed:
+                balance -= exchange_payment.amount
 
         if balance < 0:
             raise Exception(f"Error: Exchange balance for exchange {exchange.id} is negative!")

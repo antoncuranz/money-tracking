@@ -38,7 +38,7 @@ class Payment(BaseModel):
 
 class Exchange(BaseModel):
     id = AutoField()
-    actual_id = CharField(null=True)
+    actual_id = CharField(unique=True, null=True)
     date = DateField(default=datetime.date.today)
     amount_usd = IntegerField()
     amount_eur = IntegerField()

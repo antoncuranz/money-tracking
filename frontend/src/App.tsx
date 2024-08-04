@@ -14,15 +14,18 @@ const App = () => {
         <nav
           className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
           <NavLink to="/">
-            <a href="#" className="flex items-center gap-2 text-lg font-semibold md:text-base">
+            <span className="flex items-center gap-2 text-lg font-semibold md:text-base">
               <CreditCard className="h-6 w-6"/>
-            </a>
+            </span>
           </NavLink>
           <NavLink to="/">
-            <a href="#" className="text-muted-foreground transition-colors hover:text-foreground">Import</a>
+            <span className="text-muted-foreground transition-colors hover:text-foreground">Overview</span>
           </NavLink>
           <NavLink to="/exchange">
-            <a href="#" className="text-muted-foreground transition-colors hover:text-foreground">Exchange</a>
+            <span className="text-muted-foreground transition-colors hover:text-foreground">Exchange</span>
+          </NavLink>
+          <NavLink to="/archive">
+            <span className="text-muted-foreground transition-colors hover:text-foreground">Archive</span>
           </NavLink>
           <a href="https://actual.serverton.de"
              className="text-muted-foreground transition-colors hover:text-foreground">

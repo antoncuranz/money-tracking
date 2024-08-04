@@ -92,17 +92,6 @@ const ExchangeDialog = () => {
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="fee_eur" className="text-right">
-              Exchange Fee (EUR)
-            </Label>
-            <AmountInput
-              id="fee_eur"
-              className="col-span-3"
-              amount={feeEur}
-              setAmount={setFeeEur}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="rate" className="text-right">
               Exchange Rate
             </Label>
