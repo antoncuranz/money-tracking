@@ -5,7 +5,7 @@ from peewee import DoesNotExist
 
 from backend import Account, Transaction, Credit, CreditTransaction
 from backend.tests.conftest import with_test_db
-from backend.tests.fixtures import ACCOUNT_1, CREDIT_1, TX_1, TX_2, TX_3
+from backend.tests.fixtures import ACCOUNT_1, CREDIT_1, TX_1, TX_2, TX_3, CREDIT_2
 
 
 @with_test_db((Account, Credit, CreditTransaction, Transaction,))
@@ -43,7 +43,6 @@ def test_update_credit(app, client, balance_service):
 
 @with_test_db((Account, Credit, CreditTransaction, Transaction,))
 def test_update_credit_amount_larger_than_tx_500(app, client, balance_service):
-    # amount is larger than transaction amount (TODO: use remaining amount instead)
     # Arrange
     account = Account.create(**ACCOUNT_1)
     credit = Credit.create(**CREDIT_1)
@@ -59,8 +58,26 @@ def test_update_credit_amount_larger_than_tx_500(app, client, balance_service):
 
 
 @with_test_db((Account, Credit, CreditTransaction, Transaction,))
+def test_update_credit_amount_larger_than_remaining_tx_500(app, client, balance_service):
+    # Arrange
+    account = Account.create(**ACCOUNT_1)
+    credit = Credit.create(**CREDIT_1)
+    credit2 = Credit.create(**CREDIT_2)
+    tx = Transaction.create(**TX_1)
+    CreditTransaction.create(credit=credit2, transaction=tx, amount=credit2.amount_usd)
+
+    assert tx.amount_usd == credit.amount_usd
+    assert balance_service.calc_transaction_remaining(tx) < credit.amount_usd
+
+    # Act
+    response = client.put(f"/api/accounts/{account}/credits/{credit}?transaction={tx}&amount={credit.amount_usd}")
+
+    # Assert
+    assert response.status_code == 500
+
+
+@with_test_db((Account, Credit, CreditTransaction, Transaction,))
 def test_update_credit_amount_larger_than_credit_500(app, client, balance_service):
-    # amount is larger than credit amount
     # Arrange
     account = Account.create(**ACCOUNT_1)
     credit = Credit.create(**CREDIT_1)

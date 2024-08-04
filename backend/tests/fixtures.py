@@ -54,6 +54,10 @@ CREDIT_1 = dict(
     account_id=1, teller_id="teller_test_cr_1", date="2024-01-15", counterparty="Onlineshop", description="Refund",
     category="generic", amount_usd=1109
 )
+CREDIT_2 = dict(
+    account_id=1, teller_id="teller_test_cr_2", date="2024-01-16", counterparty="Onlineshop", description="Refund",
+    category="generic", amount_usd=109
+)
 
 PAYMENT_1 = dict(
     account_id=1, teller_id="teller_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",

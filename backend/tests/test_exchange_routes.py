@@ -5,7 +5,7 @@ from peewee import DoesNotExist
 
 from backend import Exchange, ExchangePayment, Payment
 from backend.tests.conftest import with_test_db
-from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3
+from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, EXCHANGE_2
 
 
 @with_test_db((Exchange,))
@@ -66,20 +66,6 @@ def test_delete_assigned_exchange_500(client):
     assert response.status_code == 500
 
 
-# @with_test_db((Account,))
-# def test_get_balances(app, client, teller_mock):
-#     # Arrange
-#     account_id = Account.create(**ACCOUNT_1)
-#
-#     # Act
-#     response = client.get(f"/api/accounts/{account_id}/balances")
-#     parsed = json.loads(response.data)
-#
-#     # Assert
-#     assert response.status_code == 200
-#     assert parsed["available"] == "123.45"
-#     assert parsed["ledger"] == "123.45"
-
 @with_test_db((Exchange, ExchangePayment, Payment))
 def test_update_exchange(app, client, balance_service):
     # Arrange
@@ -99,12 +85,29 @@ def test_update_exchange(app, client, balance_service):
 
 @with_test_db((Exchange, ExchangePayment, Payment))
 def test_update_exchange_amount_larger_than_payment_500(app, client, balance_service):
-    # TODO: use remaining amount instead
     # Arrange
     exchange = Exchange.create(**EXCHANGE_1)
     payment = Payment.create(**PAYMENT_2)
 
     assert payment.amount_usd < exchange.amount_usd
+
+    # Act
+    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={exchange.amount_usd}")
+
+    # Assert
+    assert response.status_code == 500
+
+
+@with_test_db((Exchange, ExchangePayment, Payment))
+def test_update_exchange_amount_larger_than_remaining_payment_500(app, client, balance_service):
+    # Arrange
+    exchange = Exchange.create(**EXCHANGE_1)
+    exchange2 = Exchange.create(**EXCHANGE_2)
+    payment = Payment.create(**PAYMENT_1)
+    ExchangePayment.create(exchange=exchange2, payment=payment, amount=exchange2.amount_usd)
+
+    assert payment.amount_usd == exchange.amount_usd
+    assert balance_service.calc_payment_remaining(payment) < exchange.amount_usd
 
     # Act
     response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={exchange.amount_usd}")
