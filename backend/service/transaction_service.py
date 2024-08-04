@@ -1,4 +1,4 @@
-from backend.clients.teller import TellerClient
+from backend.clients.teller import ITellerClient
 from backend.models import Transaction, Credit, Payment
 from flask_injector import inject
 
@@ -8,11 +8,11 @@ class TransactionService:
         pass
 
     @inject
-    def __init__(self, teller: TellerClient):
+    def __init__(self, teller: ITellerClient):
         self.teller = teller
 
     def import_transactions(self, account):
-        teller_response = self.teller.list_account_transactions(account).json()
+        teller_response = self.teller.list_account_transactions(account)
 
         if "error" in teller_response and teller_response["error"]["code"] == "enrollment.disconnected.user_action.mfa_required":
             raise TransactionService.MfaRequiredException()
@@ -46,8 +46,8 @@ class TransactionService:
         )
 
     def process_credit(self, account, teller_tx):
-        # if teller_tx["status"] != "posted":
-        #     return
+        if teller_tx["status"] != "posted":
+            return
 
         Credit.get_or_create(
             teller_id=teller_tx["id"],

@@ -1,10 +1,10 @@
 from flask import abort, Blueprint, request
 
-from backend.clients.teller import TellerClient
+from backend.clients.teller import ITellerClient
 from backend.models import *
 from backend.service.actual_service import ActualService
 from backend.service.balance_service import BalanceService
-from backend.service.conversion_service import ConversionService
+from backend.service.exchange_service import ExchangeService
 from backend.service.payment_service import PaymentService
 from backend.service.transaction_service import TransactionService
 
@@ -17,8 +17,12 @@ def get_accounts():
 
 
 @api.get("/api/accounts/<account_id>/balances")
-def get_balances(account_id, teller: TellerClient):
-    return teller.get_account_balances(account_id).json()
+def get_balances(account_id, teller: ITellerClient):
+    try:
+        account = Account.get(Account.id == account_id)
+    except DoesNotExist:
+        abort(404)
+    return teller.get_account_balances(account)
 
 
 @api.get("/api/accounts/<account_id>/transactions")
@@ -149,7 +153,7 @@ def update_transaction(account_id, tx_id):
 
 
 @api.post("/api/import/<account_id>")
-def import_transactions(account_id, transaction_service: TransactionService, conversion_service: ConversionService):
+def import_transactions(account_id, transaction_service: TransactionService, exchange_service: ExchangeService):
     try:
         account = Account.get(Account.id == account_id)
     except DoesNotExist:
@@ -165,7 +169,7 @@ def import_transactions(account_id, transaction_service: TransactionService, con
     except TransactionService.MfaRequiredException:
         return "", 418
 
-    conversion_service.add_missing_eur_amounts(account)
+    exchange_service.add_missing_eur_amounts(account)
 
     return "", 204
 

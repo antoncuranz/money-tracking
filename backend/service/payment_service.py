@@ -3,14 +3,14 @@ from flask_injector import inject
 from backend.clients.actual import ActualClient
 from backend.models import Transaction, db, Exchange, ExchangePayment, ExchangeRate
 from backend.service.balance_service import BalanceService
-from backend.service.conversion_service import ConversionService
+from backend.service.exchange_service import ExchangeService
 
 
 class PaymentService:
     @inject
-    def __init__(self, balance_service: BalanceService, conversion_service: ConversionService, actual: ActualClient):
+    def __init__(self, balance_service: BalanceService, exchange_service: ExchangeService, actual: ActualClient):
         self.balance_service = balance_service
-        self.conversion_service = conversion_service
+        self.exchange_service = exchange_service
         self.actual = actual
 
     def process_payment(self, payment):
@@ -37,7 +37,7 @@ class PaymentService:
         if payment.amount_usd != ex_remaining_sum:
             raise Exception("Error: Payment amount does not match sum of exchanges!")
 
-        exchange_rates = self.conversion_service.get_conversion_rates(set([tx.date for tx in transactions]), ExchangeRate.Source.IBKR)
+        exchange_rates = self.exchange_service.get_exchange_rates(set([tx.date for tx in transactions]), ExchangeRate.Source.IBKR)
 
         current_exchange = 0
         exchange_remaining = self.balance_service.calc_exchange_remaining(exchange_payments[current_exchange].exchange)

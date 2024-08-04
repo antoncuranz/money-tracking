@@ -51,7 +51,7 @@ class BalanceService:
         return balance
 
     def calc_transaction_remaining(self, tx: Transaction):
-        balance = -tx.amount_usd
+        balance = tx.amount_usd
 
         query = CreditTransaction.select().where(CreditTransaction.transaction == tx.id)
 

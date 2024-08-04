@@ -1,7 +1,15 @@
 import requests
 
 
-class TellerClient:
+class ITellerClient:
+    def get_account_balances(self, account):
+        raise NotImplementedError
+
+    def list_account_transactions(self, account):
+        raise NotImplementedError
+
+
+class TellerClient(ITellerClient):
     _BASE_URL = 'https://api.teller.io'
 
     def __init__(self, cert):
@@ -14,10 +22,18 @@ class TellerClient:
         return self._get(f'/accounts/{account.teller_id}/details', account.teller_access_token)
 
     def get_account_balances(self, account):
-        return self._get(f'/accounts/{account.teller_id}/balances', account.teller_access_token)
+        response = self._get(f'/accounts/{account.teller_id}/balances', account.teller_access_token)
+        if response.ok:
+            return response.json()
+        else:
+            response.raise_for_status()
 
     def list_account_transactions(self, account):
-        return self._get(f'/accounts/{account.teller_id}/transactions', account.teller_access_token)
+        response = self._get(f'/accounts/{account.teller_id}/transactions', account.teller_access_token)
+        if response.ok:
+            return response.json()
+        else:
+            response.raise_for_status()
 
     def list_account_payees(self, account, scheme):
         return self._get(f'/accounts/{account.teller_id}/payments/{scheme}/payees', account.teller_access_token)

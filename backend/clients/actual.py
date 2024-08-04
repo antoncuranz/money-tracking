@@ -17,7 +17,7 @@ class ActualClient:
 
         response = requests.get(url, headers=headers)
 
-        if response.status_code == 200:
+        if response.ok:
             return response.json()
         else:
             response.raise_for_status()
@@ -34,7 +34,7 @@ class ActualClient:
 
         response = requests.post(url, headers=headers, json=payload)
 
-        if response.status_code == 200 or response.status_code == 201:
+        if response.ok:
             return response.json()
         else:
             response.raise_for_status()
@@ -51,7 +51,7 @@ class ActualClient:
 
         response = requests.patch(url, headers=headers, json=payload)
 
-        if response.status_code == 200:
+        if response.ok:
             return response.json()
         else:
             response.raise_for_status()
