@@ -1,0 +1,29 @@
+from flask import abort, Blueprint, request
+
+from backend.models import *
+from backend.service.exchange_service import ExchangeService
+from backend.service.transaction_service import TransactionService
+
+imports = Blueprint("imports", __name__, url_prefix="/api/import")
+
+
+@imports.post("/<account_id>")
+def import_transactions(account_id, transaction_service: TransactionService, exchange_service: ExchangeService):
+    try:
+        account = Account.get(Account.id == account_id)
+    except DoesNotExist:
+        abort(404)
+
+    access_token = request.args.get("access_token")
+    if access_token is not None:
+        account.teller_access_token = access_token
+        account.save()
+
+    try:
+        transaction_service.import_transactions(account)
+    except TransactionService.MfaRequiredException:
+        return "", 418
+
+    exchange_service.add_missing_eur_amounts(account)
+
+    return "", 204

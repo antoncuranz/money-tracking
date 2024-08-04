@@ -2,7 +2,12 @@ from flask import Flask
 from flask_injector import FlaskInjector, singleton
 
 from backend.models import *
-from backend.routes import api
+from backend.api.api import api
+from backend.api.balances import balances
+from backend.api.imports import imports
+from backend.api.exchanges import exchanges
+from backend.api.credits import credits
+from backend.api.accounts import accounts
 from backend.clients.actual import IActualClient, ActualClient
 from backend.clients.mastercard import IMastercardClient, MastercardClient
 from backend.clients.teller import TellerClient, ITellerClient
@@ -34,9 +39,18 @@ def configure(binder):
     binder.bind(PaymentService, to=PaymentService(balance_service, exchange_service, actual), scope=singleton)
 
 
+def register_blueprints(app):
+    app.register_blueprint(api)
+    app.register_blueprint(accounts)
+    app.register_blueprint(exchanges)
+    app.register_blueprint(imports)
+    app.register_blueprint(balances)
+    app.register_blueprint(credits)
+
+
 def create_app():
     app = Flask(__name__)
-    app.register_blueprint(api)
+    register_blueprints(app)
     FlaskInjector(app=app, modules=[configure])
 
     db.connect()

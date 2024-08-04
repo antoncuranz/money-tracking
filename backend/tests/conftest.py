@@ -5,7 +5,7 @@ from flask import Flask
 from flask_injector import FlaskInjector, singleton
 from peewee import SqliteDatabase
 
-from backend import api
+from backend import register_blueprints
 from backend.clients.actual import IActualClient
 from backend.clients.mastercard import IMastercardClient
 from backend.clients.teller import ITellerClient
@@ -20,7 +20,7 @@ from backend.tests.mockclients.teller import MockTellerClient
 @pytest.fixture()
 def app():
     app = Flask(__name__)
-    app.register_blueprint(api)
+    register_blueprints(app)
 
     yield app
 

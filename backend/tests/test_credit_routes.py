@@ -1,5 +1,8 @@
 import json
 
+import pytest
+from peewee import DoesNotExist
+
 from backend import Account, Transaction, Credit, CreditTransaction
 from backend.tests.conftest import with_test_db
 from backend.tests.fixtures import ACCOUNT_1, CREDIT_1, TX_1, TX_2, TX_3
@@ -39,7 +42,7 @@ def test_update_credit(app, client, balance_service):
 
 
 @with_test_db((Account, Credit, CreditTransaction, Transaction,))
-def test_update_credit_2(app, client, balance_service):
+def test_update_credit_amount_larger_than_tx_500(app, client, balance_service):
     # amount is larger than transaction amount (TODO: use remaining amount instead)
     # Arrange
     account = Account.create(**ACCOUNT_1)
@@ -56,7 +59,7 @@ def test_update_credit_2(app, client, balance_service):
 
 
 @with_test_db((Account, Credit, CreditTransaction, Transaction,))
-def test_update_credit_2(app, client, balance_service):
+def test_update_credit_amount_larger_than_credit_500(app, client, balance_service):
     # amount is larger than credit amount
     # Arrange
     account = Account.create(**ACCOUNT_1)
@@ -72,5 +75,52 @@ def test_update_credit_2(app, client, balance_service):
     assert response.status_code == 500
 
 
-# TODO: delete CreditTransaction using amount = 0
-# TODO: update CreditTransaction amount
+@with_test_db((Account, Credit, CreditTransaction, Transaction,))
+def test_update_credit_on_paid_transaction_404(app, client, balance_service):
+    # Arrange
+    account = Account.create(**ACCOUNT_1)
+    credit = Credit.create(**CREDIT_1)
+    tx = Transaction.create(**TX_1)
+    tx.status_enum = Transaction.Status.PAID
+    tx.save()
+    CreditTransaction.create(credit=credit, transaction=tx, amount=1)
+
+    # Act
+    response = client.put(f"/api/accounts/{account}/credits/{credit}?transaction={tx}&amount={credit.amount_usd}")
+
+    # Assert
+    assert response.status_code == 404
+
+
+@with_test_db((Account, Credit, CreditTransaction, Transaction,))
+def test_update_credit_delete_credit_transaction(app, client, balance_service):
+    # Arrange
+    account = Account.create(**ACCOUNT_1)
+    credit = Credit.create(**CREDIT_1)
+    tx = Transaction.create(**TX_1)
+    CreditTransaction.create(credit=credit, transaction=tx, amount=1)
+
+    # Act
+    response = client.put(f"/api/accounts/{account}/credits/{credit}?transaction={tx}&amount={0}")
+
+    # Assert
+    assert response.status_code == 204
+    with pytest.raises(DoesNotExist):
+        CreditTransaction.get()
+
+
+@with_test_db((Account, Credit, CreditTransaction, Transaction,))
+def test_update_credit_reduce_amount(app, client, balance_service):
+    # Arrange
+    account = Account.create(**ACCOUNT_1)
+    credit = Credit.create(**CREDIT_1)
+    tx = Transaction.create(**TX_1)
+    CreditTransaction.create(credit=credit, transaction=tx, amount=credit.amount_usd)
+
+    assert tx.amount_usd == credit.amount_usd
+
+    # Act
+    response = client.put(f"/api/accounts/{account}/credits/{credit}?transaction={tx}&amount={credit.amount_usd-10}")
+
+    # Assert
+    assert response.status_code == 204
