@@ -61,11 +61,8 @@ class PaymentService:
             tx.status_enum = Transaction.Status.PAID
             tx.save()
 
-        avg_eur_usd_exchanged = 0
-        for ep in exchange_payments:
-            avg_eur_usd_exchanged += Decimal(ep.amount / payment.amount_usd) * ep.exchange.exchange_rate
-
-        payment.amount_eur = round(payment.amount_usd / avg_eur_usd_exchanged)
+        payment.amount_eur = sum([tx.amount_eur + tx.ccy_risk + tx.fx_fees for tx in transactions])
+        # alternative: payment.amount_eur = round(payment.amount_usd / avg_eur_usd_exchanged)
         payment.processed = True
         payment.save()
 
