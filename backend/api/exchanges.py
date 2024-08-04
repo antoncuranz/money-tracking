@@ -1,5 +1,6 @@
 from flask import abort, Blueprint, request
 
+from backend.api.util import stringify
 from backend.models import *
 from backend.service.balance_service import BalanceService
 
@@ -8,7 +9,8 @@ exchanges = Blueprint("exchanges", __name__, url_prefix="/api/exchanges")
 
 @exchanges.get("")
 def get_exchanges():
-    return list(Exchange.select().dicts()), 200
+    query = Exchange.select()
+    return [stringify(exchange, extra_attrs=[]) for exchange in query]
 
 
 @exchanges.post("")

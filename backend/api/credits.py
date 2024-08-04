@@ -1,5 +1,6 @@
 from flask import abort, Blueprint, request
 
+from backend.api.util import stringify
 from backend.models import *
 from backend.service.balance_service import BalanceService
 
@@ -8,21 +9,8 @@ credits = Blueprint("credits", __name__)
 
 @credits.get("/api/accounts/<account_id>/credits")
 def get_credits(account_id):
-    query = Credit.select(Credit, CreditTransaction) \
-        .left_outer_join(CreditTransaction) \
-        .where(Credit.account == account_id).order_by(-Credit.date).dicts()
-
-    credits = {}
-    for result in query:
-        id = result["id"]
-        if id not in credits:
-            credits[id] = result
-            credits[id]["transactions"] = []
-
-        if result["transaction"] is not None:
-            credits[id]["transactions"].append(result["transaction"])
-
-    return list(credits.values())
+    query = Credit.select().where(Credit.account == account_id).order_by(-Credit.date)
+    return [stringify(credit) for credit in query]
 
 
 @credits.put("/api/accounts/<account_id>/credits/<credit_id>")

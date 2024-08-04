@@ -8,7 +8,7 @@ from backend.tests.conftest import with_test_db
 from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, EXCHANGE_2
 
 
-@with_test_db((Exchange,))
+@with_test_db((Exchange, ExchangePayment))
 def test_get_exchanges(client):
     # Arrange
     exchange = Exchange.create(**EXCHANGE_1)
