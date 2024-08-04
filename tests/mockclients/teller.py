@@ -1,7 +1,7 @@
-from backend.clients.teller import ITellerClient
 from requests.exceptions import HTTPError
 
-from tests.fixtures import ACCOUNT_1, TELLER_TX_1
+from backend.clients.teller import ITellerClient
+from tests.fixtures import ACCOUNT_1, TELLER_TRANSACTIONS
 
 
 class MockTellerClient(ITellerClient):
@@ -12,8 +12,11 @@ class MockTellerClient(ITellerClient):
             ACCOUNT_1["teller_id"]: {"available": "123.45", "ledger": "123.45"}
         }
         self.transactions = {
-            ACCOUNT_1["teller_id"]: [TELLER_TX_1]
+            ACCOUNT_1["teller_id"]: TELLER_TRANSACTIONS
         }
+
+    def set_transactions(self, teller_id, transactions):
+        self.transactions[teller_id] = transactions
 
     def get_account_balances(self, account):
         if self.mfa_required:

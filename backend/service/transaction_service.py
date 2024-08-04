@@ -77,7 +77,7 @@ class TransactionService:
             "counterparty": tx["details"]["counterparty"]["name"],
             "description": tx["description"],
             "category": tx["details"]["category"],
-            "amount_usd": self.get_amount(tx),
+            "amount_usd": abs(self.get_amount(tx)),
             "status": Transaction.Status.POSTED.value if tx["status"] == "posted" else Transaction.Status.PENDING.value
         }
 
