@@ -20,10 +20,16 @@ def test_payment_processing(client, payment_service):
 
     # process Payment
     response = client.post(f"/api/accounts/{account}/payments/{payment}")
-    transactions = Transaction.select()
+    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fx_fees + Transaction.ccy_risk)).where(
+        Transaction.payment == payment).scalar()
+    sum_usd = Transaction.select(fn.SUM(Transaction.amount_eur)).where(Transaction.payment == payment).scalar()
+    payment = Payment.get()
 
     # Assert
     assert response.status_code == 555
+    assert payment.processed is True
+    assert sum_eur == payment.amount_eur
+    assert sum_usd == payment.amount_usd
     # assert len(parsed) == 1
     # assert parsed[0]["actual_id"] == ACCOUNT_1["actual_id"]
     # assert parsed[0]["teller_id"] == ACCOUNT_1["teller_id"]

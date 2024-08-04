@@ -34,14 +34,9 @@ class PaymentService:
         exchange_payments = ExchangePayment.select(Exchange, ExchangePayment).join(Exchange) \
             .where(ExchangePayment.payment == payment.id)
 
-        # ex_remaining_sum = sum([self.balance_service.calc_exchange_remaining(ep.exchange) for ep in exchange_payments])
-        # if payment.amount_usd != ex_remaining_sum:
-        #     raise Exception("Error: Payment amount does not match sum of exchanges!")
-
         exchange_rates = self.exchange_service.get_exchange_rates(set([tx.date for tx in transactions]), ExchangeRate.Source.IBKR)
 
         current_exchange = 0
-        # exchange_remaining = self.balance_service.calc_exchange_remaining(exchange_payments[current_exchange].exchange)
         exchange_remaining = exchange_payments[current_exchange].amount
 
         for tx in transactions:
@@ -65,6 +60,14 @@ class PaymentService:
             tx.payment = payment.id
             tx.status_enum = Transaction.Status.PAID
             tx.save()
+
+        avg_eur_usd_exchanged = 0
+        for ep in exchange_payments:
+            avg_eur_usd_exchanged += Decimal(ep.amount / payment.amount_usd) * ep.exchange.exchange_rate
+
+        payment.amount_eur = round(payment.amount_usd / avg_eur_usd_exchanged)
+        payment.processed = True
+        payment.save()
 
         # in a separate loop:
         # update Actual transaction (set split amounts and clear) and update amounts as well!
