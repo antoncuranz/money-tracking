@@ -45,7 +45,7 @@ class PaymentService:
             eur_usd_exchanged = 0
 
             while exchange_remaining < remaining_amount:
-                eur_usd_exchanged += (exchange_remaining / remaining_amount) * exchange_payments[current_exchange].exchange.exchange_rate
+                eur_usd_exchanged += Decimal(exchange_remaining / remaining_amount) * exchange_payments[current_exchange].exchange.exchange_rate
                 remaining_amount -= exchange_remaining
                 current_exchange += 1
                 exchange_remaining = exchange_payments[current_exchange].amount

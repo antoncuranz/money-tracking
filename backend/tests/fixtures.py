@@ -61,11 +61,23 @@ PAYMENT_1 = dict(
 )
 
 EXCHANGE_1 = dict(
-    date="2024-01-29", amount_usd=PAYMENT_1["amount_usd"], amount_eur=-1, exchange_rate=1.085199
+    id=1, date="2024-01-29", amount_usd=PAYMENT_1["amount_usd"], amount_eur=-1, exchange_rate=1.085199
+)
+EXCHANGE_2 = dict(
+    id=2, date="2024-01-20", amount_usd=1000, amount_eur=-1, exchange_rate=1.0894991
+)
+EXCHANGE_3 = dict(
+    id=3, date="2024-01-29", amount_usd=5000, amount_eur=-1, exchange_rate=1.085199
 )
 
 EXCHANGE_PAYMENT_1 = dict(
     exchange_id=1, payment_id=1, amount=PAYMENT_1["amount_usd"]
+)
+EXCHANGE_PAYMENT_2 = dict(
+    exchange_id=2, payment_id=1, amount=EXCHANGE_2["amount_usd"]
+)
+EXCHANGE_PAYMENT_3 = dict(
+    exchange_id=3, payment_id=1, amount=PAYMENT_1["amount_usd"]-EXCHANGE_2["amount_usd"]
 )
 
 MASTERCARD_EXCHANGE_RATES = [  # 1-10.01.2024
