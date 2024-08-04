@@ -22,7 +22,7 @@ class BalanceService:
         query = ExchangePayment.select().where(ExchangePayment.exchange == exchange)
 
         for exchange_payment in query:
-            balance += exchange_payment.amount
+            balance -= exchange_payment.amount
 
         if balance < 0:
             raise Exception(f"Error: Exchange balance for exchange {exchange.id} is negative!")

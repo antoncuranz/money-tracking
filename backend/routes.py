@@ -248,6 +248,6 @@ def process_payment(account_id, payment_id, payment_service: PaymentService):
     except (ValueError, TypeError):
         abort(400)
 
-    payment_service.process_payment(payment)
+    payment_service.process_payment_auto(payment)
 
-    return "not yet implemented", 500
+    return "not yet implemented", 555

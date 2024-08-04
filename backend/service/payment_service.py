@@ -1,6 +1,7 @@
 from flask_injector import inject
+from decimal import Decimal
 
-from backend.clients.actual import ActualClient
+from backend.clients.actual import IActualClient
 from backend.models import Transaction, db, Exchange, ExchangePayment, ExchangeRate
 from backend.service.balance_service import BalanceService
 from backend.service.exchange_service import ExchangeService
@@ -8,14 +9,14 @@ from backend.service.exchange_service import ExchangeService
 
 class PaymentService:
     @inject
-    def __init__(self, balance_service: BalanceService, exchange_service: ExchangeService, actual: ActualClient):
+    def __init__(self, balance_service: BalanceService, exchange_service: ExchangeService, actual: IActualClient):
         self.balance_service = balance_service
         self.exchange_service = exchange_service
         self.actual = actual
 
-    def process_payment(self, payment):
+    def process_payment_auto(self, payment):
         transactions = Transaction.select().where(
-            (Transaction.status == Transaction.Status.POSTED) &
+            (Transaction.status == Transaction.Status.POSTED.value) &
             (Transaction.account == payment.account)
         ).order_by(Transaction.date)  # TODO: order by date, then id
 
@@ -33,14 +34,15 @@ class PaymentService:
         exchange_payments = ExchangePayment.select(Exchange, ExchangePayment).join(Exchange) \
             .where(ExchangePayment.payment == payment.id)
 
-        ex_remaining_sum = sum([self.balance_service.calc_exchange_remaining(ep.exchange) for ep in exchange_payments])
-        if payment.amount_usd != ex_remaining_sum:
-            raise Exception("Error: Payment amount does not match sum of exchanges!")
+        # ex_remaining_sum = sum([self.balance_service.calc_exchange_remaining(ep.exchange) for ep in exchange_payments])
+        # if payment.amount_usd != ex_remaining_sum:
+        #     raise Exception("Error: Payment amount does not match sum of exchanges!")
 
         exchange_rates = self.exchange_service.get_exchange_rates(set([tx.date for tx in transactions]), ExchangeRate.Source.IBKR)
 
         current_exchange = 0
-        exchange_remaining = self.balance_service.calc_exchange_remaining(exchange_payments[current_exchange].exchange)
+        # exchange_remaining = self.balance_service.calc_exchange_remaining(exchange_payments[current_exchange].exchange)
+        exchange_remaining = exchange_payments[current_exchange].amount
 
         for tx in transactions:
             amount = self.balance_service.calc_transaction_remaining(tx)
@@ -51,11 +53,11 @@ class PaymentService:
                 eur_usd_exchanged += (exchange_remaining / remaining_amount) * exchange_payments[current_exchange].exchange.exchange_rate
                 remaining_amount -= exchange_remaining
                 current_exchange += 1
-                exchange_remaining = self.balance_service.calc_exchange_remaining(exchange_payments[current_exchange].exchange)
+                exchange_remaining = exchange_payments[current_exchange].amount
 
-            eur_usd_exchanged += (amount / remaining_amount) * exchange_payments[current_exchange].exchange.exchange_rate
+            eur_usd_exchanged += Decimal(amount / remaining_amount) * exchange_payments[current_exchange].exchange.exchange_rate
 
-            eur_usd_booked = exchange_rates[str(tx.date)]
+            eur_usd_booked = exchange_rates[tx.date]
             ccy_risk, fx_fees = self.calc_fx_fees(tx.amount_usd, tx.amount_eur, eur_usd_booked, eur_usd_exchanged)
 
             tx.ccy_risk = ccy_risk
@@ -73,7 +75,7 @@ class PaymentService:
         value_eur_exchanged = value_usd / eur_usd_exchanged
         effective_fees_total = value_eur_exchanged - value_eur
 
-        ccy_risk = round(value_eur_exchanged - (value_usd / eur_usd_booked))
+        ccy_risk = round(value_eur_exchanged - Decimal(value_usd / eur_usd_booked))
 
         # fx_fees_usd = value_usd - (eur_usd_booked * value_eur)
         # fx_fees = fx_fees_usd / eur_usd_exchanged

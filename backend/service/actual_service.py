@@ -1,4 +1,4 @@
-from backend.clients.actual import ActualClient
+from backend.clients.actual import IActualClient
 from backend.config import Config
 from backend.models import Transaction
 from flask_injector import inject
@@ -6,7 +6,7 @@ from flask_injector import inject
 
 class ActualService:
     @inject
-    def __init__(self, actual: ActualClient):
+    def __init__(self, actual: IActualClient):
         self.actual = actual
 
     def import_transactions(self, account):

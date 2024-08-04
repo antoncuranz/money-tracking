@@ -44,7 +44,24 @@ TX_3 = dict(
     description="description3", category="category", amount_usd=2000, status=2
 )
 
+TRANSACTIONS = [
+    TX_1, TX_2, TX_3
+]
+
 CREDIT_1 = dict(
-    account_id=1, teller_id="teller_test_cr_1", date="2024-01-30", counterparty="Onlineshop", description="Refund",
+    account_id=1, teller_id="teller_test_cr_1", date="2024-01-15", counterparty="Onlineshop", description="Refund",
     category="generic", amount_usd=1000
+)
+
+PAYMENT_1 = dict(
+    account_id=1, teller_id="teller_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
+    category="generic", amount_usd=sum([tx["amount_usd"] for tx in TRANSACTIONS])
+)
+
+EXCHANGE_1 = dict(
+    date="2024-01-29", amount_usd=PAYMENT_1["amount_usd"], amount_eur=PAYMENT_1["amount_usd"], exchange_rate=1
+)
+
+EXCHANGE_PAYMENT_1 = dict(
+    exchange_id=1, payment_id=1, amount=PAYMENT_1["amount_usd"]
 )

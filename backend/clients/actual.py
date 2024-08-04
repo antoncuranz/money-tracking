@@ -2,7 +2,12 @@ import requests
 from flask_injector import inject
 
 
-class ActualClient:
+class IActualClient:
+    def import_transactions(self, account_id, transactions):
+        raise NotImplementedError
+
+
+class ActualClient(IActualClient):
     @inject
     def __init__(self, api_key, budget_sync_id, base_url="http://localhost:5007"):
         self.api_key = api_key

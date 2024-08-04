@@ -31,7 +31,7 @@ class ExchangeService:
             if source == ExchangeRate.Source.MASTERCARD:
                 return self.mastercard.get_conversion_rate(date)
             else:
-                raise Exception("Not implemented")
+                return 1  # TODO! raise Exception("Not implemented")
 
     def get_amount_eur(self, tx, exchange_rates):
         date = tx.date
