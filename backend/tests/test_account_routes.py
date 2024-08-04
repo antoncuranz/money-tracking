@@ -1,8 +1,8 @@
 import json
 
 from backend import Account
-from tests.conftest import with_test_db
-from tests.fixtures import ACCOUNT_1
+from backend.tests.conftest import with_test_db
+from backend.tests.fixtures import ACCOUNT_1
 
 
 @with_test_db((Account,))

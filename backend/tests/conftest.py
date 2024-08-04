@@ -9,8 +9,8 @@ from backend import api
 from backend.clients.mastercard import IMastercardClient
 from backend.clients.teller import ITellerClient
 from backend.service.balance_service import BalanceService
-from tests.mockclients.mastercard import MockMastercardClient
-from tests.mockclients.teller import MockTellerClient
+from backend.tests.mockclients.mastercard import MockMastercardClient
+from backend.tests.mockclients.teller import MockTellerClient
 
 
 @pytest.fixture()

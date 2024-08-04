@@ -1,8 +1,8 @@
 import json
 
 from backend import Account, Transaction, Credit, CreditTransaction
-from tests.conftest import with_test_db
-from tests.fixtures import ACCOUNT_1, CREDIT_1, TX_1, TX_2, TX_3
+from backend.tests.conftest import with_test_db
+from backend.tests.fixtures import ACCOUNT_1, CREDIT_1, TX_1, TX_2, TX_3
 
 
 @with_test_db((Account, Credit, CreditTransaction, Transaction,))
