@@ -59,6 +59,14 @@ PAYMENT_1 = dict(
     account_id=1, teller_id="teller_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
     category="generic", amount_usd=sum([tx["amount_usd"] for tx in TRANSACTIONS])
 )
+PAYMENT_2 = dict(
+    account_id=1, teller_id="teller_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
+    category="generic", amount_usd=100
+)
+PAYMENT_3 = dict(
+    account_id=1, teller_id="teller_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
+    category="generic", amount_usd=50000
+)
 
 EXCHANGE_1 = dict(
     id=1, date="2024-01-29", amount_usd=PAYMENT_1["amount_usd"], amount_eur=-1, exchange_rate=1.085199
