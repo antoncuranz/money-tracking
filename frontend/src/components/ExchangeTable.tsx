@@ -3,9 +3,13 @@ import ExchangeRow from "@/components/ExchangeRow.tsx";
 
 interface Props {
   exchanges: any[],
+  selectedExchange?: number,
+  selectExchange: (id: number) => void,
+  unselectExchange: () => void,
+  deleteExchange: (id: number) => void,
 }
 
-const ExchangeTable = ({exchanges}: Props) => {
+const ExchangeTable = ({exchanges, selectedExchange=null, selectExchange, unselectExchange, deleteExchange}: Props) => {
 
   return (
     <Table>
@@ -22,7 +26,9 @@ const ExchangeTable = ({exchanges}: Props) => {
       </TableHeader>
       <TableBody>
         {exchanges.map(exchange =>
-          <ExchangeRow key={exchange["id"]} exchange={exchange}/>
+          <ExchangeRow key={exchange["id"]} exchange={exchange} selected={selectedExchange == exchange["id"]} disabled={selectedExchange != null}
+                       selectExchange={() => selectExchange(exchange["id"])} deleteExchange={() => deleteExchange(exchange["id"])}
+                       unselectExchange={unselectExchange}/>
         )}
       </TableBody>
     </Table>

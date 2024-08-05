@@ -12,10 +12,12 @@ import CreditTable from "@/components/CreditTable.tsx";
 import CreditTransactionDialog from "@/components/CreditTransactionDialog.tsx";
 
 const ImportPage = () => {
+  const [currentAccount, setCurrentAccount] = useState(-1)
+
   const [transactions, setTransactions] = useState([]);
   const [credits, setCredits] = useState([]);
   const [accounts, setAccounts] = useState([])
-  const [currentAccount, setCurrentAccount] = useState(-1)
+
   const [creditSelection, setCreditSelection] = useState<number>(null)
   const [transactionSelection, setTransactionSelection] = useState()
   const [ctDialogOpen, setCtDialogOpen] = useState(false)
@@ -45,6 +47,7 @@ const ImportPage = () => {
     let accountResponse = await fetch("/api/accounts")
     accountResponse = await accountResponse.json()
     setAccounts(accountResponse as any[])
+    setCurrentAccount(accountResponse[0]["id"])
   }
 
   useEffect(() => {
@@ -118,11 +121,10 @@ const ImportPage = () => {
       <div className="flex flex-col sm:gap-4 sm:py-4">
         <main className="grid flex-1 items-start gap-2 p-4 sm:px-6 sm:py-0 md:gap-2">
           <div className="flex items-center">
-            <Tabs defaultValue="all">
+            <Tabs value={currentAccount.toString()}>
               <TabsList>
-                <TabsTrigger value="all" onClick={() => setCurrentAccount(-1)}>All</TabsTrigger>
                 {accounts.map(account =>
-                  <TabsTrigger key={account.id} value={account.id} onClick={() => setCurrentAccount(account.id)}>{account.name}</TabsTrigger>
+                  <TabsTrigger key={account.id} value={account.id.toString()} onClick={() => setCurrentAccount(account.id)}>{account.name}</TabsTrigger>
                 )}
               </TabsList>
             </Tabs>

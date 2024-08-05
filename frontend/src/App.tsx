@@ -19,10 +19,10 @@ const App = () => {
             </span>
           </NavLink>
           <NavLink to="/">
-            <span className="text-muted-foreground transition-colors hover:text-foreground">Overview</span>
+            <span className="text-muted-foreground transition-colors hover:text-foreground">Transactions</span>
           </NavLink>
           <NavLink to="/exchange">
-            <span className="text-muted-foreground transition-colors hover:text-foreground">Exchange</span>
+            <span className="text-muted-foreground transition-colors hover:text-foreground">Exchanges</span>
           </NavLink>
           <NavLink to="/archive">
             <span className="text-muted-foreground transition-colors hover:text-foreground">Archive</span>
