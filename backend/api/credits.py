@@ -22,7 +22,6 @@ def update_credit(account_id, credit_id, balance_service: BalanceService):
         tx = Transaction.get(
             (Transaction.id == transaction_id) &
             (Transaction.account == account_id) &
-            (Transaction.status != Transaction.Status.PENDING.value) &
             (Transaction.status != Transaction.Status.PAID.value)
         )
         credit = Credit.get((Credit.id == credit_id) & (Credit.account == account_id))

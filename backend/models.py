@@ -4,7 +4,7 @@ from enum import Enum
 
 from backend.config import Config
 
-db = SqliteDatabase(Config.database_path)
+db = SqliteDatabase(Config.database_path, pragmas=(("foreign_keys", "on"),))
 
 
 class BaseModel(Model):
@@ -52,8 +52,8 @@ class ExchangePayment(BaseModel):
     class Meta:
         primary_key = CompositeKey("exchange", "payment")
 
-    exchange = ForeignKeyField(Exchange)
-    payment = ForeignKeyField(Payment)
+    exchange = ForeignKeyField(Exchange, on_delete="CASCADE")
+    payment = ForeignKeyField(Payment, on_delete="CASCADE")
     amount = IntegerField()
 
 
@@ -105,8 +105,8 @@ class CreditTransaction(BaseModel):
     class Meta:
         primary_key = CompositeKey("credit", "transaction")
 
-    credit = ForeignKeyField(Credit)
-    transaction = ForeignKeyField(Transaction)
+    credit = ForeignKeyField(Credit, on_delete="CASCADE")
+    transaction = ForeignKeyField(Transaction, on_delete="CASCADE")
     amount = IntegerField()
 
 

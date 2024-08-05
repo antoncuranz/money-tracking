@@ -3,9 +3,9 @@ from decimal import Decimal
 import pytest
 from peewee import DoesNotExist
 
-from backend import Exchange, ExchangePayment, Payment
+from backend import Exchange, ExchangePayment, Payment, Account
 from backend.tests.conftest import with_test_db
-from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, EXCHANGE_2
+from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, EXCHANGE_2, ACCOUNT_1
 
 
 @with_test_db((Exchange, ExchangePayment))
@@ -38,7 +38,7 @@ def test_post_exchange(client):
     assert exchange.exchange_rate == Decimal(EXCHANGE_1["exchange_rate"]).quantize(Decimal(10) ** -6)
 
 
-@with_test_db((Exchange, ExchangePayment))
+@with_test_db((Exchange, ExchangePayment, Payment))
 def test_delete_exchange(client):
     # Arrange
     exchange = Exchange.create(**EXCHANGE_1)
@@ -52,9 +52,10 @@ def test_delete_exchange(client):
         Exchange.get()
 
 
-@with_test_db((Exchange, ExchangePayment, Payment))
+@with_test_db((Account, Exchange, ExchangePayment, Payment))
 def test_delete_assigned_exchange_500(client):
     # Arrange
+    Account.create(**ACCOUNT_1)
     payment = Payment.create(**PAYMENT_1)
     exchange = Exchange.create(**EXCHANGE_1)
     ExchangePayment.create(exchange=exchange, payment=payment, amount=1)
@@ -66,9 +67,10 @@ def test_delete_assigned_exchange_500(client):
     assert response.status_code == 500
 
 
-@with_test_db((Exchange, ExchangePayment, Payment))
+@with_test_db((Account, Exchange, ExchangePayment, Payment))
 def test_update_exchange(app, client, balance_service):
     # Arrange
+    Account.create(**ACCOUNT_1)
     exchange = Exchange.create(**EXCHANGE_1)
     payment = Payment.create(**PAYMENT_1)
 
@@ -83,9 +85,10 @@ def test_update_exchange(app, client, balance_service):
     assert balance_service.calc_payment_remaining(payment) == 0
 
 
-@with_test_db((Exchange, ExchangePayment, Payment))
+@with_test_db((Account, Exchange, ExchangePayment, Payment))
 def test_update_exchange_amount_larger_than_payment_500(app, client, balance_service):
     # Arrange
+    Account.create(**ACCOUNT_1)
     exchange = Exchange.create(**EXCHANGE_1)
     payment = Payment.create(**PAYMENT_2)
 
@@ -98,9 +101,10 @@ def test_update_exchange_amount_larger_than_payment_500(app, client, balance_ser
     assert response.status_code == 500
 
 
-@with_test_db((Exchange, ExchangePayment, Payment))
+@with_test_db((Account, Exchange, ExchangePayment, Payment))
 def test_update_exchange_amount_larger_than_remaining_payment_500(app, client, balance_service):
     # Arrange
+    Account.create(**ACCOUNT_1)
     exchange = Exchange.create(**EXCHANGE_1)
     exchange2 = Exchange.create(**EXCHANGE_2)
     payment = Payment.create(**PAYMENT_1)
@@ -116,9 +120,10 @@ def test_update_exchange_amount_larger_than_remaining_payment_500(app, client, b
     assert response.status_code == 500
 
 
-@with_test_db((Exchange, ExchangePayment, Payment))
+@with_test_db((Account, Exchange, ExchangePayment, Payment))
 def test_update_exchange_amount_larger_than_exchange_500(app, client, balance_service):
     # Arrange
+    Account.create(**ACCOUNT_1)
     exchange = Exchange.create(**EXCHANGE_1)
     payment = Payment.create(**PAYMENT_3)
 
@@ -131,9 +136,10 @@ def test_update_exchange_amount_larger_than_exchange_500(app, client, balance_se
     assert response.status_code == 500
 
 
-@with_test_db((Exchange, ExchangePayment, Payment))
+@with_test_db((Account, Exchange, ExchangePayment, Payment))
 def test_update_exchange_on_processed_payment_404(app, client, balance_service):
     # Arrange
+    Account.create(**ACCOUNT_1)
     exchange = Exchange.create(**EXCHANGE_1)
     payment = Payment.create(**PAYMENT_1)
     payment.processed = True
@@ -147,9 +153,10 @@ def test_update_exchange_on_processed_payment_404(app, client, balance_service):
     assert response.status_code == 404
 
 
-@with_test_db((Exchange, ExchangePayment, Payment))
+@with_test_db((Account, Exchange, ExchangePayment, Payment))
 def test_update_exchange_delete_exchange_payment(app, client, balance_service):
     # Arrange
+    Account.create(**ACCOUNT_1)
     exchange = Exchange.create(**EXCHANGE_1)
     payment = Payment.create(**PAYMENT_1)
     ExchangePayment.create(exchange=exchange, payment=payment, amount=1)
@@ -159,13 +166,16 @@ def test_update_exchange_delete_exchange_payment(app, client, balance_service):
 
     # Assert
     assert response.status_code == 204
+    Exchange.get()
+    Payment.get()
     with pytest.raises(DoesNotExist):
         ExchangePayment.get()
 
 
-@with_test_db((Exchange, ExchangePayment, Payment))
+@with_test_db((Account, Exchange, ExchangePayment, Payment))
 def test_update_exchange_reduce_amount(app, client, balance_service):
     # Arrange
+    Account.create(**ACCOUNT_1)
     exchange = Exchange.create(**EXCHANGE_1)
     payment = Payment.create(**PAYMENT_1)
     ExchangePayment.create(exchange=exchange, payment=payment, amount=exchange.amount_usd)

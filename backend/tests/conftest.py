@@ -34,7 +34,7 @@ def with_test_db(dbs: tuple):
     def decorator(func):
         @wraps(func)
         def test_db_closure(*args, **kwargs):
-            test_db = SqliteDatabase(":memory:")
+            test_db = SqliteDatabase(":memory:", pragmas=(("foreign_keys", "on"),))
             with test_db.bind_ctx(dbs):
                 test_db.create_tables(dbs)
                 try:
