@@ -31,7 +31,7 @@ const PaymentRow = ({payment, showAccount=false}: Props) => {
       <TableCell>{payment["counterparty"]}</TableCell>
       <TableCell>{payment["description"]}</TableCell>
       <TableCell>{payment["category"]}</TableCell>
-      <TableCell style={{textAlign: "right"}}>
+      <TableCell className="text-right">
         { isAppliedToExchange() ?
           <>
             <span className="line-through mr-1">{formatAmount(payment["amount_usd"])}</span>

@@ -2,15 +2,17 @@ import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {Check, Clock} from "lucide-react";
 import AmountInput from "@/components/AmountInput.tsx";
 import {formatAmount} from "@/components/util.ts";
+import {MouseEventHandler} from "react";
 
 interface Props {
   transaction: any,
   updateTransactionAmount?: (txId: string, newAmount) => void,
   readonly?: boolean,
-  showAmountEur?: boolean,
+  selectable?: boolean,
+  onClick?: MouseEventHandler<HTMLTableRowElement> | undefined;
 }
 
-const TransactionRow = ({transaction, updateTransactionAmount, readonly=true, showAmountEur=false}: Props) => {
+const TransactionRow = ({transaction, updateTransactionAmount, readonly, selectable, onClick=null}: Props) => {
 
   function updateAmount(newAmount) {
     if (updateTransactionAmount)
@@ -26,12 +28,12 @@ const TransactionRow = ({transaction, updateTransactionAmount, readonly=true, sh
   }
 
   return (
-    <TableRow>
+    <TableRow onClick={onClick} className={selectable ? "hover:bg-muted cursor-pointer" : ""}>
       <TableCell>{transaction["date"].substring(0, 16)}</TableCell>
       <TableCell>{transaction["counterparty"]}</TableCell>
       <TableCell>{transaction["description"]}</TableCell>
       <TableCell>{transaction["category"]}</TableCell>
-      <TableCell style={{textAlign: "right"}}>
+      <TableCell className="text-right">
         { isCreditApplied() ?
           <>
             <span className="line-through mr-1">{formatAmount(transaction["amount_usd"])}</span>
@@ -40,21 +42,15 @@ const TransactionRow = ({transaction, updateTransactionAmount, readonly=true, sh
           : formatAmount(transaction["amount_usd"])
         }
       </TableCell>
-      { showAmountEur &&
-        <TableCell style={{textAlign: "right"}}>
-          {readonly ?
-            <>{formatAmount(transaction["amount_eur"])}</>
-          :
-            <AmountInput amount={transaction.amount_eur} setAmount={updateAmount}/>
-          }
-        </TableCell>
-      }
+      <TableCell className="text-right pt-0 pb-0">
+        <AmountInput amount={transaction.amount_eur} setAmount={updateAmount} disabled={readonly}/>
+      </TableCell>
       <TableCell>
         {transaction["status"] == 1 &&
-            <Clock className="h-5 w-5" style={{float: "right"}}/>
+            <Clock className="h-5 w-5 float-right"/>
         }
         {transaction["status"] == 3 &&
-            <Check className="h-5 w-5" style={{float: "right"}}/>
+            <Check className="h-5 w-5 float-right"/>
         }
       </TableCell>
     </TableRow>

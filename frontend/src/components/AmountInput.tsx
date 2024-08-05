@@ -7,9 +7,10 @@ interface Props {
   amount: number,
   setAmount: (newAmount) => void,
   className?: string,
+  disabled?: boolean,
 }
 
-const AmountInput = ({amount, setAmount, className = ""}: Props) => {
+const AmountInput = ({amount, setAmount, className = "", disabled = false}: Props) => {
   const [stringAmount, setStringAmount] = useState("")
   const { toast } = useToast();
 
@@ -52,7 +53,7 @@ const AmountInput = ({amount, setAmount, className = ""}: Props) => {
 
   return (
     <Input value={stringAmount} onChange={e => setStringAmount(e.target.value)}
-           onBlur={onBlur} style={{textAlign: "right"}} className={className}/>
+           onBlur={onBlur} className={className + " text-right"} disabled={disabled}/>
   )
 }
 

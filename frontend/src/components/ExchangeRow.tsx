@@ -1,6 +1,6 @@
 import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Check, Clock, Delete, Info, Pencil, Trash, Trash2} from "lucide-react";
+import {Cable, Check, Clock, Delete, Info, Pencil, Trash, Trash2} from "lucide-react";
 import {formatAmount} from "@/components/util.ts";
 
 interface Props {
@@ -21,7 +21,7 @@ const ExchangeRow = ({exchange}: Props) => {
     <TableRow>
       <TableCell>{exchange["date"].substring(0, 16)}</TableCell>
       <TableCell>{exchange["exchange_rate"]}</TableCell>
-      <TableCell style={{textAlign: "right"}}>
+      <TableCell className="text-right">
         { isAppliedToPayment() ?
           <>
             <span className="line-through mr-1">{formatAmount(exchange["amount_usd"])}</span>
@@ -30,12 +30,12 @@ const ExchangeRow = ({exchange}: Props) => {
           : formatAmount(exchange["amount_usd"])
         }
       </TableCell>
-      <TableCell style={{textAlign: "right"}}>
+      <TableCell className="text-right">
         {formatAmount(exchange["amount_eur"])}
       </TableCell>
-      <TableCell style={{float: "right"}}>
+      <TableCell className="text-right">
         <Button variant="outline" size="icon">
-          <Pencil className="h-4 w-4" />
+          <Cable className="h-4 w-4" />
         </Button>
         <Button variant="outline" size="icon" className="ml-2" disabled={isAppliedToPayment()}>
           <Trash2 className="h-4 w-4" />

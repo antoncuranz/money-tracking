@@ -8,14 +8,17 @@ import {useToast} from "@/components/ui/use-toast.ts";
 import {useTellerConnect} from 'teller-connect-react';
 import {useEffect, useState} from "react";
 import TransactionTable from "@/components/TransactionTable.tsx";
-import PaymentTable from "@/components/PaymentTable.tsx";
+import CreditTable from "@/components/CreditTable.tsx";
+import CreditTransactionDialog from "@/components/CreditTransactionDialog.tsx";
 
 const ImportPage = () => {
   const [transactions, setTransactions] = useState([]);
   const [credits, setCredits] = useState([]);
-  const [payments, setPayments] = useState([]);
   const [accounts, setAccounts] = useState([])
   const [currentAccount, setCurrentAccount] = useState(-1)
+  const [creditSelection, setCreditSelection] = useState<number>(null)
+  const [transactionSelection, setTransactionSelection] = useState()
+  const [ctDialogOpen, setCtDialogOpen] = useState(false)
 
   const { toast } = useToast();
   const { open: openTeller, ready: isTellerReady } = useTellerConnect({
@@ -58,10 +61,6 @@ const ImportPage = () => {
     const credits = await creditResponse.json()
     // setCredits(credits.filter(c => c.transactions.length == 0))
     setCredits(credits)
-
-    const paymentsResponse = await fetch("/api/accounts/" + currentAccount + "/payments")
-    const payments = await paymentsResponse.json()
-    setPayments(payments.filter(p => !p.exchange))
   }
 
   async function onTellerButtonClick(accessToken?: string) {
@@ -101,6 +100,20 @@ const ImportPage = () => {
     setTransactions(transactions.map(tx => tx["id"] == txId ? transactionToUpdate : tx))
   }
 
+  function openCreditTransactionDialog(tx) {
+    if (creditSelection != null) {
+      setTransactionSelection(tx)
+      setCtDialogOpen(true)
+    }
+  }
+
+  function onDialogClose(needsUpdate) {
+    setCtDialogOpen(false)
+
+    if (needsUpdate)
+      updateData()
+  }
+
   return (<>
       <div className="flex flex-col sm:gap-4 sm:py-4">
         <main className="grid flex-1 items-start gap-2 p-4 sm:px-6 sm:py-0 md:gap-2">
@@ -120,7 +133,7 @@ const ImportPage = () => {
                   Teller Connect
                 </span>
               </Button>
-              <Button size="sm" className="h-8 gap-1" onClick={onActualButtonClick} disabled={currentAccount < 0 || credits.length > 0}>
+              <Button size="sm" className="h-8 gap-1" onClick={onActualButtonClick} disabled={currentAccount < 0}>
                 <Import className="h-3.5 w-3.5"/>
                 <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                   Actual Import
@@ -129,22 +142,11 @@ const ImportPage = () => {
               <Button size="sm" className="h-8 gap-1" onClick={onSaveButtonClick} disabled={currentAccount < 0}>
                 <Save className="h-3.5 w-3.5"/>
                 <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Save
+                  Save Amounts
                 </span>
               </Button>
             </div>
           </div>
-          { payments.length > 0 &&
-            <Card className="mb-2">
-              <CardHeader className="pb-0">
-                <CardTitle>Payments</CardTitle>
-                <CardDescription/>
-              </CardHeader>
-              <CardContent>
-                <PaymentTable payments={payments}/>
-              </CardContent>
-            </Card>
-          }
           { credits.length > 0 &&
             <Card className="mb-2">
               <CardHeader className="pb-0">
@@ -152,23 +154,26 @@ const ImportPage = () => {
                 <CardDescription/>
               </CardHeader>
               <CardContent>
-                <TransactionTable transactions={credits}/>
+                <CreditTable credits={credits} selectedCredit={creditSelection} selectCredit={setCreditSelection} unselectCredit={() => setCreditSelection(null)}/>
               </CardContent>
             </Card>
           }
           { transactions.length > 0 &&
-            <Card className="mb-2">
+            <Card className={creditSelection == null ? "mb-2" : "mb-2 outline"}>
               <CardHeader className="pb-0">
                 <CardTitle>Transactions</CardTitle>
                 <CardDescription/>
               </CardHeader>
               <CardContent>
-                <TransactionTable transactions={transactions} updateTransactionAmount={updateTransactionAmount} readonly={false} showAmountEur={true}/>
+                <TransactionTable transactions={transactions} updateTransactionAmount={updateTransactionAmount}
+                                  readonly={creditSelection != null} selectable={creditSelection != null}
+                                  onTransactionClick={openCreditTransactionDialog}/>
               </CardContent>
             </Card>
           }
         </main>
       </div>
+      <CreditTransactionDialog open={ctDialogOpen} onClose={onDialogClose} credit={creditSelection} transaction={transactionSelection}/>
   </>
 )
 }

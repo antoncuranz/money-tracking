@@ -5,10 +5,11 @@ interface Props {
   transactions: any[],
   updateTransactionAmount?: (txId: string, newAmount) => void,
   readonly?: boolean,
-  showAmountEur?: boolean,
+  selectable?: boolean,
+  onTransactionClick?: (tx) => void,
 }
 
-const TransactionTable = ({transactions, updateTransactionAmount=null, readonly=true, showAmountEur=false}: Props) => {
+const TransactionTable = ({transactions, updateTransactionAmount=null, readonly=true, selectable=false, onTransactionClick=null}: Props) => {
 
   return (
     <Table>
@@ -18,10 +19,8 @@ const TransactionTable = ({transactions, updateTransactionAmount=null, readonly=
           <TableHead>Counterparty</TableHead>
           <TableHead>Description</TableHead>
           <TableHead style={{width: "200px"}}>Category</TableHead>
-          <TableHead style={{width: "200px", textAlign: "right"}}>Amount (USD)</TableHead>
-          { showAmountEur &&
-            <TableHead style={{width: "200px", textAlign: "right"}}>Amount (EUR)</TableHead>
-          }
+          <TableHead className="text-right" style={{width: "200px"}}>Amount (USD)</TableHead>
+          <TableHead className="text-right" style={{width: "200px"}}>Amount (EUR)</TableHead>
           <TableHead style={{width: "50px"}}>
             <span className="sr-only">Status</span>
           </TableHead>
@@ -29,7 +28,8 @@ const TransactionTable = ({transactions, updateTransactionAmount=null, readonly=
       </TableHeader>
       <TableBody>
         {transactions.map(tx =>
-          <TransactionRow key={tx["id"]} transaction={tx} readonly={readonly} showAmountEur={showAmountEur} updateTransactionAmount={updateTransactionAmount}/>
+          <TransactionRow key={tx["id"]} transaction={tx} updateTransactionAmount={updateTransactionAmount}
+                          readonly={readonly} selectable={selectable} onClick={() => onTransactionClick ? onTransactionClick(tx) : {}}/>
         )}
       </TableBody>
     </Table>

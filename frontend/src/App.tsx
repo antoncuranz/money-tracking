@@ -10,7 +10,7 @@ const App = () => {
 
   return (<>
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+      <header className="sticky top-0 flex h-16 items-center gap-4 border-b px-4 md:px-6 z-10 backdrop-blur-lg bg-white/80">
         <nav
           className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
           <NavLink to="/">
