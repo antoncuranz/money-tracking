@@ -8,9 +8,10 @@ interface Props {
   setAmount: (newAmount) => void,
   className?: string,
   disabled?: boolean,
+  decimals?: number,
 }
 
-const AmountInput = ({amount, setAmount, className = "", disabled = false}: Props) => {
+const AmountInput = ({amount, setAmount, className = "", disabled = false, decimals = 2}: Props) => {
   const [stringAmount, setStringAmount] = useState("")
   const { toast } = useToast();
 
@@ -19,7 +20,7 @@ const AmountInput = ({amount, setAmount, className = "", disabled = false}: Prop
   }, [amount]);
 
   function updateAmount() {
-    setStringAmount(formatAmount(amount))
+    setStringAmount(formatAmount(amount, decimals))
   }
 
   function onBlur(event: any) {
@@ -35,7 +36,7 @@ const AmountInput = ({amount, setAmount, className = "", disabled = false}: Prop
   }
 
   function parseMonetaryValue(valueString: string) {
-    const re = /^(-)?(\d*)(?:[.,](\d{0,2}))?\d*$/
+    const re = new RegExp(String.raw`^(-)?(\d*)(?:[.,](\d{0,${decimals}}))?\d*$`);
     const match = valueString.replace(/\s/g, "").match(re)
 
     if (!match || match[2].length + (match[3]?.length ?? 0) == 0)
@@ -45,10 +46,10 @@ const AmountInput = ({amount, setAmount, className = "", disabled = false}: Prop
     const euros = parseInt(match[2]) || 0
     let cents = parseInt(match[3]) || 0
 
-    if (match[3]?.length == 1)
-      cents *= 10
+    if (match[3])
+      cents *= Math.pow(10, decimals - match[3].length)
 
-    return sign * (euros * 100 + cents)
+    return sign * (euros * Math.pow(10, decimals!) + cents)
   }
 
   return (

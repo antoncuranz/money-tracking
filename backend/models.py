@@ -42,10 +42,7 @@ class Exchange(BaseModel):
     date = DateField(default=datetime.date.today)
     amount_usd = IntegerField()
     amount_eur = IntegerField()
-    exchange_rate = DecimalField()  # needs to be IBKR rate
-
-    # optional, if available:
-    # exchange_fee_eur = IntegerField(null=True)
+    exchange_rate = DecimalField()
 
 
 class ExchangePayment(BaseModel):
@@ -132,3 +129,4 @@ class ExchangeRate(BaseModel):
     class Source(Enum):
         IBKR = 1
         MASTERCARD = 2
+        EXCHANGERATESIO = 3

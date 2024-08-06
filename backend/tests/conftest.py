@@ -7,13 +7,13 @@ from peewee import SqliteDatabase
 
 from backend import register_blueprints
 from backend.clients.actual import IActualClient
-from backend.clients.mastercard import IMastercardClient
+from backend.clients.exchangerates import IExchangeRateClient
 from backend.clients.teller import ITellerClient
 from backend.service.balance_service import BalanceService
 from backend.service.exchange_service import ExchangeService
 from backend.service.payment_service import PaymentService
 from backend.tests.mockclients.actual import MockActualClient
-from backend.tests.mockclients.mastercard import MockMastercardClient
+from backend.tests.mockclients.exchangerates import MockExchangeRateClient
 from backend.tests.mockclients.teller import MockTellerClient
 
 
@@ -57,9 +57,9 @@ def configure(binder):
 
 
 @pytest.fixture()
-def mastercard_mock(app):
-    client = MockMastercardClient()
-    dependencies[IMastercardClient] = client
+def exchangerates_mock(app):
+    client = MockExchangeRateClient()
+    dependencies[IExchangeRateClient] = client
     FlaskInjector(app=app, modules=[configure])
 
     yield client
@@ -93,8 +93,8 @@ def balance_service(app):
 
 
 @pytest.fixture()
-def exchange_service(app, mastercard_mock):
-    service = ExchangeService(mastercard_mock)
+def exchange_service(app, exchangerates_mock):
+    service = ExchangeService(exchangerates_mock, exchangerates_mock)
     dependencies[ExchangeService] = service
     FlaskInjector(app=app, modules=[configure])
 

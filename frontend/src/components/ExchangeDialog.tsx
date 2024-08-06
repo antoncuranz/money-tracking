@@ -1,7 +1,6 @@
 import {Button} from "@/components/ui/button.tsx";
 import {Dialog, DialogFooter, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger} from "@/components/ui/dialog.tsx";
 import {Label} from "@/components/ui/label.tsx";
-import {Input} from "@/components/ui/input.tsx";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover.tsx";
 import {Calendar} from "@/components/ui/calendar.tsx";
 import {CalendarIcon, Coins} from "lucide-react";
@@ -9,37 +8,54 @@ import {useState} from "react";
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import AmountInput from "@/components/AmountInput.tsx";
+import {useToast} from "@/components/ui/use-toast.ts";
 
 interface Props {
-  transactions: any[],
-  updateTransactionAmount?: (txId: string, newAmount) => void,
-  readonly?: boolean,
+  open: boolean,
+  onClose: (needsUpdate: boolean) => void,
 }
 
-const ExchangeDialog = () => {
+const ExchangeDialog = ({open, onClose}: Props) => {
   const [date, setDate] = useState<Date>()
-  const [amountUsd, setAmountUsd] = useState(0)
-  const [amountEur, setAmountEur] = useState(0)
-  const [feeEur, setFeeEur] = useState(0)
+  const [amountUsd, setAmountUsd] = useState<number>(null)
+  const [amountEur, setAmountEur] = useState<number>(null)
+  const [exchangeRate, setExchangeRate] = useState<number>(null)
+
+  const { toast } = useToast();
+
+  async function onSaveButtonClick() {
+    const response = await fetch("/api/exchanges", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        date: date,
+        amount_usd: amountUsd,
+        amount_eur: amountEur,
+        exchange_rate: exchangeRate
+      })
+    })
+
+    if (response.ok)
+      onClose(true)
+    else toast({
+      title: "Error creating Exchange",
+      description: response.statusText
+    })
+  }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button size="sm" className="h-8 gap-1">
-          <Coins className="h-3.5 w-3.5"/>
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            Add Exchange
-          </span>
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={open => open ? onClose(false) : {}}>
+      {/*<DialogTrigger asChild>*/}
+      {/*  <Button size="sm" className="h-8 gap-1">*/}
+      {/*    <Coins className="h-3.5 w-3.5"/>*/}
+      {/*    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">*/}
+      {/*      Add Exchange*/}
+      {/*    </span>*/}
+      {/*  </Button>*/}
+      {/*</DialogTrigger>*/}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add Exchange</DialogTitle>
-          {/*exchange_rate = IntegerField(null=True)  # needs to be IBKR rate*/}
-
-          {/*<DialogDescription>*/}
-          {/*  Make changes to your profile here. Click save when you're done.*/}
-          {/*</DialogDescription>*/}
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -95,14 +111,17 @@ const ExchangeDialog = () => {
             <Label htmlFor="rate" className="text-right">
               Exchange Rate
             </Label>
-            <Input
+            <AmountInput
               id="rate"
               className="col-span-3"
+              amount={exchangeRate}
+              setAmount={setExchangeRate}
+              decimals={7}
             />
           </div>
         </div>
         <DialogFooter>
-          <Button type="submit">Save</Button>
+          <Button type="submit" onClick={onSaveButtonClick}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

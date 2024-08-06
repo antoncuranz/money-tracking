@@ -3,6 +3,8 @@ import ibind
 import urllib3
 from flask_injector import inject
 
+from backend.clients.exchangerates import IExchangeRateClient
+
 urllib3.disable_warnings()
 
 # https://pennies.interactivebrokers.com/cstools/contract_info/v3.10/index.php
@@ -12,7 +14,7 @@ BUY_USD = "SELL"
 SELL_USD = "BUY"
 
 
-class IbkrClient:
+class IbkrClient(IExchangeRateClient):
     @inject
     def __init__(self, host, port):
         self._client = ibind.IbkrClient(host=host, port=port)

@@ -9,7 +9,7 @@ from backend.api.exchanges import exchanges
 from backend.api.credits import credits
 from backend.api.accounts import accounts
 from backend.clients.actual import IActualClient, ActualClient
-from backend.clients.mastercard import IMastercardClient, MastercardClient
+from backend.clients.exchangerates import ExchangeratesApiIoClient, MastercardClient
 from backend.clients.teller import TellerClient, ITellerClient
 from backend.service.actual_service import ActualService
 from backend.service.balance_service import BalanceService
@@ -22,15 +22,17 @@ def configure(binder):
     teller = TellerClient(Config.teller_cert)
     actual = ActualClient(Config.actual_api_key, Config.actual_sync_id)
     mastercard = MastercardClient()
+    exchangeratesio = ExchangeratesApiIoClient(Config.exchangeratesio_access_key)
     # ibkr = IbkrClient(Config.ibkr_host, Config.ibkr_port)
 
     binder.bind(ITellerClient, to=teller, scope=singleton)
     binder.bind(IActualClient, to=actual, scope=singleton)
-    binder.bind(IMastercardClient, to=mastercard, scope=singleton)
+    binder.bind(MastercardClient, to=mastercard, scope=singleton)
+    binder.bind(ExchangeratesApiIoClient, to=exchangeratesio, scope=singleton)
     # binder.bind(IbkrClient, to=ibkr, scope=singleton)
 
     balance_service = BalanceService()
-    exchange_service = ExchangeService(mastercard)
+    exchange_service = ExchangeService(mastercard, exchangeratesio)
 
     binder.bind(TransactionService, to=TransactionService(teller), scope=singleton)
     binder.bind(ActualService, to=ActualService(actual), scope=singleton)

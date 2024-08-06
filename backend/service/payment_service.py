@@ -34,7 +34,7 @@ class PaymentService:
         exchange_payments = ExchangePayment.select(Exchange, ExchangePayment).join(Exchange) \
             .where(ExchangePayment.payment == payment.id)
 
-        exchange_rates = self.exchange_service.get_exchange_rates(set([tx.date for tx in transactions]), ExchangeRate.Source.IBKR)
+        exchange_rates = self.exchange_service.get_exchange_rates(set([tx.date for tx in transactions]), ExchangeRate.Source.EXCHANGERATESIO)
 
         current_exchange = 0
         exchange_remaining = exchange_payments[current_exchange].amount
@@ -61,10 +61,21 @@ class PaymentService:
             tx.status_enum = Transaction.Status.PAID
             tx.save()
 
-        payment.amount_eur = sum([tx.amount_eur + tx.ccy_risk + tx.fx_fees for tx in transactions])
-        # alternative: payment.amount_eur = round(payment.amount_usd / avg_eur_usd_exchanged)
+        avg_eur_usd_exchanged = 0
+        for ep in exchange_payments:
+            avg_eur_usd_exchanged += Decimal(ep.amount / payment.amount_usd) * ep.exchange.exchange_rate
+
+        payment.amount_eur = round(payment.amount_usd / avg_eur_usd_exchanged)
         payment.processed = True
         payment.save()
+
+        eur_sum = sum([tx.amount_eur + tx.ccy_risk + tx.fx_fees for tx in transactions])
+        eur_err = payment.amount_eur - eur_sum
+
+        # apply error to largest transaction
+        largest_tx = max(transactions, key=lambda tx: tx.amount_usd)
+        largest_tx.fx_fees += eur_err
+        largest_tx.save()
 
         # in a separate loop:
         # update Actual transaction (set split amounts and clear) and update amounts as well!

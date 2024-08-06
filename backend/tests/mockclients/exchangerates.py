@@ -1,7 +1,7 @@
-from backend.clients.mastercard import IMastercardClient
+from backend.clients.exchangerates import IExchangeRateClient
 
 
-class MockMastercardClient(IMastercardClient):
+class MockExchangeRateClient(IExchangeRateClient):
     def __init__(self):
         self.rates = {
             "2024-01-01": 1.1,

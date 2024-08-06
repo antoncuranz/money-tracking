@@ -32,6 +32,11 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
     updateCreditTransaction(0)
   }
 
+  function onMaximumButtonClick() {
+    alert("TODO")
+    // also disable credit selection mode in ImportPage
+  }
+
   function onSaveButtonClick() {
     updateCreditTransaction(amount ?? 0)
   }
@@ -69,6 +74,7 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClearButtonClick}>Clear</Button>
+          <Button variant="outline" onClick={onMaximumButtonClick}>Maximum</Button>
           <Button type="submit" onClick={onSaveButtonClick}>Save</Button>
         </DialogFooter>
       </DialogContent>

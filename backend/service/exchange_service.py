@@ -1,4 +1,4 @@
-from backend.clients.mastercard import IMastercardClient
+from backend.clients.exchangerates import IExchangeRateClient
 from backend.models import Transaction, ExchangeRate
 from peewee import DoesNotExist
 from flask_injector import inject
@@ -6,8 +6,9 @@ from flask_injector import inject
 
 class ExchangeService:
     @inject
-    def __init__(self, mastercard: IMastercardClient):
+    def __init__(self, mastercard: IExchangeRateClient, exchangeratesio: IExchangeRateClient):
         self.mastercard = mastercard
+        self.exchangeratesio = exchangeratesio
 
     def add_missing_eur_amounts(self, account):
         transactions = Transaction.select().where((Transaction.account == account.id) & (Transaction.amount_eur.is_null()))
@@ -30,6 +31,8 @@ class ExchangeService:
         except DoesNotExist:
             if source == ExchangeRate.Source.MASTERCARD:
                 return self.mastercard.get_conversion_rate(date)
+            elif source == ExchangeRate.Source.EXCHANGERATESIO:
+                return self.exchangeratesio.get_conversion_rate(date)
             else:
                 raise Exception("Not implemented")
 

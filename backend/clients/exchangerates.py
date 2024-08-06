@@ -1,14 +1,29 @@
 import requests
+from flask_injector import inject
 
 from backend import ExchangeRate
 
 
-class IMastercardClient:
+class IExchangeRateClient:
     def get_conversion_rate(self, date):
         raise NotImplementedError
 
 
-class MastercardClient(IMastercardClient):
+class ExchangeratesApiIoClient(IExchangeRateClient):
+    @inject
+    def __init__(self, access_key):
+        self.access_key = access_key
+
+    def get_conversion_rate(self, date):
+        url = f"http://api.exchangeratesapi.io/v1/{date}?access_key={self.access_key}&base=EUR&symbols=USD"
+
+        response = requests.get(url).json()
+        rate = response["rates"]["USD"]
+        ExchangeRate.create(date=date, source=ExchangeRate.Source.MASTERCARD.value, exchange_rate=rate)
+        return rate
+
+
+class MastercardClient(IExchangeRateClient):
     _URL = "https://www.mastercard.de/settlement/currencyrate/conversion-rate"
 
     def get_conversion_rate(self, date):

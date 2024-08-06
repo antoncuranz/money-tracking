@@ -1,7 +1,7 @@
 import './App.css'
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
-import {AlertCircle} from 'lucide-react';
+import {AlertCircle, Coins} from 'lucide-react';
 import {useToast} from "@/components/ui/use-toast.ts";
 import {useEffect, useState} from "react";
 import {Alert, AlertDescription} from "@/components/ui/alert.tsx";
@@ -9,8 +9,8 @@ import ExchangeDialog from "@/components/ExchangeDialog.tsx";
 import ExchangeTable from "@/components/ExchangeTable.tsx";
 import PaymentTable from "@/components/PaymentTable.tsx";
 import {formatAmount} from "@/components/util.ts";
-import CreditTransactionDialog from "@/components/CreditTransactionDialog.tsx";
 import ExchangePaymentDialog from "@/components/ExchangePaymentDialog.tsx";
+import {Button} from "@/components/ui/button.tsx";
 
 const ExchangePage = () => {
   const [exchanges, setExchanges] = useState([]);
@@ -20,6 +20,7 @@ const ExchangePage = () => {
   const [exchangeSelection, setExchangeSelection] = useState<number>(null)
   const [paymentSelection, setPaymentSelection] = useState()
   const [epDialogOpen, setEpDialogOpen] = useState(false)
+  const [exchangeDialogOpen, setExchangeDialogOpen] = useState(false)
 
   const { toast } = useToast();
 
@@ -56,8 +57,15 @@ const ExchangePage = () => {
     }
   }
 
-  function onDialogClose(needsUpdate) {
+  function onEpDialogClose(needsUpdate) {
     setEpDialogOpen(false)
+
+    if (needsUpdate)
+      updateData()
+  }
+
+  function onExchangeDialogClose(needsUpdate) {
+    setExchangeDialogOpen(false)
 
     if (needsUpdate)
       updateData()
@@ -68,7 +76,12 @@ const ExchangePage = () => {
         <main className="grid flex-1 items-start gap-2 p-4 sm:px-6 sm:py-0 md:gap-2">
           <div className="flex items-center">
             <div className="ml-auto flex items-center gap-2">
-              <ExchangeDialog/>
+              <Button size="sm" className="h-8 gap-1" onClick={() => setExchangeDialogOpen(true)}>
+                <Coins className="h-3.5 w-3.5"/>
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                  Add Exchange
+                </span>
+              </Button>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2 mb-2">
@@ -116,7 +129,8 @@ const ExchangePage = () => {
           </Card>
         </main>
       </div>
-      <ExchangePaymentDialog open={epDialogOpen} onClose={onDialogClose} exchange={exchangeSelection} payment={paymentSelection}/>
+      <ExchangeDialog open={exchangeDialogOpen} onClose={onExchangeDialogClose}/>
+      <ExchangePaymentDialog open={epDialogOpen} onClose={onEpDialogClose} exchange={exchangeSelection} payment={paymentSelection}/>
   </>
 )
 }

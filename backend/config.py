@@ -14,3 +14,5 @@ class Config:
 
     ibkr_host = os.getenv("IBKR_HOST", "localhost")
     ibkr_port = os.getenv("IBKR_PORT", "5000")
+
+    exchangeratesio_access_key = os.getenv("EXCHANGERATESIO_ACCESS_KEY")
