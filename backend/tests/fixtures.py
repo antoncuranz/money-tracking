@@ -45,6 +45,10 @@ TX_3 = dict(
     account_id=1, teller_id="teller_test_tx_3", date="2024-01-03", counterparty="counterparty3",
     description="description3", category="category", amount_usd=2193, amount_eur=2000, status=2
 )
+TX_4 = dict(
+    account_id=2, teller_id="teller_test_tx_4", date="2024-01-04", counterparty="counterparty4",
+    description="description4", category="category", amount_usd=2193, amount_eur=2000, status=2
+)
 
 TRANSACTIONS = [
     TX_1, TX_2, TX_3
@@ -70,6 +74,10 @@ PAYMENT_2 = dict(
 PAYMENT_3 = dict(
     account_id=1, teller_id="teller_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
     category="generic", amount_usd=50000
+)
+
+EXCHANGE_1_JSON = dict(
+    date="2024-01-29", amount_usd=PAYMENT_1["amount_usd"], amount_eur=-1, exchange_rate=10851990
 )
 
 EXCHANGE_1 = dict(

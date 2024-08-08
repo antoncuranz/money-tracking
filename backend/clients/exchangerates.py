@@ -19,7 +19,7 @@ class ExchangeratesApiIoClient(IExchangeRateClient):
 
         response = requests.get(url).json()
         rate = response["rates"]["USD"]
-        ExchangeRate.create(date=date, source=ExchangeRate.Source.MASTERCARD.value, exchange_rate=rate)
+        ExchangeRate.create(date=date, source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=rate)
         return rate
 
 

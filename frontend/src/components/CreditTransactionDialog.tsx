@@ -42,8 +42,7 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
   }
 
   async function updateCreditTransaction(newAmount: number) {
-    const url = "/api/accounts/" + transaction["account_id"] + "/credits/" + credit
-      + "?amount=" + newAmount + "&transaction=" + transaction["id"]
+    const url = "/api/credits/" + credit + "?amount=" + newAmount + "&transaction=" + transaction["id"]
     const response = await fetch(url, {method: "PUT"})
     if (response.ok)
       onClose(true)

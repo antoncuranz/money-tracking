@@ -5,7 +5,7 @@ from peewee import DoesNotExist
 
 from backend import Exchange, ExchangePayment, Payment, Account
 from backend.tests.conftest import with_test_db
-from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, EXCHANGE_2, ACCOUNT_1
+from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, EXCHANGE_2, ACCOUNT_1, EXCHANGE_1_JSON
 
 
 @with_test_db((Exchange, ExchangePayment))
@@ -28,7 +28,7 @@ def test_post_exchange(client):
     # Arrange
 
     # Act
-    response = client.post("/api/exchanges", json=EXCHANGE_1)
+    response = client.post("/api/exchanges", json=EXCHANGE_1_JSON)
 
     # Assert
     assert response.status_code == 200

@@ -25,7 +25,7 @@ def test_payment_processing_good_ccy_risk(client, balance_service, payment_servi
     sum_usd = Transaction.select(fn.SUM(Transaction.amount_usd)).where(Transaction.payment == payment).scalar()
     payment = Payment.get()
 
-    assert response.status_code == 555
+    assert response.status_code == 204
     assert payment.processed is True
     assert sum_eur == payment.amount_eur
     assert sum_usd == payment.amount_usd
@@ -76,7 +76,7 @@ def test_payment_processing_bad_ccy_risk(client, balance_service, payment_servic
     sum_usd = Transaction.select(fn.SUM(Transaction.amount_usd)).where(Transaction.payment == payment).scalar()
     payment = Payment.get()
 
-    assert response.status_code == 555
+    assert response.status_code == 204
     assert payment.processed is True
     assert sum_eur == payment.amount_eur
     assert sum_usd == payment.amount_usd
@@ -153,7 +153,7 @@ def test_payment_processing_with_multiple_exchanges(client, balance_service, pay
     sum_usd = Transaction.select(fn.SUM(Transaction.amount_usd)).where(Transaction.payment == payment).scalar()
     payment = Payment.get()
 
-    assert response.status_code == 555
+    assert response.status_code == 204
     assert payment.processed is True
     assert sum_eur == payment.amount_eur
     assert sum_usd == payment.amount_usd

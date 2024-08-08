@@ -28,7 +28,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
-        date: date,
+        date: date?.toJSON().substring(0,10),
         amount_usd: amountUsd,
         amount_eur: amountEur,
         exchange_rate: exchangeRate
@@ -44,15 +44,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
   }
 
   return (
-    <Dialog open={open} onOpenChange={open => open ? onClose(false) : {}}>
-      {/*<DialogTrigger asChild>*/}
-      {/*  <Button size="sm" className="h-8 gap-1">*/}
-      {/*    <Coins className="h-3.5 w-3.5"/>*/}
-      {/*    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">*/}
-      {/*      Add Exchange*/}
-      {/*    </span>*/}
-      {/*  </Button>*/}
-      {/*</DialogTrigger>*/}
+    <Dialog open={open} onOpenChange={open => !open ? onClose(false) : {}}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add Exchange</DialogTitle>

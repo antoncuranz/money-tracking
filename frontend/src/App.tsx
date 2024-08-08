@@ -3,8 +3,9 @@ import {Toaster} from "@/components/ui/toaster.tsx";
 import {ExternalLink, CreditCard} from 'lucide-react';
 
 import {NavLink, Route, Routes} from "react-router-dom";
-import ImportPage from "@/ImportPage.tsx";
+import TransactionPage from "@/TransactionPage.tsx";
 import ExchangePage from "@/ExchangePage.tsx";
+import ArchivePage from "@/ArchivePage.tsx";
 
 const App = () => {
 
@@ -21,7 +22,7 @@ const App = () => {
           <NavLink to="/">
             <span className="text-muted-foreground transition-colors hover:text-foreground">Transactions</span>
           </NavLink>
-          <NavLink to="/exchange">
+          <NavLink to="/exchanges">
             <span className="text-muted-foreground transition-colors hover:text-foreground">Exchanges</span>
           </NavLink>
           <NavLink to="/archive">
@@ -35,8 +36,10 @@ const App = () => {
         </nav>
       </header>
       <Routes>
-        <Route path="/" element={<ImportPage/>}/>
-        <Route path="/exchange" element={<ExchangePage/>}/>
+        <Route path="/" element={<TransactionPage/>}/>
+        <Route path="/transactions" element={<TransactionPage/>}/>
+        <Route path="/exchanges" element={<ExchangePage/>}/>
+        <Route path="/archive" element={<ArchivePage/>}/>
       </Routes>
       <Toaster/>
     </div>

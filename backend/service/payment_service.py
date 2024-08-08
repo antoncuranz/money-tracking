@@ -20,7 +20,20 @@ class PaymentService:
             (Transaction.account == payment.account)
         ).order_by(Transaction.date)  # TODO: order by date, then id
 
-        self.process_payment(payment, transactions)
+        process_tx = []
+        amount = payment.amount_usd
+
+        for tx in transactions:
+            if 0 < amount < tx.amount_usd:
+                raise Exception("Error finding transactions automatically.")
+
+            if amount > 0:
+                process_tx.append(tx)
+                amount -= tx.amount_usd
+            else:
+                break
+
+        self.process_payment(payment, process_tx)
 
     @db.atomic()
     def process_payment(self, payment, transactions):

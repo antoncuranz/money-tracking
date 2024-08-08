@@ -5,24 +5,20 @@ from backend.service.actual_service import ActualService
 from backend.service.payment_service import PaymentService
 
 api = Blueprint("api", __name__)
+
+
 # TODO: move to other blueprints
 
 
-@api.put("/api/accounts/<account_id>/transactions/<tx_id>")
-def update_transaction(account_id, tx_id):
-    try:
-        amount_eur_str = request.args.get("amount_eur")
-        amount_eur = None if not amount_eur_str else int(amount_eur_str)
-        transaction = Transaction.get((Transaction.id == tx_id) & (Transaction.account == account_id))
-    except DoesNotExist:
-        abort(404)
-    except (ValueError, TypeError):
-        abort(400)
+@api.get("/api/fee_summary")
+def get_fee_summary():
+    query = Transaction.select(fn.SUM(Transaction.fx_fees), fn.SUM(Transaction.ccy_risk)) \
+            .where(Transaction.status == Transaction.Status.PAID.value)[0]
 
-    transaction.amount_eur = amount_eur
-    transaction.save()
-
-    return "", 200
+    return {
+        "fx_fees": query.fx_fees,
+        "ccy_risk": query.ccy_risk
+    }
 
 
 @api.post("/api/actual/<account_id>")
@@ -53,4 +49,4 @@ def process_payment(account_id, payment_id, payment_service: PaymentService):
 
     payment_service.process_payment_auto(payment)
 
-    return "not yet implemented", 555
+    return "", 204

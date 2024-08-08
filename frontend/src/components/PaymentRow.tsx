@@ -8,10 +8,11 @@ interface Props {
   payment: any,
   showAccount?: boolean,
   selectable?: boolean,
-  onClick?: MouseEventHandler<HTMLTableRowElement> | undefined;
+  onClick?: MouseEventHandler<HTMLTableRowElement> | undefined,
+  onProcessPaymentClick?: () => void,
 }
 
-const PaymentRow = ({payment, showAccount=false, selectable, onClick=null}: Props) => {
+const PaymentRow = ({payment, showAccount=false, selectable, onClick=null, onProcessPaymentClick=null}: Props) => {
 
   function isAppliedToExchange() {
     return  payment["exchangepayment_set"] != null && payment["exchangepayment_set"].length > 0
@@ -47,7 +48,7 @@ const PaymentRow = ({payment, showAccount=false, selectable, onClick=null}: Prop
         {formatAmount(payment["amount_eur"])}
       </TableCell>
       <TableCell className="float-right pt-1.5 pb-0">
-        <Button variant="outline" size="icon" className="ml-2" disabled={isProcessButtonDisabled()}>
+        <Button variant="outline" size="icon" className="ml-2" disabled={isProcessButtonDisabled()} onClick={onProcessPaymentClick}>
           { payment["processed"] ?
             <Check className="h-4 w-4" />
           :

@@ -1,6 +1,5 @@
 import './App.css'
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
-import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
 import {AlertCircle, Coins} from 'lucide-react';
 import {useToast} from "@/components/ui/use-toast.ts";
 import {useEffect, useState} from "react";
@@ -28,11 +27,11 @@ const ExchangePage = () => {
     updateData()
   }, []);
   async function updateData() {
-    let response = await fetch("/api/exchanges")
+    let response = await fetch("/api/exchanges?usable=true")
     response = await response.json()
     setExchanges(response as any[])
 
-    response = await fetch("/api/accounts/2/payments") // FIXME
+    response = await fetch("/api/payments?processed=false")
     response = await response.json()
     setPayments(response as any[])
 
@@ -69,6 +68,17 @@ const ExchangePage = () => {
 
     if (needsUpdate)
       updateData()
+  }
+
+  async function processPayment(payment) {
+    const url = "/api/accounts/" + payment["account_id"] + "/payments/" + payment["id"]
+    const response = await fetch(url, {method: "POST"})
+    if (response.ok)
+      updateData()
+    else toast({
+      title: "Error processing Payment",
+      description: response.statusText
+    })
   }
 
   return (<>
@@ -124,6 +134,7 @@ const ExchangePage = () => {
             </CardHeader>
             <CardContent>
               <PaymentTable payments={payments} showAccount={true} selectable={exchangeSelection != null}
+                            onProcessPaymentClick={processPayment}
                             onPaymentClick={openExchangePaymentDialog}/>
             </CardContent>
           </Card>

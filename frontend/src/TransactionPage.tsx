@@ -11,7 +11,7 @@ import TransactionTable from "@/components/TransactionTable.tsx";
 import CreditTable from "@/components/CreditTable.tsx";
 import CreditTransactionDialog from "@/components/CreditTransactionDialog.tsx";
 
-const ImportPage = () => {
+const TransactionPage = () => {
   const [currentAccount, setCurrentAccount] = useState(-1)
 
   const [transactions, setTransactions] = useState([]);
@@ -24,9 +24,9 @@ const ImportPage = () => {
 
   const { toast } = useToast();
   const { open: openTeller, ready: isTellerReady } = useTellerConnect({
-    applicationId: "snip",
+    applicationId: "***REMOVED***",
     environment: "sandbox",
-    enrollmentId: "snip",
+    enrollmentId: "***REMOVED***",
     onSuccess: authorization => {
       toast({
         title: "Teller success",
@@ -56,13 +56,12 @@ const ImportPage = () => {
   async function updateData() {
     if (currentAccount < 0) return
 
-    const txResponse = await fetch("/api/accounts/" + currentAccount + "/transactions")
+    const txResponse = await fetch("/api/transactions?paid=false&account=" + currentAccount)
     const transactions = await txResponse.json()
     setTransactions(transactions.filter(tx => tx.status != 3))
 
-    const creditResponse = await fetch("/api/accounts/" + currentAccount + "/credits")
+    const creditResponse = await fetch("/api/credits?usable=true&account=" + currentAccount)
     const credits = await creditResponse.json()
-    // setCredits(credits.filter(c => c.transactions.length == 0))
     setCredits(credits)
   }
 
@@ -86,7 +85,7 @@ const ImportPage = () => {
   async function onSaveButtonClick() {
     for (const tx of transactions) {
       const amount = tx["amount_eur"] == null ? "" : tx["amount_eur"];
-      const response = await fetch("/api/accounts/" + currentAccount + "/transactions/" + tx["id"] + "?amount_eur=" + amount, {method: "PUT"})
+      const response = await fetch("/api/transactions/" + tx["id"] + "?amount_eur=" + amount, {method: "PUT"})
       if (response.status != 200) {
         toast({title: "Error updating transaction " + tx["id"]})
         break;
@@ -180,4 +179,4 @@ const ImportPage = () => {
 )
 }
 
-export default ImportPage
+export default TransactionPage

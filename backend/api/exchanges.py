@@ -1,6 +1,8 @@
+from decimal import Decimal
+
 from flask import abort, Blueprint, request
 
-from backend.api.util import stringify
+from backend.api.util import stringify, parse_boolean
 from backend.models import *
 from backend.service.balance_service import BalanceService
 
@@ -9,13 +11,21 @@ exchanges = Blueprint("exchanges", __name__, url_prefix="/api/exchanges")
 
 @exchanges.get("")
 def get_exchanges():
+    try:
+        usable = parse_boolean(request.args.get("usable"))  # TODO
+    except (ValueError, TypeError):
+        abort(400)
+
     query = Exchange.select()
     return [stringify(exchange, extra_attrs=[]) for exchange in query]
 
 
 @exchanges.post("")
 def post_exchange():
-    model = Exchange.create(**request.json)
+    json = request.json
+    exchange_rate = Decimal(json["exchange_rate"]) / 10000000
+    model = Exchange.create(
+        date=json["date"], amount_usd=json["amount_usd"], amount_eur=json["amount_eur"], exchange_rate=exchange_rate)
     return str(model.id), 200
 
 

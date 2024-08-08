@@ -34,3 +34,18 @@ def get_transactions():
     return [stringify(tx) for tx in transactions]
 
 
+@transactions.put("/<tx_id>")
+def update_transaction(tx_id):
+    try:
+        amount_eur_str = request.args.get("amount_eur")
+        amount_eur = None if not amount_eur_str else int(amount_eur_str)
+        transaction = Transaction.get(Transaction.id == tx_id)
+    except DoesNotExist:
+        abort(404)
+    except (ValueError, TypeError):
+        abort(400)
+
+    transaction.amount_eur = amount_eur
+    transaction.save()
+
+    return "", 200

@@ -5,10 +5,11 @@ interface Props {
   payments: any[],
   showAccount?: boolean,
   selectable?: boolean,
-  onPaymentClick?: (tx) => void,
+  onPaymentClick?: (payment) => void,
+  onProcessPaymentClick?: (payment) => void,
 }
 
-const PaymentTable = ({payments, showAccount=false, selectable=false, onPaymentClick=null}: Props) => {
+const PaymentTable = ({payments, showAccount=false, selectable=false, onPaymentClick=null, onProcessPaymentClick=null}: Props) => {
 
   return (
     <Table>
@@ -31,6 +32,7 @@ const PaymentTable = ({payments, showAccount=false, selectable=false, onPaymentC
       <TableBody>
         {payments.map(payment =>
           <PaymentRow key={payment["id"]} payment={payment} showAccount={showAccount} selectable={selectable}
+                      onProcessPaymentClick={() => onProcessPaymentClick(payment)}
                       onClick={() => onPaymentClick ? onPaymentClick(payment) : {}}/>
         )}
       </TableBody>
