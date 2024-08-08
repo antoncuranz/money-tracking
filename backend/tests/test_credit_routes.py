@@ -15,7 +15,7 @@ def test_get_credits(app, client):
     Credit.create(**CREDIT_1)
 
     # Act
-    response = client.get(f"/api/accounts/{account}/credits")
+    response = client.get(f"/api/credits?account={account}")
     parsed = json.loads(response.data)
 
     # Assert
@@ -26,14 +26,14 @@ def test_get_credits(app, client):
 @with_test_db((Account, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit(app, client, balance_service):
     # Arrange
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
     credit = Credit.create(**CREDIT_1)
     tx = Transaction.create(**TX_1)
 
     assert tx.amount_usd == credit.amount_usd
 
     # Act
-    response = client.put(f"/api/accounts/{account}/credits/{credit}?transaction={tx}&amount={credit.amount_usd}")
+    response = client.put(f"/api/credits/{credit}?transaction={tx}&amount={credit.amount_usd}")
 
     # Assert
     assert response.status_code == 204
@@ -44,14 +44,14 @@ def test_update_credit(app, client, balance_service):
 @with_test_db((Account, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit_amount_larger_than_tx_500(app, client, balance_service):
     # Arrange
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
     credit = Credit.create(**CREDIT_1)
     tx = Transaction.create(**TX_2)
 
     assert tx.amount_usd < credit.amount_usd
 
     # Act
-    response = client.put(f"/api/accounts/{account}/credits/{credit}?transaction={tx}&amount={credit.amount_usd}")
+    response = client.put(f"/api/credits/{credit}?transaction={tx}&amount={credit.amount_usd}")
 
     # Assert
     assert response.status_code == 500
@@ -60,7 +60,7 @@ def test_update_credit_amount_larger_than_tx_500(app, client, balance_service):
 @with_test_db((Account, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit_amount_larger_than_remaining_tx_500(app, client, balance_service):
     # Arrange
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
     credit = Credit.create(**CREDIT_1)
     credit2 = Credit.create(**CREDIT_2)
     tx = Transaction.create(**TX_1)
@@ -70,7 +70,7 @@ def test_update_credit_amount_larger_than_remaining_tx_500(app, client, balance_
     assert balance_service.calc_transaction_remaining(tx) < credit.amount_usd
 
     # Act
-    response = client.put(f"/api/accounts/{account}/credits/{credit}?transaction={tx}&amount={credit.amount_usd}")
+    response = client.put(f"/api/credits/{credit}?transaction={tx}&amount={credit.amount_usd}")
 
     # Assert
     assert response.status_code == 500
@@ -79,14 +79,14 @@ def test_update_credit_amount_larger_than_remaining_tx_500(app, client, balance_
 @with_test_db((Account, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit_amount_larger_than_credit_500(app, client, balance_service):
     # Arrange
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
     credit = Credit.create(**CREDIT_1)
     tx = Transaction.create(**TX_3)
 
     assert tx.amount_usd > credit.amount_usd
 
     # Act
-    response = client.put(f"/api/accounts/{account}/credits/{credit}?transaction={tx}&amount={tx.amount_usd}")
+    response = client.put(f"/api/credits/{credit}?transaction={tx}&amount={tx.amount_usd}")
 
     # Assert
     assert response.status_code == 500
@@ -95,7 +95,7 @@ def test_update_credit_amount_larger_than_credit_500(app, client, balance_servic
 @with_test_db((Account, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit_on_paid_transaction_404(app, client, balance_service):
     # Arrange
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
     credit = Credit.create(**CREDIT_1)
     tx = Transaction.create(**TX_1)
     tx.status_enum = Transaction.Status.PAID
@@ -103,7 +103,7 @@ def test_update_credit_on_paid_transaction_404(app, client, balance_service):
     CreditTransaction.create(credit=credit, transaction=tx, amount=1)
 
     # Act
-    response = client.put(f"/api/accounts/{account}/credits/{credit}?transaction={tx}&amount={credit.amount_usd}")
+    response = client.put(f"/api/credits/{credit}?transaction={tx}&amount={credit.amount_usd}")
 
     # Assert
     assert response.status_code == 404
@@ -112,13 +112,13 @@ def test_update_credit_on_paid_transaction_404(app, client, balance_service):
 @with_test_db((Account, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit_delete_credit_transaction(app, client, balance_service):
     # Arrange
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
     credit = Credit.create(**CREDIT_1)
     tx = Transaction.create(**TX_1)
     CreditTransaction.create(credit=credit, transaction=tx, amount=1)
 
     # Act
-    response = client.put(f"/api/accounts/{account}/credits/{credit}?transaction={tx}&amount={0}")
+    response = client.put(f"/api/credits/{credit}?transaction={tx}&amount={0}")
 
     # Assert
     assert response.status_code == 204
@@ -130,7 +130,7 @@ def test_update_credit_delete_credit_transaction(app, client, balance_service):
 @with_test_db((Account, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit_reduce_amount(app, client, balance_service):
     # Arrange
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
     credit = Credit.create(**CREDIT_1)
     tx = Transaction.create(**TX_1)
     CreditTransaction.create(credit=credit, transaction=tx, amount=credit.amount_usd)
@@ -138,7 +138,7 @@ def test_update_credit_reduce_amount(app, client, balance_service):
     assert tx.amount_usd == credit.amount_usd
 
     # Act
-    response = client.put(f"/api/accounts/{account}/credits/{credit}?transaction={tx}&amount={credit.amount_usd-10}")
+    response = client.put(f"/api/credits/{credit}?transaction={tx}&amount={credit.amount_usd-10}")
 
     # Assert
     assert response.status_code == 204

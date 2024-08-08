@@ -1,30 +1,45 @@
 from flask import abort, Blueprint, request
 
-from backend.api.util import stringify
+from backend.api.util import stringify, parse_boolean
 from backend.models import *
 from backend.service.balance_service import BalanceService
 
-credits = Blueprint("credits", __name__)
+credits = Blueprint("credits", __name__, url_prefix="/api/credits")
 
 
-@credits.get("/api/accounts/<account_id>/credits")
-def get_credits(account_id):
-    query = Credit.select().where(Credit.account == account_id).order_by(-Credit.date)
-    return [stringify(credit) for credit in query]
+@credits.get("")
+def get_credits():
+    try:
+        account_str = request.args.get("account")
+        account_id = None if not account_str else int(account_str)
+        usable = parse_boolean(request.args.get("usable"))  # TODO
+    except (ValueError, TypeError):
+        abort(400)
+
+    query = True
+
+    if account_id is not None:
+        try:
+            Account.get(Account.id == account_id)
+        except DoesNotExist:
+            abort(404)
+        query = query & (Credit.account == account_id)
+
+    credits = Credit.select().where(query).order_by(-Credit.date)
+    return [stringify(credit) for credit in credits]
 
 
-@credits.put("/api/accounts/<account_id>/credits/<credit_id>")
-def update_credit(account_id, credit_id, balance_service: BalanceService):
+@credits.put("/<credit_id>")
+def update_credit(credit_id, balance_service: BalanceService):
     try:
         amount = int(request.args.get("amount"))
         transaction_id = int(request.args.get("transaction"))
 
         tx = Transaction.get(
             (Transaction.id == transaction_id) &
-            (Transaction.account == account_id) &
             (Transaction.status != Transaction.Status.PAID.value)
         )
-        credit = Credit.get((Credit.id == credit_id) & (Credit.account == account_id))
+        credit = Credit.get((Credit.id == credit_id) & (Credit.account == tx.account_id))
     except DoesNotExist:
         abort(404)
     except (ValueError, TypeError):

@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_injector import FlaskInjector, singleton
 
+from backend.api.payments import payments
 from backend.models import *
 from backend.api.api import api
 from backend.api.balances import balances
@@ -8,6 +9,7 @@ from backend.api.imports import imports
 from backend.api.exchanges import exchanges
 from backend.api.credits import credits
 from backend.api.accounts import accounts
+from backend.api.transactions import transactions
 from backend.clients.actual import IActualClient, ActualClient
 from backend.clients.exchangerates import ExchangeratesApiIoClient, MastercardClient
 from backend.clients.teller import TellerClient, ITellerClient
@@ -44,10 +46,12 @@ def configure(binder):
 def register_blueprints(app):
     app.register_blueprint(api)
     app.register_blueprint(accounts)
+    app.register_blueprint(transactions)
+    app.register_blueprint(payments)
+    app.register_blueprint(credits)
     app.register_blueprint(exchanges)
     app.register_blueprint(imports)
     app.register_blueprint(balances)
-    app.register_blueprint(credits)
 
 
 def create_app():
