@@ -29,6 +29,7 @@ const TellerButton = ({account, updateData=() => {}}: Props) => {
   });
 
   async function onTellerButtonClick(accessToken?: string) {
+    console.log("application id:", import.meta.env.VITE_TELLER_APPLICATION_ID)
     let url = "/api/import/" + account["id"]
     if (accessToken)
       url += "?access_token=" + accessToken
