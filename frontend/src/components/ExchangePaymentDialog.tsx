@@ -8,12 +8,12 @@ import {useToast} from "@/components/ui/use-toast.ts";
 interface Props {
   open: boolean,
   onClose: (needsUpdate: boolean) => void,
-  payment: any,
+  payment: Payment,
   exchange: number,
 }
 
 const ExchangePaymentDialog = ({open, onClose, payment, exchange}: Props) => {
-  const [amount, setAmount] = useState<number>(null)
+  const [amount, setAmount] = useState<number|null>(null)
 
   const { toast } = useToast();
 

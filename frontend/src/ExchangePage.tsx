@@ -12,12 +12,12 @@ import ExchangePaymentDialog from "@/components/ExchangePaymentDialog.tsx";
 import {Button} from "@/components/ui/button.tsx";
 
 const ExchangePage = () => {
-  const [exchanges, setExchanges] = useState([]);
-  const [payments, setPayments] = useState([]);
-  const [balances, setBalances] = useState({});
+  const [exchanges, setExchanges] = useState<Exchange[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [balances, setBalances] = useState<Balances|null>();
 
-  const [exchangeSelection, setExchangeSelection] = useState<number>(null)
-  const [paymentSelection, setPaymentSelection] = useState()
+  const [exchangeSelection, setExchangeSelection] = useState<number|null>(null)
+  const [paymentSelection, setPaymentSelection] = useState<Payment>()
   const [epDialogOpen, setEpDialogOpen] = useState(false)
   const [exchangeDialogOpen, setExchangeDialogOpen] = useState(false)
 
@@ -28,14 +28,16 @@ const ExchangePage = () => {
   }, []);
   async function updateData() {
     let response = await fetch("/api/exchanges?usable=true")
-    response = await response.json()
-    setExchanges(response as any[])
+    const exchanges = await response.json() as Exchange[]
+    setExchanges(exchanges)
 
     response = await fetch("/api/payments?processed=false")
-    response = await response.json()
-    setPayments(response as any[])
+    const payments = await response.json() as Payment[]
+    setPayments(payments)
 
-    setBalances(await (await fetch("/api/balance")).json())
+    response = await fetch("/api/balance")
+    const balances = await response.json() as Balances
+    setBalances(balances)
   }
 
   async function deleteExchange(exId: number) {
@@ -49,29 +51,29 @@ const ExchangePage = () => {
     })
   }
 
-  function openExchangePaymentDialog(payment) {
+  function openExchangePaymentDialog(payment: Payment) {
     if (exchangeSelection != null) {
       setPaymentSelection(payment)
       setEpDialogOpen(true)
     }
   }
 
-  function onEpDialogClose(needsUpdate) {
+  function onEpDialogClose(needsUpdate: boolean) {
     setEpDialogOpen(false)
 
     if (needsUpdate)
       updateData()
   }
 
-  function onExchangeDialogClose(needsUpdate) {
+  function onExchangeDialogClose(needsUpdate: boolean) {
     setExchangeDialogOpen(false)
 
     if (needsUpdate)
       updateData()
   }
 
-  async function processPayment(payment) {
-    const url = "/api/accounts/" + payment["account_id"] + "/payments/" + payment["id"]
+  async function processPayment(payment: Payment) {
+    const url = "/api/accounts/" + payment.account_id + "/payments/" + payment.id
     const response = await fetch(url, {method: "POST"})
     if (response.ok)
       updateData()
@@ -97,11 +99,11 @@ const ExchangePage = () => {
           <div className="grid grid-cols-2 gap-2 mb-2">
             <Card>
               <CardHeader className="pb-0">
-                <CardTitle>{formatAmount(balances["total"])}</CardTitle>
+                <CardTitle>{formatAmount(balances?.total ?? 0)}</CardTitle>
                 <CardDescription>
-                  <span className="text-lg">{formatAmount(balances["posted"])} + {formatAmount(balances["pending"])}</span> pending
-                  <span className="text-lg"> - {formatAmount(balances["credits"])}</span> credits
-                  <span className="text-lg"> - {formatAmount(balances["exchanged"])}</span> exchanged
+                  <span className="text-lg">{formatAmount(balances?.posted ?? 0)} + {formatAmount(balances?.pending ?? 0)}</span> pending
+                  <span className="text-lg"> - {formatAmount(balances?.credits ?? 0)}</span> credits
+                  <span className="text-lg"> - {formatAmount(balances?.exchanged ?? 0)}</span> exchanged
                 </CardDescription>
               </CardHeader>
               <CardContent/>
@@ -141,7 +143,7 @@ const ExchangePage = () => {
         </main>
       </div>
       <ExchangeDialog open={exchangeDialogOpen} onClose={onExchangeDialogClose}/>
-      <ExchangePaymentDialog open={epDialogOpen} onClose={onEpDialogClose} exchange={exchangeSelection} payment={paymentSelection}/>
+      <ExchangePaymentDialog open={epDialogOpen} onClose={onEpDialogClose} exchange={exchangeSelection!} payment={paymentSelection!}/>
   </>
 )
 }

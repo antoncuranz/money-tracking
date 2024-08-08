@@ -4,14 +4,15 @@ import {useToast} from "@/components/ui/use-toast.ts";
 import {formatAmount} from "@/components/util.ts";
 
 interface Props {
-  amount: number,
-  setAmount: (newAmount) => void,
+  amount: number|null,
+  setAmount: (newAmount: number|null) => void,
   className?: string,
   disabled?: boolean,
   decimals?: number,
+  id?: string,
 }
 
-const AmountInput = ({amount, setAmount, className = "", disabled = false, decimals = 2}: Props) => {
+const AmountInput = ({amount, setAmount, className = "", disabled = false, decimals = 2, id}: Props) => {
   const [stringAmount, setStringAmount] = useState("")
   const { toast } = useToast();
 
@@ -53,7 +54,7 @@ const AmountInput = ({amount, setAmount, className = "", disabled = false, decim
   }
 
   return (
-    <Input value={stringAmount} onChange={e => setStringAmount(e.target.value)}
+    <Input id={id} value={stringAmount} onChange={e => setStringAmount(e.target.value)}
            onBlur={onBlur} className={className + " text-right"} disabled={disabled}/>
   )
 }

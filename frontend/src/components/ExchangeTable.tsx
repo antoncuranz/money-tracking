@@ -2,8 +2,8 @@ import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/u
 import ExchangeRow from "@/components/ExchangeRow.tsx";
 
 interface Props {
-  exchanges: any[],
-  selectedExchange?: number,
+  exchanges: Exchange[],
+  selectedExchange: number|null,
   selectExchange: (id: number) => void,
   unselectExchange: () => void,
   deleteExchange: (id: number) => void,

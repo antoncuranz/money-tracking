@@ -2,14 +2,14 @@ import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/u
 import TransactionRow from "@/components/TransactionRow.tsx";
 
 interface Props {
-  transactions: any[],
-  updateTransactionAmount?: (txId: string, newAmount) => void,
+  transactions: Transaction[],
+  updateTransactionAmount: (txId: number, newAmount: number|null) => void,
+  onTransactionClick: (tx: Transaction) => void,
   readonly?: boolean,
   selectable?: boolean,
-  onTransactionClick?: (tx) => void,
 }
 
-const TransactionTable = ({transactions, updateTransactionAmount=null, readonly=true, selectable=false, onTransactionClick=null}: Props) => {
+const TransactionTable = ({transactions, updateTransactionAmount, onTransactionClick, readonly=true, selectable=false}: Props) => {
 
   return (
     <Table>
@@ -28,7 +28,7 @@ const TransactionTable = ({transactions, updateTransactionAmount=null, readonly=
       </TableHeader>
       <TableBody>
         {transactions.map(tx =>
-          <TransactionRow key={tx["id"]} transaction={tx} updateTransactionAmount={updateTransactionAmount}
+          <TransactionRow key={tx.id} transaction={tx} updateTransactionAmount={updateTransactionAmount}
                           readonly={readonly} selectable={selectable} onClick={() => onTransactionClick ? onTransactionClick(tx) : {}}/>
         )}
       </TableBody>

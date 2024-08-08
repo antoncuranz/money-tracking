@@ -2,13 +2,13 @@ import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/u
 import CreditRow from "@/components/CreditRow.tsx";
 
 interface Props {
-  credits: any[],
-  selectedCredit?: number,
+  credits: Credit[],
+  selectedCredit: number|null,
   selectCredit: (id: number) => void,
   unselectCredit: () => void,
 }
 
-const CreditTable = ({credits, selectedCredit=null, selectCredit, unselectCredit}: Props) => {
+const CreditTable = ({credits, selectedCredit, selectCredit, unselectCredit}: Props) => {
 
   return (
     <Table>
@@ -26,8 +26,8 @@ const CreditTable = ({credits, selectedCredit=null, selectCredit, unselectCredit
       </TableHeader>
       <TableBody>
         {credits.map(credit =>
-          <CreditRow key={credit["id"]} credit={credit} selected={selectedCredit == credit["id"]} disabled={selectedCredit != null}
-                     selectCredit={() => selectCredit(credit["id"])} unselectCredit={unselectCredit}/>
+          <CreditRow key={credit.id} credit={credit} selected={selectedCredit == credit.id} disabled={selectedCredit != null}
+                     selectCredit={() => selectCredit(credit.id)} unselectCredit={unselectCredit}/>
         )}
       </TableBody>
     </Table>

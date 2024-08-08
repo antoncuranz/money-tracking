@@ -1,9 +1,9 @@
 import {Button} from "@/components/ui/button.tsx";
-import {Dialog, DialogFooter, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger} from "@/components/ui/dialog.tsx";
+import {Dialog, DialogFooter, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover.tsx";
 import {Calendar} from "@/components/ui/calendar.tsx";
-import {CalendarIcon, Coins} from "lucide-react";
+import {CalendarIcon} from "lucide-react";
 import {useState} from "react";
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
@@ -17,9 +17,9 @@ interface Props {
 
 const ExchangeDialog = ({open, onClose}: Props) => {
   const [date, setDate] = useState<Date>()
-  const [amountUsd, setAmountUsd] = useState<number>(null)
-  const [amountEur, setAmountEur] = useState<number>(null)
-  const [exchangeRate, setExchangeRate] = useState<number>(null)
+  const [amountUsd, setAmountUsd] = useState<number|null>(null)
+  const [amountEur, setAmountEur] = useState<number|null>(null)
+  const [exchangeRate, setExchangeRate] = useState<number|null>(null)
 
   const { toast } = useToast();
 
@@ -54,7 +54,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
             <Label htmlFor="date" className="text-right">
               Date
             </Label>
-            <Popover id="date">
+            <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"

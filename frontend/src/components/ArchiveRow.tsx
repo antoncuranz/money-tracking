@@ -1,8 +1,5 @@
 import {TableCell, TableRow} from "@/components/ui/table.tsx";
-import {Check, Clock} from "lucide-react";
-import AmountInput from "@/components/AmountInput.tsx";
 import {formatAmount} from "@/components/util.ts";
-import {MouseEventHandler} from "react";
 
 interface Props {
   transaction: any,

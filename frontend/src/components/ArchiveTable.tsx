@@ -1,5 +1,4 @@
 import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
-import TransactionRow from "@/components/TransactionRow.tsx";
 import ArchiveRow from "@/components/ArchiveRow.tsx";
 
 interface Props {

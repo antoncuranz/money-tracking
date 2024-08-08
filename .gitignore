@@ -2,3 +2,4 @@
 /scripts/
 /.idea/
 /money-tracking.iml
+/frontend/.env

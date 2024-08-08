@@ -1,10 +1,10 @@
 import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Cable, Check, Clock, Delete, Info, Pencil, Trash, Trash2, Undo2} from "lucide-react";
+import {Cable, Trash2, Undo2} from "lucide-react";
 import {formatAmount} from "@/components/util.ts";
 
 interface Props {
-  exchange: any,
+  exchange: Exchange,
   selected: boolean,
   disabled: boolean,
   selectExchange: () => void,
@@ -15,28 +15,28 @@ interface Props {
 const ExchangeRow = ({exchange, selected, disabled, selectExchange, unselectExchange, deleteExchange}: Props) => {
 
   function isAppliedToPayment() {
-    return  exchange["exchangepayment_set"] != null && exchange["exchangepayment_set"].length > 0
+    return  exchange.exchangepayment_set != null && exchange.exchangepayment_set.length > 0
   }
 
   function calculateAppliedAmount() {
-    return exchange["exchangepayment_set"].map(ct => ct["amount"]).reduce((a, b) => a + b, 0)
+    return exchange.exchangepayment_set.map(ep => ep.amount).reduce((a, b) => a + b, 0)
   }
 
   return (
     <TableRow>
-      <TableCell>{exchange["date"].substring(0, 16)}</TableCell>
-      <TableCell>{exchange["exchange_rate"]}</TableCell>
+      <TableCell>{exchange.date.substring(0, 16)}</TableCell>
+      <TableCell>{exchange.exchange_rate}</TableCell>
       <TableCell className="text-right">
         { isAppliedToPayment() ?
           <>
-            <span className="line-through mr-1">{formatAmount(exchange["amount_usd"])}</span>
-            <span style={{color: "green"}}>{formatAmount(exchange["amount_usd"] - calculateAppliedAmount())}</span>
+            <span className="line-through mr-1">{formatAmount(exchange.amount_usd)}</span>
+            <span style={{color: "green"}}>{formatAmount(exchange.amount_usd - calculateAppliedAmount())}</span>
           </>
-          : formatAmount(exchange["amount_usd"])
+          : formatAmount(exchange.amount_usd)
         }
       </TableCell>
       <TableCell className="text-right">
-        {formatAmount(exchange["amount_eur"])}
+        {formatAmount(exchange.amount_eur)}
       </TableCell>
       <TableCell className="float-right pt-1.5 pb-0">
         { selected ?

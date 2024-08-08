@@ -8,12 +8,12 @@ import {useToast} from "@/components/ui/use-toast.ts";
 interface Props {
   open: boolean,
   onClose: (needsUpdate: boolean) => void,
-  transaction: any,
+  transaction: Transaction,
   credit: number,
 }
 
 const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) => {
-  const [amount, setAmount] = useState<number>(null)
+  const [amount, setAmount] = useState<number|null>(null)
 
   const { toast } = useToast();
 
@@ -24,8 +24,8 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
     if (!transaction)
       return
 
-    const ct = transaction["credittransaction_set"].find(ct => ct["credit"]["id"] == credit)
-    setAmount(ct ? ct["amount"] : null)
+    const ct = transaction.credittransaction_set.find(ct => ct.credit.id == credit)
+    setAmount(ct ? ct.amount : null)
   }
 
   function onClearButtonClick() {
@@ -42,7 +42,7 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
   }
 
   async function updateCreditTransaction(newAmount: number) {
-    const url = "/api/credits/" + credit + "?amount=" + newAmount + "&transaction=" + transaction["id"]
+    const url = "/api/credits/" + credit + "?amount=" + newAmount + "&transaction=" + transaction.id
     const response = await fetch(url, {method: "PUT"})
     if (response.ok)
       onClose(true)

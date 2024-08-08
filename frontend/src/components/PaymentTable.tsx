@@ -2,14 +2,14 @@ import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/u
 import PaymentRow from "@/components/PaymentRow.tsx";
 
 interface Props {
-  payments: any[],
+  payments: Payment[],
+  onPaymentClick: (payment: Payment) => void,
+  onProcessPaymentClick: (payment: Payment) => void,
   showAccount?: boolean,
   selectable?: boolean,
-  onPaymentClick?: (payment) => void,
-  onProcessPaymentClick?: (payment) => void,
 }
 
-const PaymentTable = ({payments, showAccount=false, selectable=false, onPaymentClick=null, onProcessPaymentClick=null}: Props) => {
+const PaymentTable = ({payments, onPaymentClick, onProcessPaymentClick, showAccount=false, selectable=false}: Props) => {
 
   return (
     <Table>
@@ -31,7 +31,7 @@ const PaymentTable = ({payments, showAccount=false, selectable=false, onPaymentC
       </TableHeader>
       <TableBody>
         {payments.map(payment =>
-          <PaymentRow key={payment["id"]} payment={payment} showAccount={showAccount} selectable={selectable}
+          <PaymentRow key={payment.id} payment={payment} showAccount={showAccount} selectable={selectable}
                       onProcessPaymentClick={() => onProcessPaymentClick(payment)}
                       onClick={() => onPaymentClick ? onPaymentClick(payment) : {}}/>
         )}

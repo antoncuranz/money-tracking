@@ -5,18 +5,20 @@ import {formatAmount} from "@/components/util.ts";
 import ArchiveTable from "@/components/ArchiveTable.tsx";
 
 const ArchivePage = () => {
-  const [fees, setFees] = useState({});
-  const [transactions, setTransactions] = useState([]);
+  const [fees, setFees] = useState<FeeSummary|null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
     updateData()
   }, []);
   async function updateData() {
     let response = await fetch("/api/transactions?paid=true")
-    response = await response.json()
-    setTransactions(response as any[])
+    const transactions = await response.json() as Transaction[]
+    setTransactions(transactions)
 
-    setFees(await (await fetch("/api/fee_summary")).json())
+    response = await fetch("/api/fee_summary")
+    const fees = await response.json() as FeeSummary
+    setFees(fees)
   }
 
   return (<>
@@ -25,7 +27,7 @@ const ArchivePage = () => {
           <div className="grid grid-cols-3 gap-2 mb-2">
             <Card>
               <CardHeader className="pb-0">
-                <CardTitle>{formatAmount(fees["fx_fees"])}</CardTitle>
+                <CardTitle>{formatAmount(fees?.fx_fees ?? 0)}</CardTitle>
                 <CardDescription>
                   TOTAL FX FEES
                 </CardDescription>
@@ -34,7 +36,7 @@ const ArchivePage = () => {
             </Card>
             <Card>
               <CardHeader className="pb-0">
-                <CardTitle>{formatAmount(fees["ccy_risk"])}</CardTitle>
+                <CardTitle>{formatAmount(fees?.ccy_risk ?? 0)}</CardTitle>
                 <CardDescription>
                   TOTAL CCY RISK
                 </CardDescription>
