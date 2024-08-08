@@ -9,7 +9,7 @@ class IActualClient:
 
 class ActualClient(IActualClient):
     @inject
-    def __init__(self, api_key, budget_sync_id, base_url="http://localhost:5007"):
+    def __init__(self, api_key, budget_sync_id, base_url):
         self.api_key = api_key
         self.budget_sync_id = budget_sync_id
         self.base_url = base_url

@@ -2,10 +2,14 @@ import os
 
 
 class Config:
-    database_path = os.getenv("DB_PATH", "sqlite.db")
+    postgres_host = os.getenv("POSTGRES_HOST")
+    postgres_password = os.getenv("POSTGRES_PASSWORD")
+    postgres_user = os.getenv("POSTGRES_USER")
+    postgres_database = os.getenv("POSTGRES_DATABASE")
 
     teller_cert = ("./teller/certificate.pem", "./teller/private_key.pem")
 
+    actual_base_url = os.getenv("ACTUAL_BASE_URL", "http://localhost:5007")
     actual_api_key = os.getenv("ACTUAL_API_KEY")
     actual_sync_id = os.getenv("ACTUAL_SYNC_ID")
 

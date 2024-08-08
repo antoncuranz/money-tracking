@@ -4,7 +4,11 @@ from enum import Enum
 
 from backend.config import Config
 
-db = SqliteDatabase(Config.database_path, pragmas=(("foreign_keys", "on"),))
+if Config.postgres_database is None:
+    db = SqliteDatabase("sqlite.db", pragmas=(("foreign_keys", "on"),))
+else:
+    db = PostgresqlDatabase(Config.postgres_database,
+                            user=Config.postgres_user, password=Config.postgres_password, host=Config.postgres_host)
 
 
 class BaseModel(Model):

@@ -22,7 +22,7 @@ from backend.service.transaction_service import TransactionService
 
 def configure(binder):
     teller = TellerClient(Config.teller_cert)
-    actual = ActualClient(Config.actual_api_key, Config.actual_sync_id)
+    actual = ActualClient(Config.actual_api_key, Config.actual_sync_id, Config.actual_base_url)
     mastercard = MastercardClient()
     exchangeratesio = ExchangeratesApiIoClient(Config.exchangeratesio_access_key)
     # ibkr = IbkrClient(Config.ibkr_host, Config.ibkr_port)
