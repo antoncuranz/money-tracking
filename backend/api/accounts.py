@@ -9,7 +9,7 @@ accounts = Blueprint("accounts", __name__, url_prefix="/api/accounts")
 
 @accounts.get("")
 def get_accounts():
-    return list(Account.select().dicts())
+    return list(Account.select().order_by(Account.id).dicts())
 
 
 @accounts.get("/<account_id>/balances")

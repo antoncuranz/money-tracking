@@ -4,6 +4,8 @@ from backend.api.util import stringify, parse_boolean
 from backend.models import Account, Transaction
 from peewee import DoesNotExist
 
+from backend.service.actual_service import ActualService
+
 transactions = Blueprint("transactions", __name__, url_prefix="/api/transactions")
 
 
@@ -35,11 +37,12 @@ def get_transactions():
 
 
 @transactions.put("/<tx_id>")
-def update_transaction(tx_id):
+def update_transaction(tx_id, actual_service: ActualService):
     try:
         amount_eur_str = request.args.get("amount_eur")
         amount_eur = None if not amount_eur_str else int(amount_eur_str)
         transaction = Transaction.get(Transaction.id == tx_id)
+        account = Account.get(Account.id == transaction.account)
     except DoesNotExist:
         abort(404)
     except (ValueError, TypeError):
@@ -47,5 +50,8 @@ def update_transaction(tx_id):
 
     transaction.amount_eur = amount_eur
     transaction.save()
+
+    if transaction.actual_id is not None:
+        actual_service.update_transaction(account, transaction)
 
     return "", 200

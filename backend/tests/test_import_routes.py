@@ -22,7 +22,7 @@ def test_import_transactions_mfa(app, client, teller_mock):
 
 
 @with_test_db((Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
-def test_import_transactions(app, client, teller_mock, exchangerates_mock):
+def test_import_transactions(app, client, teller_mock, exchangerates_mock, actual_mock):
     # Arrange
     account = Account.create(**ACCOUNT_1)
 

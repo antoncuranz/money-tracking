@@ -28,7 +28,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
-        date: date?.toJSON().substring(0,10),
+        date: getDateString(date!),
         amount_usd: amountUsd,
         amount_eur: amountEur,
         exchange_rate: exchangeRate
@@ -41,6 +41,12 @@ const ExchangeDialog = ({open, onClose}: Props) => {
       title: "Error creating Exchange",
       description: response.statusText
     })
+  }
+
+  function getDateString(date: Date) {
+    const offset = date.getTimezoneOffset()
+    const offsetDate = new Date(date.getTime() - (offset*60*1000))
+    return offsetDate.toISOString().split('T')[0]
   }
 
   return (

@@ -3,7 +3,16 @@ from flask_injector import inject
 
 
 class IActualClient:
-    def import_transactions(self, account_id, transactions):
+    def create_transaction(self, account_id, transaction):
+        raise NotImplementedError
+
+    def get_transaction(self, account_id, tx):
+        raise NotImplementedError
+
+    def patch_transaction(self, account_id, actual_tx, updated_fields):
+        raise NotImplementedError
+
+    def delete_transaction(self, actual_id):
         raise NotImplementedError
 
 
@@ -14,27 +23,14 @@ class ActualClient(IActualClient):
         self.budget_sync_id = budget_sync_id
         self.base_url = base_url
 
-    def get_transactions(self, account_id, since_date):
-        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/accounts/{account_id}/transactions?since_date={since_date}"
-        headers = {
-            'x-api-key': self.api_key,
-        }
-
-        response = requests.get(url, headers=headers)
-
-        if response.ok:
-            return response.json()
-        else:
-            response.raise_for_status()
-
-    def import_transactions(self, account_id, transactions):
-        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/accounts/{account_id}/transactions/import"
+    def create_transaction(self, account_id, transaction):
+        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/accounts/{account_id}/transactions"
         headers = {
             'x-api-key': self.api_key,
             'Content-Type': 'application/json',
         }
         payload = {
-            "transactions": transactions
+            "transaction": transaction
         }
 
         response = requests.post(url, headers=headers, json=payload)
@@ -44,17 +40,45 @@ class ActualClient(IActualClient):
         else:
             response.raise_for_status()
 
-    def patch_transaction(self, transaction_id, transaction):
-        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/transactions/{transaction_id}"
+    def get_transaction(self, account_id, tx):
+        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/accounts/{account_id}/transactions" \
+              + f"?since_date={tx.date}&until_date={tx.date}"
+        headers = {
+            'x-api-key': self.api_key,
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.ok:
+            data = response.json()["data"]
+            return next(actual_tx for actual_tx in data if actual_tx["id"] == tx.actual_id)
+        else:
+            response.raise_for_status()
+
+    def patch_transaction(self, account_id, actual_tx, updated_fields):
+        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/transactions/{actual_tx["id"]}"
         headers = {
             'x-api-key': self.api_key,
             'Content-Type': 'application/json',
         }
         payload = {
-            "transaction": transaction
+            "transaction": actual_tx | updated_fields
         }
 
         response = requests.patch(url, headers=headers, json=payload)
+
+        if response.ok:
+            return response.json()
+        else:
+            response.raise_for_status()
+
+    def delete_transaction(self, actual_id):
+        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/transactions/{actual_id}"
+        headers = {
+            'x-api-key': self.api_key
+        }
+
+        response = requests.delete(url, headers=headers)
 
         if response.ok:
             return response.json()

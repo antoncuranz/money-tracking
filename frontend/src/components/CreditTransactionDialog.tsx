@@ -4,6 +4,7 @@ import {Label} from "@/components/ui/label.tsx";
 import {useEffect, useState} from "react";
 import AmountInput from "@/components/AmountInput.tsx";
 import {useToast} from "@/components/ui/use-toast.ts";
+import {DialogDescription} from "@radix-ui/react-dialog";
 
 interface Props {
   open: boolean,
@@ -57,6 +58,7 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Apply Credit to Transaction</DialogTitle>
+          <DialogDescription>Remember to also update Amount (EUR).</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">

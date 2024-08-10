@@ -28,7 +28,7 @@ class Account(BaseModel):
 
 class Payment(BaseModel):
     id = AutoField()
-    account = ForeignKeyField(Account, backref="transactions")
+    account = ForeignKeyField(Account, backref="payments")
     teller_id = CharField(unique=True)
     actual_id = CharField(null=True)
     date = DateField(default=datetime.date.today)

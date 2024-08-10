@@ -34,10 +34,11 @@ class PaymentService:
                 break
 
         self.process_payment(payment, process_tx)
+        return process_tx
 
     @db.atomic()
     def process_payment(self, payment, transactions):
-        if payment.processed or len(payment.transactions) > 0:  # TODO: verify
+        if payment.processed or len(payment.transactions) > 0:
             raise Exception("Error: Payment was already processed!")
 
         tx_remaining_sum = sum([self.balance_service.calc_transaction_remaining(tx) for tx in transactions])
@@ -89,11 +90,6 @@ class PaymentService:
         largest_tx = max(transactions, key=lambda tx: tx.amount_usd)
         largest_tx.fx_fees += eur_err
         largest_tx.save()
-
-        # in a separate loop:
-        # update Actual transaction (set split amounts and clear) and update amounts as well!
-
-        # create Actual transfer (add transfer split to exchange transaction)
 
     def calc_fx_fees(self, value_usd, value_eur, eur_usd_booked, eur_usd_exchanged):
         value_eur_exchanged = value_usd / eur_usd_exchanged
