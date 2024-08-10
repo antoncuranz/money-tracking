@@ -14,7 +14,7 @@ const ArchiveRow = ({transaction}: Props) => {
       <TableCell>{transaction["counterparty"]}</TableCell>
       <TableCell>{transaction["description"]}</TableCell>
       <TableCell className="text-right">
-        {formatAmount(transaction["amount_usd"])}
+        {formatAmount(transaction["amount_eur"])}
       </TableCell>
       <TableCell className="text-right">
         {formatAmount(transaction["fx_fees"])}
