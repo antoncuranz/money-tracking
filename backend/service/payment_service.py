@@ -24,12 +24,13 @@ class PaymentService:
         amount = payment.amount_usd
 
         for tx in transactions:
-            if 0 < amount < tx.amount_usd:
+            tx_remaining = self.balance_service.calc_transaction_remaining(tx)
+            if 0 < amount < tx_remaining:
                 raise Exception("Error finding transactions automatically.")
 
             if amount > 0:
                 process_tx.append(tx)
-                amount -= tx.amount_usd
+                amount -= tx_remaining
             else:
                 break
 
