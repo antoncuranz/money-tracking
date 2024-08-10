@@ -65,13 +65,18 @@ class PaymentService:
                 current_exchange += 1
                 exchange_remaining = exchange_payments[current_exchange].amount
 
-            eur_usd_exchanged += Decimal(amount / remaining_amount) * exchange_payments[current_exchange].exchange.exchange_rate
+            if remaining_amount != 0:
+                eur_usd_exchanged += Decimal(amount / remaining_amount) * exchange_payments[current_exchange].exchange.exchange_rate
 
-            eur_usd_booked = exchange_rates[tx.date]
-            ccy_risk, fx_fees = self.calc_fx_fees(tx.amount_usd, tx.amount_eur, eur_usd_booked, eur_usd_exchanged)
+                eur_usd_booked = exchange_rates[tx.date]
+                ccy_risk, fx_fees = self.calc_fx_fees(tx.amount_usd, tx.amount_eur, eur_usd_booked, eur_usd_exchanged)
 
-            tx.ccy_risk = ccy_risk
-            tx.fx_fees = fx_fees
+                tx.ccy_risk = ccy_risk
+                tx.fx_fees = fx_fees
+            else:
+                tx.ccy_risk = 0
+                tx.fx_fees = 0
+
             tx.payment = payment.id
             tx.status_enum = Transaction.Status.PAID
             tx.save()
