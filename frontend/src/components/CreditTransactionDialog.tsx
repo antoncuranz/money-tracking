@@ -29,7 +29,7 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
 
     const ct = transaction.credittransaction_set.find(ct => ct.credit.id == appliedCredit)
     setAppliedCredit(ct ? ct.amount : null)
-    setAdjustedAmt(transaction.amount_eur)
+    setAdjustedAmt(transaction.amount_eur ?? 0)
   }
 
   function onClearButtonClick() {
