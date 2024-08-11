@@ -31,7 +31,7 @@ const ExchangePage = () => {
     const exchanges = await response.json() as Exchange[]
     setExchanges(exchanges)
 
-    response = await fetch("/api/payments?processed=false")
+    response = await fetch("/api/payments")
     const payments = await response.json() as Payment[]
     setPayments(payments)
 
@@ -75,12 +75,14 @@ const ExchangePage = () => {
   async function processPayment(payment: Payment) {
     const url = "/api/accounts/" + payment.account_id + "/payments/" + payment.id
     const response = await fetch(url, {method: "POST"})
-    if (response.ok)
-      updateData()
-    else toast({
-      title: "Error processing Payment",
-      description: response.statusText
-    })
+
+    if (!response.ok)
+      toast({
+        title: "Error processing Payment",
+        description: response.statusText
+      })
+
+    updateData()
   }
 
   return (<>

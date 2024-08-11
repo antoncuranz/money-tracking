@@ -12,12 +12,19 @@ exchanges = Blueprint("exchanges", __name__, url_prefix="/api/exchanges")
 @exchanges.get("")
 def get_exchanges():
     try:
-        usable = parse_boolean(request.args.get("usable"))  # TODO
+        usable = parse_boolean(request.args.get("usable"))
     except (ValueError, TypeError):
         abort(400)
 
-    query = Exchange.select()
-    return [stringify(exchange, extra_attrs=[]) for exchange in query]
+    query = True
+    if usable is True:
+        query = query & (Exchange.amount_usd > fn.COALESCE(
+            ExchangePayment.select(fn.SUM(ExchangePayment.amount))
+            .join(Payment).where(Payment.processed == True), 0
+        ))
+
+    exchanges = Exchange.select().where(query).order_by(-Exchange.date)
+    return [stringify(exchange, extra_attrs=[]) for exchange in exchanges]
 
 
 @exchanges.post("")

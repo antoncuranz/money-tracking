@@ -1,8 +1,8 @@
 import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Check, DraftingCompass} from "lucide-react";
+import {Check, DraftingCompass, LoaderCircle} from "lucide-react";
 import {formatAmount} from "@/components/util.ts";
-import {MouseEventHandler} from "react";
+import {MouseEventHandler, useState} from "react";
 
 interface Props {
   payment: Payment,
@@ -13,6 +13,7 @@ interface Props {
 }
 
 const PaymentRow = ({payment, showAccount=false, selectable, onClick, onProcessPaymentClick}: Props) => {
+  const [inProgress, setInProgress] = useState(false)
 
   function isAppliedToExchange() {
     return  payment.exchangepayment_set != null && payment.exchangepayment_set.length > 0
@@ -23,7 +24,13 @@ const PaymentRow = ({payment, showAccount=false, selectable, onClick, onProcessP
   }
 
   function isProcessButtonDisabled() {
-    return selectable || payment.processed || (payment.amount_usd - calculateAppliedAmount() != 0)
+    return inProgress || selectable || payment.processed || (payment.amount_usd - calculateAppliedAmount() != 0)
+  }
+
+  async function onProcessPaymentClickLocal() {
+    setInProgress(true)
+    await onProcessPaymentClick()
+    setInProgress(false)
   }
 
   return (
@@ -48,11 +55,15 @@ const PaymentRow = ({payment, showAccount=false, selectable, onClick, onProcessP
         {formatAmount(payment.amount_eur)}
       </TableCell>
       <TableCell className="float-right pt-1.5 pb-0">
-        <Button variant="outline" size="icon" className="ml-2" disabled={isProcessButtonDisabled()} onClick={onProcessPaymentClick}>
+        <Button variant="outline" size="icon" className="ml-2" disabled={isProcessButtonDisabled()} onClick={onProcessPaymentClickLocal}>
           { payment.processed ?
             <Check className="h-4 w-4" />
           :
-            <DraftingCompass className="h-4 w-4"/>
+            ( inProgress ?
+              <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
+            :
+              <DraftingCompass className="h-4 w-4"/>
+            )
           }
         </Button>
       </TableCell>

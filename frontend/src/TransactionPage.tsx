@@ -2,7 +2,7 @@ import './App.css'
 import {Button} from "@/components/ui/button.tsx";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
-import {Import, Save} from 'lucide-react';
+import {LoaderCircle, Save} from 'lucide-react';
 
 import {useToast} from "@/components/ui/use-toast.ts";
 import {useEffect, useState} from "react";
@@ -10,6 +10,7 @@ import TransactionTable from "@/components/TransactionTable.tsx";
 import CreditTable from "@/components/CreditTable.tsx";
 import CreditTransactionDialog from "@/components/CreditTransactionDialog.tsx";
 import TellerButton from "@/components/TellerButton.tsx";
+import ActualButton from "@/components/ActualButton.tsx";
 
 const TransactionPage = () => {
   const [currentAccount, setCurrentAccount] = useState<Account|null>(null)
@@ -20,7 +21,10 @@ const TransactionPage = () => {
 
   const [creditSelection, setCreditSelection] = useState<number|null>(null)
   const [transactionSelection, setTransactionSelection] = useState<Transaction|null>()
+  const [transactionAmounts, setTransactionAmounts] = useState<{[id: number]: number|null}>({});
   const [ctDialogOpen, setCtDialogOpen] = useState(false)
+
+  const [saveInProgress, setSaveInProgress] = useState(false)
 
   const { toast } = useToast();
 
@@ -43,21 +47,23 @@ const TransactionPage = () => {
     const txResponse = await fetch("/api/transactions?paid=false&account=" + currentAccount.id)
     const transactions = await txResponse.json() as Transaction[]
     setTransactions(transactions.filter(tx => tx.status != 3))
+    setTransactionAmounts(Object.fromEntries(transactions.map(tx => [tx.id, tx.amount_eur])))
 
     const creditResponse = await fetch("/api/credits?usable=true&account=" + currentAccount.id)
     const credits = await creditResponse.json() as Credit[]
     setCredits(credits)
   }
 
-  async function onActualButtonClick() {
-    if (!currentAccount) return
-
-    await fetch("/api/actual/" + currentAccount.id, {method: "POST"})
-    await updateData()
-  }
-
   async function onSaveButtonClick() {
-    for (const tx of transactions) {
+    setSaveInProgress(true)
+
+    const updatedTransactions = transactions.filter(tx => tx.amount_eur != transactionAmounts[tx.id])
+    console.log("updatedTransactions", updatedTransactions)
+
+    if (updatedTransactions.length == 0)
+      toast({title: "Nothing to do."})
+
+    for (const tx of updatedTransactions) {
       const amount = tx.amount_eur ?? "";
       const response = await fetch("/api/transactions/" + tx.id + "?amount_eur=" + amount, {method: "PUT"})
       if (response.status != 200) {
@@ -65,6 +71,8 @@ const TransactionPage = () => {
         break;
       }
     }
+
+    setSaveInProgress(false)
   }
 
   function updateTransactionAmount(txId: number, newAmount: number|null) {
@@ -103,20 +111,21 @@ const TransactionPage = () => {
             </Tabs>
             <div className="ml-auto flex items-center gap-2">
               { currentAccount &&
-                <TellerButton account={currentAccount} updateData={updateData}/>
+                <>
+                  <TellerButton account={currentAccount} updateData={updateData}/>
+                  <ActualButton account={currentAccount} updateData={updateData}/>
+                  <Button size="sm" className="h-8 gap-1" onClick={onSaveButtonClick} disabled={saveInProgress}>
+                    { saveInProgress ?
+                      <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
+                    :
+                      <Save className="h-3.5 w-3.5"/>
+                    }
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      Save Amounts
+                    </span>
+                  </Button>
+                </>
               }
-              <Button size="sm" className="h-8 gap-1" onClick={onActualButtonClick} disabled={!currentAccount}>
-                <Import className="h-3.5 w-3.5"/>
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Actual Import
-                </span>
-              </Button>
-              <Button size="sm" className="h-8 gap-1" onClick={onSaveButtonClick} disabled={!currentAccount}>
-                <Save className="h-3.5 w-3.5"/>
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Save Amounts
-                </span>
-              </Button>
             </div>
           </div>
           { credits.length > 0 &&
