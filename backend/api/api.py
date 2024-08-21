@@ -16,7 +16,7 @@ def get_fee_summary():
     query = Transaction.select(fn.SUM(Transaction.fx_fees), fn.SUM(Transaction.ccy_risk)) \
             .where(Transaction.status == Transaction.Status.PAID.value)[0]
 
-    return {
+    return {  # TODO: not working
         "fx_fees": query.fx_fees,
         "ccy_risk": query.ccy_risk
     }

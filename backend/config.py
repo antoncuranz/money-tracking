@@ -16,6 +16,7 @@ class Config:
     actual_fee_category = os.getenv("ACTUAL_CAT_FX_FEES", "15656542-e7fe-4851-bfe0-c7758c6de4b4")
     actual_ccy_category = os.getenv("ACTUAL_CAT_CCY_RISK", "b05e1866-4587-4038-92c6-b14d174008ce")
     actual_other_category = os.getenv("ACTUAL_CAT_OTHER", "7e179c86-50cd-4f9e-86dd-d085dfa21a10")
+    # dynamic categories: ACTUAL_CAT_<TELLER_CATEGORY>
 
     ibkr_host = os.getenv("IBKR_HOST", "localhost")
     ibkr_port = os.getenv("IBKR_PORT", "5000")

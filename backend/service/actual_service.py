@@ -1,3 +1,5 @@
+import os
+
 from backend.clients.actual import IActualClient
 from backend.config import Config
 from backend.models import Transaction, Account, Payment
@@ -72,20 +74,21 @@ class ActualService:
         payment.save()
 
     def _create_actual_transaction(self, tx, id):
+        category = os.getenv("ACTUAL_CAT_" + tx.category.upper(), Config.actual_other_category)
         return {
             "id": id,
             "date": str(tx.date),
             "amount": -tx.amount_eur,
             "payee_name": tx.counterparty,
             "imported_payee": tx.counterparty,
-            "category": Config.actual_other_category,
+            "category": category,
             "notes": tx.description,
             "imported_id": tx.teller_id,
             "cleared": False,
             "subtransactions": [
                 {
                     "amount": -tx.amount_eur,
-                    "category": Config.actual_other_category,
+                    "category": category,
                     "notes": "Original value in EUR"
                 },
                 {
