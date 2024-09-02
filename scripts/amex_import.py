@@ -12,7 +12,7 @@ testmail_api_key = os.getenv("TESTMAIL_API_KEY")
 testmail_namespace = os.getenv("TESTMAIL_NAMESPACE")
 
 url = f"https://api.testmail.app/api/json?apikey={testmail_api_key}&namespace={testmail_namespace}"
-regex = r"<b>\s*(\d+,\d\d)\s*EUR<\/b>\n<\/div>\n<\/td><td[^>]*><div[^>]*>\s*\n<b>(\d\d)\.(\d\d)\.(\d\d\d\d)<\/b>\n<\/div>\n<\/td><td[^>]*><div[^>]*>\s*\n<b>([^>]*)<\/b>"
+regex = r"<b>\s*(\d+,\d\d)\s*EUR<\/b>.*?<b>(\d\d)\.(\d\d)\.(\d\d\d\d)<\/b>.*?<b>([^>]*)<\/b>"
 
 
 def import_transaction(transaction):
