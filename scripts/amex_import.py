@@ -44,7 +44,7 @@ for mail in response["emails"]:
     html = mail["html"]
     imported_id = mail["messageId"]
 
-    match = re.search(regex, html)
+    match = re.search(regex, html, re.DOTALL)
     if not match:
         print(f"Error matching regex for mail {imported_id}!")
         sys.exit(1)
