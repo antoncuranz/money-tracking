@@ -18,17 +18,21 @@ class IActualClient:
 
 class ActualClient(IActualClient):
     @inject
-    def __init__(self, api_key, budget_sync_id, base_url):
+    def __init__(self, api_key, budget_sync_id, base_url, encryption_passwd=None):
         self.api_key = api_key
         self.budget_sync_id = budget_sync_id
         self.base_url = base_url
+        self.encryption_passwd = encryption_passwd
 
     def create_transaction(self, account_id, transaction):
         url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/accounts/{account_id}/transactions"
         headers = {
-            'x-api-key': self.api_key,
-            'Content-Type': 'application/json',
+            "x-api-key": self.api_key,
+            "Content-Type": "application/json",
         }
+        if self.encryption_passwd is not None:
+            headers["budget-encryption-password"] = self.encryption_passwd
+
         payload = {
             "transaction": transaction
         }
@@ -44,8 +48,10 @@ class ActualClient(IActualClient):
         url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/accounts/{account_id}/transactions" \
               + f"?since_date={tx.date}&until_date={tx.date}"
         headers = {
-            'x-api-key': self.api_key,
+            "x-api-key": self.api_key,
         }
+        if self.encryption_passwd is not None:
+            headers["budget-encryption-password"] = self.encryption_passwd
 
         response = requests.get(url, headers=headers)
 
@@ -58,9 +64,12 @@ class ActualClient(IActualClient):
     def patch_transaction(self, account_id, actual_tx, updated_fields):
         url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/transactions/{actual_tx["id"]}"
         headers = {
-            'x-api-key': self.api_key,
-            'Content-Type': 'application/json',
+            "x-api-key": self.api_key,
+            "Content-Type": "application/json",
         }
+        if self.encryption_passwd is not None:
+            headers["budget-encryption-password"] = self.encryption_passwd
+
         payload = {
             "transaction": actual_tx | updated_fields
         }
@@ -77,6 +86,8 @@ class ActualClient(IActualClient):
         headers = {
             'x-api-key': self.api_key
         }
+        if self.encryption_passwd is not None:
+            headers["budget-encryption-password"] = self.encryption_passwd
 
         response = requests.delete(url, headers=headers)
 
