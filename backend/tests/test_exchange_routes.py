@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 from peewee import DoesNotExist
 
-from backend import Exchange, ExchangePayment, Payment, Account
+from backend import Exchange, ExchangePayment, Payment, Account, Transaction
 from backend.tests.conftest import with_test_db
 from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, EXCHANGE_2, ACCOUNT_1, EXCHANGE_1_JSON
 
@@ -187,3 +187,24 @@ def test_update_exchange_reduce_amount(app, client, balance_service):
 
     # Assert
     assert response.status_code == 204
+
+
+@with_test_db((Transaction, Account, Exchange, ExchangePayment, Payment))
+def test_get_usable_exchanges(app, client, balance_service):
+    # Arrange
+    Account.create(**ACCOUNT_1)
+    exchange = Exchange.create(**EXCHANGE_1)
+    payment = Payment.create(**PAYMENT_1, processed=True)
+    ExchangePayment.create(exchange=exchange, payment=payment, amount=exchange.amount_usd)
+
+    assert payment.amount_usd == exchange.amount_usd
+
+    exchange2 = Exchange.create(**EXCHANGE_2)
+
+    # Act
+    response = client.get(f"/api/exchanges?usable=true")
+
+    # Assert
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["id"] == exchange2.id

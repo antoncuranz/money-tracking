@@ -142,3 +142,27 @@ def test_update_credit_reduce_amount(app, client, balance_service):
 
     # Assert
     assert response.status_code == 204
+
+
+@with_test_db((Account, Credit, CreditTransaction, Transaction, Payment))
+def test_get_usable_credits(app, client, balance_service):
+    # Arrange
+    account = Account.create(**ACCOUNT_1)
+    credit = Credit.create(**CREDIT_1)
+    tx = Transaction.create(**TX_1)
+    tx.status_enum = Transaction.Status.PAID
+    tx.amount_usd = credit.amount_usd
+    tx.save()
+    CreditTransaction.create(credit=credit, transaction=tx, amount=credit.amount_usd)
+
+    assert tx.amount_usd == credit.amount_usd
+
+    credit2 = Credit.create(**CREDIT_2)
+
+    # Act
+    response = client.get(f"/api/credits?account={account}&usable=true")
+
+    # Assert
+    assert response.status_code == 200
+    assert len(response.json) == 1
+    assert response.json[0]["id"] == credit2.id

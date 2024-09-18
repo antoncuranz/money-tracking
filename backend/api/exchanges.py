@@ -19,8 +19,8 @@ def get_exchanges():
     query = True
     if usable is True:
         query = query & (Exchange.amount_usd > fn.COALESCE(
-            ExchangePayment.select(fn.SUM(ExchangePayment.amount))
-            .join(Payment).where(Payment.processed == True), 0
+            ExchangePayment.select(fn.SUM(ExchangePayment.amount)).join(Payment)
+            .where((ExchangePayment.exchange == Exchange.id) & (Payment.processed == True)), 0
         ))
 
     exchanges = Exchange.select().where(query).order_by(-Exchange.date)

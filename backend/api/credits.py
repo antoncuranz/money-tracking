@@ -19,8 +19,8 @@ def get_credits():
     query = True
     if usable is True:
         query = query & (Credit.amount_usd > fn.COALESCE(
-            CreditTransaction.select(fn.SUM(CreditTransaction.amount))
-            .join(Transaction).where(Transaction.status == Transaction.Status.PAID.value), 0
+            CreditTransaction.select(fn.SUM(CreditTransaction.amount)).join(Transaction)
+            .where((CreditTransaction.credit == Credit.id) & (Transaction.status == Transaction.Status.PAID.value)), 0
         ))
 
     if account_id is not None:
