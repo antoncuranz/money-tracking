@@ -84,6 +84,7 @@ type Balances = {
   pending: number;
   credits: number;
   exchanged: number;
+  virtual_account: number;
 };
 
 type FeeSummary = {

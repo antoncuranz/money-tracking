@@ -1,9 +1,8 @@
 import './App.css'
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
-import {AlertCircle, Coins} from 'lucide-react';
+import {Coins} from 'lucide-react';
 import {useToast} from "@/components/ui/use-toast.ts";
 import {useEffect, useState} from "react";
-import {Alert, AlertDescription} from "@/components/ui/alert.tsx";
 import ExchangeDialog from "@/components/ExchangeDialog.tsx";
 import ExchangeTable from "@/components/ExchangeTable.tsx";
 import PaymentTable from "@/components/PaymentTable.tsx";
@@ -112,13 +111,12 @@ const ExchangePage = () => {
             </Card>
             <Card>
               <CardHeader className="pb-0">
+                <CardTitle>{formatAmount(balances?.virtual_account ?? 0)}</CardTitle>
+                <CardDescription>
+                  <span className="text-lg">virtual account balance</span>
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>TODO</AlertDescription>
-                </Alert>
-              </CardContent>
+              <CardContent/>
             </Card>
           </div>
           <Card className="mb-2">
