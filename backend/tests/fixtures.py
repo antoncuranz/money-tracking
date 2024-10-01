@@ -77,17 +77,17 @@ PAYMENT_3 = dict(
 )
 
 EXCHANGE_1_JSON = dict(
-    date="2024-01-29", amount_usd=PAYMENT_1["amount_usd"], amount_eur=-1, exchange_rate=10851990
+    date="2024-01-29", amount_usd=PAYMENT_1["amount_usd"], paid_eur=-1, exchange_rate=10851990
 )
 
 EXCHANGE_1 = dict(
-    id=1, date="2024-01-29", amount_usd=PAYMENT_1["amount_usd"], amount_eur=-1, exchange_rate=1.085199
+    id=1, date="2024-01-29", amount_usd=PAYMENT_1["amount_usd"], paid_eur=-1, exchange_rate=1.085199
 )
 EXCHANGE_2 = dict(
-    id=2, date="2024-01-20", amount_usd=1000, amount_eur=-1, exchange_rate=1.0894991
+    id=2, date="2024-01-20", amount_usd=1000, paid_eur=-1, exchange_rate=1.0894991
 )
 EXCHANGE_3 = dict(
-    id=3, date="2024-01-29", amount_usd=5000, amount_eur=-1, exchange_rate=1.085199
+    id=3, date="2024-01-29", amount_usd=5000, paid_eur=-1, exchange_rate=1.085199
 )
 
 EXCHANGE_PAYMENT_1 = dict(

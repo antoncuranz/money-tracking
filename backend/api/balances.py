@@ -39,7 +39,7 @@ def get_balance_posted():
 
 def get_balance_pending():
     return Transaction.select(fn.SUM(Transaction.amount_usd)) \
-        .where(Transaction.status == Transaction.Status.PENDING.value).scalar()
+        .where((Transaction.status == Transaction.Status.PENDING.value) & (Transaction.ignore.is_null() | ~Transaction.ignore)).scalar()
 
 
 def get_balance_credits(balance_service: BalanceService):

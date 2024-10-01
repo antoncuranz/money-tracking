@@ -34,7 +34,7 @@ def test_post_exchange(client):
     assert response.status_code == 200
     exchange = Exchange.get()
     assert exchange.amount_usd == EXCHANGE_1["amount_usd"]
-    assert exchange.amount_eur == EXCHANGE_1["amount_eur"]
+    assert exchange.paid_eur == EXCHANGE_1["paid_eur"]
     assert exchange.exchange_rate == Decimal(EXCHANGE_1["exchange_rate"]).quantize(Decimal(10) ** -6)
 
 

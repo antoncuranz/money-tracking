@@ -42,6 +42,7 @@ type Transaction = {
   ccy_risk: number | null;
   fx_fees: number | null;
   credittransaction_set: CreditTransaction[];
+  ignore: boolean | null;
 };
 
 type Exchange = {
@@ -49,8 +50,10 @@ type Exchange = {
   actual_id: number | null;
   date: string;
   amount_usd: number;
-  amount_eur: number;
   exchange_rate: number;
+  amount_eur: number | null;
+  paid_eur: number;
+  fees_eur: number | null;
   exchangepayment_set: ExchangePayment[];
 };
 

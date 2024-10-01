@@ -45,8 +45,10 @@ class Exchange(BaseModel):
     actual_id = CharField(unique=True, null=True)
     date = DateField(default=datetime.date.today)
     amount_usd = IntegerField()
-    amount_eur = IntegerField()
     exchange_rate = DecimalField()
+    amount_eur = IntegerField(null=True)
+    paid_eur = IntegerField()
+    fees_eur = IntegerField(null=True)
 
 
 class ExchangePayment(BaseModel):
@@ -73,6 +75,7 @@ class Transaction(BaseModel):
     payment = ForeignKeyField(Payment, backref="transactions", null=True)
     ccy_risk = IntegerField(null=True)
     fx_fees = IntegerField(null=True)
+    ignore = BooleanField(null=True)
 
     @property
     def status_enum(self):

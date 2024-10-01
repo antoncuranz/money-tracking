@@ -30,9 +30,14 @@ def get_exchanges():
 @exchanges.post("")
 def post_exchange():
     json = request.json
+
     exchange_rate = Decimal(json["exchange_rate"]) / 10000000
+    amount_eur = round(Decimal(json["amount_usd"]) / exchange_rate)
+    fees_eur = json["paid_eur"] - amount_eur
+
     model = Exchange.create(
-        date=json["date"], amount_usd=json["amount_usd"], amount_eur=json["amount_eur"], exchange_rate=exchange_rate)
+        date=json["date"], amount_usd=json["amount_usd"], exchange_rate=exchange_rate, amount_eur=amount_eur,
+        paid_eur=json["paid_eur"], fees_eur=fees_eur)
     return str(model.id), 200
 
 

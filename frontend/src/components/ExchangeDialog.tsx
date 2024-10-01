@@ -18,7 +18,7 @@ interface Props {
 const ExchangeDialog = ({open, onClose}: Props) => {
   const [date, setDate] = useState<Date>()
   const [amountUsd, setAmountUsd] = useState<number|null>(null)
-  const [amountEur, setAmountEur] = useState<number|null>(null)
+  const [paidEur, setPaidEur] = useState<number|null>(null)
   const [exchangeRate, setExchangeRate] = useState<number|null>(null)
 
   const { toast } = useToast();
@@ -30,7 +30,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
       body: JSON.stringify({
         date: getDateString(date!),
         amount_usd: amountUsd,
-        amount_eur: amountEur,
+        paid_eur: paidEur,
         exchange_rate: exchangeRate
       })
     })
@@ -47,6 +47,21 @@ const ExchangeDialog = ({open, onClose}: Props) => {
     const offset = date.getTimezoneOffset()
     const offsetDate = new Date(date.getTime() - (offset*60*1000))
     return offsetDate.toISOString().split('T')[0]
+  }
+
+  function getAmountEur() {
+    if (!amountUsd || !exchangeRate)
+      return 0;
+
+    const exchangeRateFloat = exchangeRate / 10000000
+    return parseInt((amountUsd / exchangeRateFloat).toFixed(2))
+  }
+
+  function getFeesEur() {
+    if (!paidEur || !amountUsd || !exchangeRate)
+      return 0;
+
+    return paidEur - getAmountEur()
   }
 
   return (
@@ -84,17 +99,6 @@ const ExchangeDialog = ({open, onClose}: Props) => {
             </Popover>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="amount_eur" className="text-right">
-              Amount (EUR)
-            </Label>
-            <AmountInput
-              id="amount_eur"
-              className="col-span-3"
-              amount={amountEur}
-              setAmount={setAmountEur}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="amount_usd" className="text-right">
               Amount (USD)
             </Label>
@@ -107,7 +111,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="rate" className="text-right">
-              Exchange Rate
+              Exchange Rate (IBKR)
             </Label>
             <AmountInput
               id="rate"
@@ -115,6 +119,43 @@ const ExchangeDialog = ({open, onClose}: Props) => {
               amount={exchangeRate}
               setAmount={setExchangeRate}
               decimals={7}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="amount_eur" className="text-right">
+              Amount (EUR)
+            </Label>
+            <AmountInput
+              id="fees_eur"
+              className="col-span-3"
+              amount={getAmountEur()}
+              setAmount={() => {
+              }}
+              disabled
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="amount_eur" className="text-right">
+              Paid (EUR)
+            </Label>
+            <AmountInput
+              id="amount_eur"
+              className="col-span-3"
+              amount={paidEur}
+              setAmount={setPaidEur}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="amount_eur" className="text-right">
+              Fees (EUR)
+            </Label>
+            <AmountInput
+              id="fees_eur"
+              className="col-span-3"
+              amount={getFeesEur()}
+              setAmount={() => {
+              }}
+              disabled
             />
           </div>
         </div>

@@ -21,8 +21,8 @@ else:
 
 ######
 
-some_new_column = CharField(null=True)
+ignore = BooleanField(null=True)
 
 migrate(
-    migrator.drop_column("account", "some_new_column", some_new_column),
+    migrator.add_column("transaction", "ignore", ignore),
 )

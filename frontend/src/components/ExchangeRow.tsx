@@ -38,6 +38,12 @@ const ExchangeRow = ({exchange, selected, disabled, selectExchange, unselectExch
       <TableCell className="text-right">
         {formatAmount(exchange.amount_eur)}
       </TableCell>
+      <TableCell className="text-right">
+        {formatAmount(exchange.paid_eur)}
+      </TableCell>
+      <TableCell className="text-right">
+        {formatAmount(exchange.fees_eur)}
+      </TableCell>
       <TableCell className="float-right pt-1.5 pb-0">
         { selected ?
           <Button variant="outline" size="icon" onClick={unselectExchange}>

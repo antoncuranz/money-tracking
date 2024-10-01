@@ -27,8 +27,20 @@ const TransactionRow = ({transaction, updateTransactionAmount, readonly, selecta
     return transaction.credittransaction_set.map(ct => ct.amount).reduce((a, b) => a + b, 0)
   }
 
+  function getClasses() {
+    let classes = []
+
+    if (selectable)
+      classes.push("hover:bg-muted cursor-pointer")
+
+    if (transaction.ignore)
+      classes.push("line-through")
+
+    return classes.join(" ")
+  }
+
   return (
-    <TableRow onClick={onClick} className={selectable ? "hover:bg-muted cursor-pointer" : ""}>
+    <TableRow onClick={onClick} className={getClasses()}>
       <TableCell>{transaction.date.substring(0, 16)}</TableCell>
       <TableCell>{transaction.counterparty}</TableCell>
       <TableCell>{transaction.description}</TableCell>
