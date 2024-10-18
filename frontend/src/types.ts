@@ -39,8 +39,7 @@ type Transaction = {
   amount_eur: number | null;
   status: number;
   payment: number | null;
-  ccy_risk: number | null;
-  fx_fees: number | null;
+  fees_and_risk_eur: number | null;
   credittransaction_set: CreditTransaction[];
   ignore: boolean | null;
 };
@@ -88,6 +87,5 @@ type Balances = {
 };
 
 type FeeSummary = {
-  fx_fees: number;
-  ccy_risk: number;
+  fees_and_risk_eur: number;
 };

@@ -2,7 +2,7 @@ import os
 
 from backend.clients.actual import IActualClient
 from backend.config import Config
-from backend.models import Transaction, Account, Payment
+from backend.models import Transaction, Payment
 from flask_injector import inject
 import uuid
 
@@ -40,19 +40,33 @@ class ActualService:
 
         actual_tx = self.actual.get_transaction(actual_account, tx)
 
-        fx_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == Config.actual_fee_category)
-        ccy_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == Config.actual_ccy_category)
-        main_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] != Config.actual_fee_category and sub["category"] != Config.actual_ccy_category)
+        fee_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == Config.actual_fee_category)
+        main_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] != Config.actual_fee_category)
 
-        fx_fees = tx.fx_fees if tx.fx_fees is not None else 0
-        ccy_risk = tx.ccy_risk if tx.ccy_risk is not None else 0
+        fees_and_risk_eur = tx.fees_and_risk_eur if tx.fees_and_risk_eur is not None else 0
         self.actual.patch_transaction(actual_account, actual_tx, {
             "cleared": tx.status_enum == Transaction.Status.PAID,
-            "amount": -(tx.amount_eur + fx_fees + ccy_risk),
+            "amount": -(tx.amount_eur + fees_and_risk_eur),
         })
         self.actual.patch_transaction(actual_account, main_split, {"amount": -tx.amount_eur})
-        self.actual.patch_transaction(actual_account, fx_split, {"amount": -fx_fees})
-        self.actual.patch_transaction(actual_account, ccy_split, {"amount": -ccy_risk})
+        self.actual.patch_transaction(actual_account, fee_split, {"amount": -fees_and_risk_eur})
+
+    def merge_splits(self, account, tx): # TODO: remove once all splits are merged
+        actual_account = account.actual_id
+
+        if tx.actual_id is None:
+            return
+
+        actual_tx = self.actual.get_transaction(actual_account, tx)
+
+        fx_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == Config.actual_fee_category)
+        ccy_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == Config.actual_ccy_category)
+
+        self.actual.patch_transaction(actual_account, fx_split, {
+            "notes": "FX Fees and CCY Risk",
+            "amount": fx_split["amount"] + ccy_split["amount"]
+        })
+        self.actual.delete_transaction(ccy_split["id"])
 
     def import_payments(self, account):
         payments = Payment.select().where(
@@ -74,7 +88,7 @@ class ActualService:
         payment.save()
 
     def _create_actual_transaction(self, tx, id):
-        category = os.getenv("ACTUAL_CAT_" + tx.category.upper(), Config.actual_other_category)
+        category = os.getenv("ACTUAL_CAT_" + tx.category.upper(), None)
         return {
             "id": id,
             "date": str(tx.date),
@@ -94,12 +108,7 @@ class ActualService:
                 {
                     "amount": 0,
                     "category": Config.actual_fee_category,
-                    "notes": "Effective FX fees"
-                },
-                {
-                    "amount": 0,
-                    "category": Config.actual_ccy_category,
-                    "notes": "Currency Risk"
+                    "notes": "FX Fees and CCY Risk"
                 }
             ]
         }
@@ -111,7 +120,6 @@ class ActualService:
             "amount": payment.amount_eur,
             "payee_name": payment.counterparty,
             "imported_payee": payment.counterparty,
-            "category": Config.actual_other_category,
             "notes": payment.description,
             "imported_id": payment.teller_id,
             "cleared": True

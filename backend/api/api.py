@@ -13,13 +13,39 @@ api = Blueprint("api", __name__)
 
 @api.get("/api/fee_summary")
 def get_fee_summary():
-    query = Transaction.select(fn.SUM(Transaction.fx_fees), fn.SUM(Transaction.ccy_risk)) \
-            .where(Transaction.status == Transaction.Status.PAID.value)[0]
+    fees_and_risk_eur = Transaction.select(fn.SUM(Transaction.fees_and_risk_eur)) \
+            .where(Transaction.status == Transaction.Status.PAID.value).scalar()
 
-    return {  # TODO: not working
-        "fx_fees": query.fx_fees,
-        "ccy_risk": query.ccy_risk
+    return {
+        "fees_and_risk_eur": fees_and_risk_eur
     }
+
+
+@api.post("/api/actual/merge/<account_id>")
+def merge_all_splits(account_id, actual_service: ActualService):
+    try:
+        account = Account.get(Account.id == account_id)
+    except DoesNotExist:
+        abort(404)
+
+    transactions = Transaction.select().where(Transaction.actual_id.is_null(False))
+
+    for tx in transactions:
+        actual_service.merge_splits(account, tx)
+
+    return "", 204
+
+@api.post("/api/actual/merge/<account_id>/<tx_id>")
+def merge_splits(account_id, tx_id, actual_service: ActualService):
+    try:
+        account = Account.get(Account.id == account_id)
+        transaction = Transaction.get(Transaction.id == tx_id)
+    except DoesNotExist:
+        abort(404)
+
+    actual_service.merge_splits(account, transaction)
+
+    return "", 204
 
 
 @api.post("/api/actual/<account_id>")
@@ -76,8 +102,7 @@ def unprocess_payment(account_id, payment_id, actual_service: ActualService, act
     for tx in transactions:
         tx.status_enum = Transaction.Status.POSTED
         tx.payment = None
-        tx.fx_fees = None
-        tx.ccy_risk = None
+        tx.fees_and_risk_eur = None
         tx.save()
 
     payment_actual_id = payment.actual_id

@@ -6,6 +6,7 @@ class Config:
     postgres_password = os.getenv("POSTGRES_PASSWORD")
     postgres_user = os.getenv("POSTGRES_USER")
     postgres_database = os.getenv("POSTGRES_DATABASE")
+    postgres_port = os.getenv("POSTGRES_PORT", "5432")
 
     teller_cert = ("./teller/certificate.pem", "./teller/private_key.pem")
 
@@ -16,7 +17,6 @@ class Config:
 
     actual_fee_category = os.getenv("ACTUAL_CAT_FX_FEES", "ff41dcbd-5962-4b32-b3fe-ce9d63cf9c25")
     actual_ccy_category = os.getenv("ACTUAL_CAT_CCY_RISK", "82da7443-67e0-41b2-84fe-95e17676b5ec")
-    actual_other_category = os.getenv("ACTUAL_CAT_OTHER", "7e179c86-50cd-4f9e-86dd-d085dfa21a10")
     # dynamic categories: ACTUAL_CAT_<TELLER_CATEGORY>
 
     ibkr_host = os.getenv("IBKR_HOST", "localhost")

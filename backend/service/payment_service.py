@@ -2,7 +2,7 @@ from flask_injector import inject
 from decimal import Decimal
 
 from backend.clients.actual import IActualClient
-from backend.models import Transaction, db, Exchange, ExchangePayment, ExchangeRate
+from backend.models import Transaction, db, Exchange, ExchangePayment
 from backend.service.balance_service import BalanceService
 from backend.service.exchange_service import ExchangeService
 
@@ -49,8 +49,6 @@ class PaymentService:
         exchange_payments = ExchangePayment.select(Exchange, ExchangePayment).join(Exchange) \
             .where(ExchangePayment.payment == payment.id)
 
-        exchange_rates = self.exchange_service.get_exchange_rates(set([tx.date for tx in transactions]), ExchangeRate.Source.EXCHANGERATESIO)
-
         current_exchange = 0
         exchange_remaining = exchange_payments[current_exchange].amount
 
@@ -69,14 +67,9 @@ class PaymentService:
                 eur_usd_exchanged += Decimal(remaining_amount / amount) * exchange_payments[current_exchange].exchange.exchange_rate
                 exchange_remaining -= remaining_amount
 
-                eur_usd_booked = exchange_rates[tx.date]
-                ccy_risk, fx_fees = self.calc_fx_fees(tx.amount_usd, tx.amount_eur, eur_usd_booked, eur_usd_exchanged)
-
-                tx.ccy_risk = ccy_risk
-                tx.fx_fees = fx_fees
+                tx.fees_and_risk_eur = self.calc_fees_and_risk(tx.amount_usd, tx.amount_eur, eur_usd_exchanged)
             else:
-                tx.ccy_risk = 0
-                tx.fx_fees = 0
+                tx.fees_and_risk_eur = 0
 
             tx.payment = payment.id
             tx.status_enum = Transaction.Status.PAID
@@ -90,23 +83,17 @@ class PaymentService:
         payment.processed = True
         payment.save()
 
-        eur_sum = sum([tx.amount_eur + tx.ccy_risk + tx.fx_fees for tx in transactions])
+        eur_sum = sum([tx.amount_eur + tx.fees_and_risk_eur for tx in transactions])
         eur_err = payment.amount_eur - eur_sum
         print("Calculated eur_err of " + str(eur_err))
 
         # apply error to largest transaction
         largest_tx = max(transactions, key=lambda tx: tx.amount_usd)
-        largest_tx.fx_fees += eur_err
+        largest_tx.fees_and_risk_eur += eur_err
         largest_tx.save()
 
-    def calc_fx_fees(self, value_usd, value_eur, eur_usd_booked, eur_usd_exchanged):
+    def calc_fees_and_risk(self, value_usd, value_eur, eur_usd_exchanged):
         value_eur_exchanged = value_usd / eur_usd_exchanged
         effective_fees_total = value_eur_exchanged - value_eur
 
-        ccy_risk = round(value_eur_exchanged - Decimal(value_usd / eur_usd_booked))
-
-        # fx_fees_usd = value_usd - (eur_usd_booked * value_eur)
-        # fx_fees = fx_fees_usd / eur_usd_exchanged
-        fx_fees = round(effective_fees_total - ccy_risk)
-
-        return ccy_risk, fx_fees
+        return round(effective_fees_total)

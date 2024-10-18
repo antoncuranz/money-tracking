@@ -2,7 +2,7 @@ import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/u
 import ArchiveRow from "@/components/ArchiveRow.tsx";
 
 interface Props {
-  transactions: any[],
+  transactions: Transaction[],
 }
 
 const ArchiveTable = ({transactions}: Props) => {
@@ -16,8 +16,7 @@ const ArchiveTable = ({transactions}: Props) => {
           <TableHead>Counterparty</TableHead>
           <TableHead>Description</TableHead>
           <TableHead className="text-right" style={{width: "200px"}}>Amount (EUR)</TableHead>
-          <TableHead className="text-right" style={{width: "200px"}}>FX Fees (EUR)</TableHead>
-          <TableHead className="text-right" style={{width: "200px"}}>CCY Risk (EUR)</TableHead>
+          <TableHead className="text-right" style={{width: "200px"}}>Fees and Risk (EUR)</TableHead>
           <TableHead style={{width: "50px"}}>
             <span className="sr-only">Status</span>
           </TableHead>

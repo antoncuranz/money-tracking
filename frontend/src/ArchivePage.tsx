@@ -24,21 +24,12 @@ const ArchivePage = () => {
   return (<>
       <div className="flex flex-col sm:gap-4 sm:py-4">
         <main className="grid flex-1 items-start gap-2 p-4 sm:px-6 sm:py-0 md:gap-2">
-          <div className="grid grid-cols-3 gap-2 mb-2">
+          <div className="grid grid-cols-2 gap-2 mb-2">
             <Card>
               <CardHeader className="pb-0">
-                <CardTitle>{formatAmount(fees?.fx_fees ?? 0)}</CardTitle>
+                <CardTitle>{formatAmount(fees?.fees_and_risk_eur ?? 0)}</CardTitle>
                 <CardDescription>
-                  TOTAL FX FEES
-                </CardDescription>
-              </CardHeader>
-              <CardContent/>
-            </Card>
-            <Card>
-              <CardHeader className="pb-0">
-                <CardTitle>{formatAmount(fees?.ccy_risk ?? 0)}</CardTitle>
-                <CardDescription>
-                  TOTAL CCY RISK
+                  TOTAL FX FEES AND CCY RISK
                 </CardDescription>
               </CardHeader>
               <CardContent/>
@@ -46,9 +37,6 @@ const ArchivePage = () => {
             <Card>
               <CardHeader className="pb-0">
                 <CardTitle>TODO</CardTitle>
-                <CardDescription>
-                  TOTAL CASHBACK
-                </CardDescription>
               </CardHeader>
               <CardContent/>
             </Card>

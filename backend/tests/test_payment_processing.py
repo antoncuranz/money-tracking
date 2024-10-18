@@ -20,7 +20,7 @@ def test_payment_processing_good_ccy_risk(client, balance_service, payment_servi
     response = client.post(f"/api/accounts/{account}/payments/{payment}")
 
     # Assert (general checks)
-    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fx_fees + Transaction.ccy_risk)) \
+    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fees_and_risk_eur)) \
         .where(Transaction.payment == payment).scalar()
     sum_usd = Transaction.select(fn.SUM(Transaction.amount_usd)).where(Transaction.payment == payment).scalar()
     payment = Payment.get()
@@ -32,26 +32,20 @@ def test_payment_processing_good_ccy_risk(client, balance_service, payment_servi
     assert balance_service.calc_exchange_remaining(exchange) == 0
 
     # Assert (individual values)
-    thresh = 2
     tx1 = Transaction.get(Transaction.id == 1)
-    assert tx1.fx_fees == 5
-    assert tx1.ccy_risk == -82
+    assert tx1.fees_and_risk_eur == -77
 
     tx2 = Transaction.get(Transaction.id == 2)
-    assert tx2.fx_fees == 49
-    assert tx2.ccy_risk == -731
+    assert tx2.fees_and_risk_eur == -682
 
     tx3 = Transaction.get(Transaction.id == 3)
-    assert tx3.fx_fees - 13 < thresh
-    assert tx3.ccy_risk == -166
+    assert tx3.fees_and_risk_eur == -154
 
     tx4 = Transaction.get(Transaction.id == 4)
-    assert tx4.fx_fees == 19
-    assert tx4.ccy_risk == -219
+    assert tx4.fees_and_risk_eur == -200
 
     tx5 = Transaction.get(Transaction.id == 5)
-    assert tx5.fx_fees == 38
-    assert tx5.ccy_risk == -365
+    assert tx5.fees_and_risk_eur == -327
 
 
 @with_test_db((Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
@@ -71,7 +65,7 @@ def test_payment_processing_bad_ccy_risk(client, balance_service, payment_servic
     response = client.post(f"/api/accounts/{account}/payments/{payment}")
 
     # Assert (general checks)
-    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fx_fees + Transaction.ccy_risk)) \
+    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fees_and_risk_eur)) \
         .where(Transaction.payment == payment).scalar()
     sum_usd = Transaction.select(fn.SUM(Transaction.amount_usd)).where(Transaction.payment == payment).scalar()
     payment = Payment.get()
@@ -84,24 +78,19 @@ def test_payment_processing_bad_ccy_risk(client, balance_service, payment_servic
 
     # Assert (individual values)
     tx1 = Transaction.get(Transaction.id == 1)
-    assert tx1.fx_fees == 5
-    assert tx1.ccy_risk == 50
+    assert tx1.fees_and_risk_eur == 55
 
     tx2 = Transaction.get(Transaction.id == 2)
-    assert tx2.fx_fees == 48
-    assert tx2.ccy_risk == 402
+    assert tx2.fees_and_risk_eur == 450
 
     tx3 = Transaction.get(Transaction.id == 3)
-    assert tx3.fx_fees == 13
-    assert tx3.ccy_risk == 78
+    assert tx3.fees_and_risk_eur == 91
 
     tx4 = Transaction.get(Transaction.id == 4)
-    assert tx4.fx_fees == 20
-    assert tx4.ccy_risk == 80
+    assert tx4.fees_and_risk_eur == 100
 
     tx5 = Transaction.get(Transaction.id == 5)
-    assert tx5.fx_fees == 40
-    assert tx5.ccy_risk == 80
+    assert tx5.fees_and_risk_eur == 120
 
 
 @with_test_db((Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
@@ -123,7 +112,7 @@ def test_payment_processing_applied_credit(client, balance_service, payment_serv
     response = client.post(f"/api/accounts/{account}/payments/{payment}")
 
     # Assert (general checks)
-    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fx_fees + Transaction.ccy_risk)) \
+    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fees_and_risk_eur)) \
         .where(Transaction.payment == payment).scalar()
     sum_usd = Transaction.select(fn.SUM(Transaction.amount_usd)).where(Transaction.payment == payment).scalar()
     payment = Payment.get()
@@ -136,24 +125,19 @@ def test_payment_processing_applied_credit(client, balance_service, payment_serv
 
     # Assert (individual values)
     tx1 = Transaction.get(Transaction.id == 1)
-    assert tx1.fx_fees == 5
-    assert tx1.ccy_risk == 50
+    assert tx1.fees_and_risk_eur == 55
 
     tx2 = Transaction.get(Transaction.id == 2)
-    assert tx2.fx_fees == 48
-    assert tx2.ccy_risk == 402
+    assert tx2.fees_and_risk_eur == 450
 
     tx3 = Transaction.get(Transaction.id == 3)
-    assert tx3.fx_fees == 13
-    assert tx3.ccy_risk == 78
+    assert tx3.fees_and_risk_eur == 91
 
     tx4 = Transaction.get(Transaction.id == 4)
-    assert tx4.fx_fees == 0
-    assert tx4.ccy_risk == 0
+    assert tx4.fees_and_risk_eur == 0
 
     tx5 = Transaction.get(Transaction.id == 5)
-    assert tx5.fx_fees == 40
-    assert tx5.ccy_risk == 80
+    assert tx5.fees_and_risk_eur == 120
 
 
 def setup_tables(transactions, credits=[], exchange_rate=1.0):
@@ -207,7 +191,7 @@ def test_payment_processing_with_multiple_exchanges(client, balance_service, pay
     response = client.post(f"/api/accounts/{account}/payments/{payment}")
 
     # Assert
-    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fx_fees + Transaction.ccy_risk)) \
+    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fees_and_risk_eur)) \
         .where(Transaction.payment == payment).scalar()
     sum_usd = Transaction.select(fn.SUM(Transaction.amount_usd)).where(Transaction.payment == payment).scalar()
     payment = Payment.get()
@@ -259,7 +243,7 @@ def test_payment_processing_with_multiple_exchanges_real_case(client, balance_se
     response = client.post(f"/api/accounts/{account}/payments/{payment}")
 
     # Assert
-    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fx_fees + Transaction.ccy_risk)) \
+    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fees_and_risk_eur)) \
         .where(Transaction.payment == payment).scalar()
     sum_usd = Transaction.select(fn.SUM(Transaction.amount_usd)).where(Transaction.payment == payment).scalar()
     payment = Payment.get()
@@ -307,7 +291,7 @@ def test_payment_processing_with_multiple_exchanges_real_case_2(client, balance_
     response = client.post(f"/api/accounts/{account}/payments/{payment}")
 
     # Assert
-    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fx_fees + Transaction.ccy_risk)) \
+    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fees_and_risk_eur)) \
         .where(Transaction.payment == payment).scalar()
     sum_usd = Transaction.select(fn.SUM(Transaction.amount_usd)).where(Transaction.payment == payment).scalar()
     payment = Payment.get()

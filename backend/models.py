@@ -8,7 +8,7 @@ if Config.postgres_database is None:
     db = SqliteDatabase("sqlite.db", pragmas=(("foreign_keys", "on"),))
 else:
     db = PostgresqlDatabase(Config.postgres_database,
-                            user=Config.postgres_user, password=Config.postgres_password, host=Config.postgres_host)
+                            user=Config.postgres_user, password=Config.postgres_password, host=Config.postgres_host, port=Config.postgres_port)
 
 
 class BaseModel(Model):
@@ -73,8 +73,7 @@ class Transaction(BaseModel):
     amount_eur = IntegerField(null=True)
     status = IntegerField()
     payment = ForeignKeyField(Payment, backref="transactions", null=True)
-    ccy_risk = IntegerField(null=True)
-    fx_fees = IntegerField(null=True)
+    fees_and_risk_eur = IntegerField(null=True)
     ignore = BooleanField(null=True)
 
     @property
