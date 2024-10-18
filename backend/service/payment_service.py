@@ -66,7 +66,8 @@ class PaymentService:
                 exchange_remaining = exchange_payments[current_exchange].amount
 
             if remaining_amount != 0:
-                eur_usd_exchanged += Decimal(amount / remaining_amount) * exchange_payments[current_exchange].exchange.exchange_rate
+                eur_usd_exchanged += Decimal(remaining_amount / amount) * exchange_payments[current_exchange].exchange.exchange_rate
+                exchange_remaining -= remaining_amount
 
                 eur_usd_booked = exchange_rates[tx.date]
                 ccy_risk, fx_fees = self.calc_fx_fees(tx.amount_usd, tx.amount_eur, eur_usd_booked, eur_usd_exchanged)
@@ -91,6 +92,7 @@ class PaymentService:
 
         eur_sum = sum([tx.amount_eur + tx.ccy_risk + tx.fx_fees for tx in transactions])
         eur_err = payment.amount_eur - eur_sum
+        print("Calculated eur_err of " + str(eur_err))
 
         # apply error to largest transaction
         largest_tx = max(transactions, key=lambda tx: tx.amount_usd)

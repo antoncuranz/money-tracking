@@ -218,3 +218,101 @@ def test_payment_processing_with_multiple_exchanges(client, balance_service, pay
     assert sum_usd == payment.amount_usd
     assert balance_service.calc_exchange_remaining(ex1) == 0
     assert balance_service.calc_exchange_remaining(ex2) == ex2.amount_usd - (payment.amount_usd - ex1.amount_usd)
+
+@with_test_db((Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
+def test_payment_processing_with_multiple_exchanges_real_case(client, balance_service, payment_service):
+    # Arrange
+    account = Account.create(**ACCOUNT_1)
+
+    Transaction.create(
+        account_id=1, teller_id="teller_test_tx_1", date="2024-09-16", counterparty="counterparty1",
+        description="description1", category="category", amount_usd=182, amount_eur=164, status=2
+    )
+    Transaction.create(
+        account_id=1, teller_id="teller_test_tx_2", date="2024-09-16", counterparty="counterparty2",
+        description="description2", category="category", amount_usd=666, amount_eur=600, status=2
+    )
+    Transaction.create(
+        account_id=1, teller_id="teller_test_tx_3", date="2024-09-19", counterparty="counterparty3",
+        description="description3", category="category", amount_usd=2996, amount_eur=2677, status=2
+    )
+    Transaction.create(
+        account_id=1, teller_id="teller_test_tx_4", date="2024-09-19", counterparty="counterparty4",
+        description="description4", category="category", amount_usd=500, amount_eur=446, status=2
+    )
+
+    payment = Payment.create(
+        account_id=1, teller_id="teller_test_pm_1", date="2024-10-15", counterparty="Capital One", description="Payment",
+        category="generic", amount_usd=4344
+    )
+
+    Exchange.create(id=1, date="2024-09-17", amount_usd=49789, paid_eur=-1, exchange_rate=1.11210)
+    Exchange.create(id=2, date="2024-10-16", amount_usd=26378, paid_eur=-1, exchange_rate=1.08890)
+
+    ExchangePayment.create(exchange_id=1, payment_id=1, amount=1048)
+    ExchangePayment.create(exchange_id=2, payment_id=1, amount=3296)
+
+    ExchangeRate.create(date="2024-09-16", source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=1.11294)
+    ExchangeRate.create(date="2024-09-19", source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=1.11590)
+
+    # Act
+    response = client.post(f"/api/accounts/{account}/payments/{payment}")
+
+    # Assert
+    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fx_fees + Transaction.ccy_risk)) \
+        .where(Transaction.payment == payment).scalar()
+    sum_usd = Transaction.select(fn.SUM(Transaction.amount_usd)).where(Transaction.payment == payment).scalar()
+    payment = Payment.get()
+
+    assert response.status_code == 204
+    assert payment.processed is True
+    assert sum_eur == payment.amount_eur
+    assert sum_usd == payment.amount_usd
+
+
+@with_test_db((Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
+def test_payment_processing_with_multiple_exchanges_real_case_2(client, balance_service, payment_service):
+    # Arrange
+    account = Account.create(**ACCOUNT_1)
+
+    Transaction.create(
+        account_id=1, teller_id="teller_test_tx_1", date="2024-08-10", counterparty="counterparty1",
+        description="description1", category="category", amount_usd=861, amount_eur=788, status=2
+    )
+    Transaction.create(
+        account_id=1, teller_id="teller_test_tx_2", date="2024-08-12", counterparty="counterparty2",
+        description="description2", category="category", amount_usd=864, amount_eur=790, status=2
+    )
+    Transaction.create(
+        account_id=1, teller_id="teller_test_tx_3", date="2024-08-20", counterparty="counterparty3",
+        description="description3", category="category", amount_usd=880, amount_eur=795, status=2
+    )
+
+    payment = Payment.create(
+        account_id=1, teller_id="teller_test_pm_1", date="2024-09-15", counterparty="Capital One", description="Payment",
+        category="generic", amount_usd=2605
+    )
+
+    Exchange.create(id=1, date="2024-08-06", amount_usd=27995, paid_eur=-1, exchange_rate=1.09219)
+    Exchange.create(id=2, date="2024-09-17", amount_usd=49789, paid_eur=-1, exchange_rate=1.11210)
+
+    ExchangePayment.create(exchange_id=1, payment_id=1, amount=1903)
+    ExchangePayment.create(exchange_id=2, payment_id=1, amount=702)
+
+    ExchangeRate.create(date="2024-08-10", source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=1.09224)
+    ExchangeRate.create(date="2024-08-12", source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=1.09360)
+    ExchangeRate.create(date="2024-08-20", source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=1.11276)
+
+    # Act
+    response = client.post(f"/api/accounts/{account}/payments/{payment}")
+
+    # Assert
+    sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fx_fees + Transaction.ccy_risk)) \
+        .where(Transaction.payment == payment).scalar()
+    sum_usd = Transaction.select(fn.SUM(Transaction.amount_usd)).where(Transaction.payment == payment).scalar()
+    payment = Payment.get()
+
+    assert response.status_code == 204
+    assert payment.processed is True
+    assert sum_eur == payment.amount_eur
+    assert sum_usd == payment.amount_usd

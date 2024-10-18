@@ -103,7 +103,7 @@ EXCHANGE_PAYMENT_3 = dict(
 MASTERCARD_EXCHANGE_RATES = [  # 1-10.01.2024
     1.1086991, 1.1048991, 1.0966993, 1.0973997, 1.1000991, 1.1000991, 1.1000991, 1.0980998, 1.0980998, 1.0970999
 ]
-IBKR_EXCHANGE_RATES = [er * 1.005 for er in MASTERCARD_EXCHANGE_RATES]  # TODO: use real data
+EXCHANGERATESIO_EXCHANGE_RATES = [er * 1.005 for er in MASTERCARD_EXCHANGE_RATES]  # TODO: use real data
 
 EXCHANGE_RATES = [
     dict(
@@ -111,6 +111,6 @@ EXCHANGE_RATES = [
     ) for i, er in enumerate(MASTERCARD_EXCHANGE_RATES)
 ] + [
     dict(
-        date="2024-01-"+str(i+1).zfill(2), source=ExchangeRate.Source.IBKR.value, exchange_rate=er
-    ) for i, er in enumerate(IBKR_EXCHANGE_RATES)
+        date="2024-01-"+str(i+1).zfill(2), source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=er
+    ) for i, er in enumerate(EXCHANGERATESIO_EXCHANGE_RATES)
 ]
