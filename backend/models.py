@@ -19,7 +19,7 @@ class BaseModel(Model):
 class Account(BaseModel):
     id = AutoField()
     actual_id = CharField()
-    teller_id = CharField()
+    teller_id = CharField(null=True)
     teller_access_token = CharField(null=True)
     teller_enrollment_id = CharField(null=True)
     name = CharField()

@@ -20,6 +20,16 @@ def import_transactions(account_id, transaction_service: TransactionService, exc
         account.teller_access_token = access_token
         account.save()
 
+    enrollment = request.args.get("enrollment_id")
+    if enrollment is not None:
+        account.teller_enrollment_id = enrollment
+        account.save()
+
+    teller_id = request.args.get("teller_id")
+    if teller_id is not None:
+        account.teller_id = teller_id
+        account.save()
+
     try:
         transaction_service.import_transactions(account)
     except TransactionService.MfaRequiredException:

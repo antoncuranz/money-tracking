@@ -1,7 +1,8 @@
 from backend import ExchangeRate
 
 ACCOUNT_1 = dict(
-    actual_id="actual_test_acc_1", teller_id="teller_test_acc_1", name="Test Account 1", institution="Institution 1"
+    actual_id="actual_test_acc_1", name="Test Account 1", institution="Institution 1",
+    teller_id="teller_test_acc_1", teller_enrollment_id="teller_enr_1", teller_access_token="teller_token_1"
 )
 
 TELLER_TX_1 = dict(

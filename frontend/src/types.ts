@@ -1,9 +1,9 @@
 type Account = {
   id: number;
   actual_id: string;
-  teller_id: string;
-  teller_access_token: string;
-  teller_enrollment_id: string;
+  teller_id?: string;
+  teller_access_token?: string;
+  teller_enrollment_id?: string;
   name: string;
   institution: string;
 };

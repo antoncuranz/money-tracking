@@ -3,6 +3,7 @@ import {Button} from "@/components/ui/button.tsx";
 import {LoaderCircle, Plug} from "lucide-react";
 import {useTellerConnect} from "teller-connect-react";
 import {useState} from "react";
+import {TellerConnectEnrollment} from "teller-connect-react/src/types";
 
 interface Props {
   account: Account,
@@ -15,10 +16,11 @@ const TellerButton = ({account, updateData=() => {}}: Props) => {
 
   const { open: openTeller, ready: isTellerReady } = useTellerConnect({
     applicationId: import.meta.env.VITE_TELLER_APPLICATION_ID,
-    environment: "sandbox",
-    enrollmentId: account["teller_enrollment_id"],
+    environment: "development",
+    enrollmentId: account.teller_enrollment_id ?? "",
     onSuccess: authorization => {
-      onTellerButtonClick(authorization.accessToken)
+      console.log(authorization)
+      onTellerButtonClick(authorization)
     },
     onFailure: failure => toast({
       title: "Teller failure",
@@ -26,15 +28,15 @@ const TellerButton = ({account, updateData=() => {}}: Props) => {
     })
   });
 
-  async function onTellerButtonClick(accessToken?: string) {
+  async function onTellerButtonClick(authorization?: TellerConnectEnrollment) {
     setInProgress(true)
 
     let url = "/api/import/" + account["id"]
-    if (accessToken)
-      url += "?access_token=" + accessToken
+    if (authorization)
+      url += "?access_token=" + authorization.accessToken + "&enrollment_id=" + authorization.enrollment.id + "&teller_id=" + authorization.user.id
     const response = await fetch(url, {method: "POST"})
 
-    if (!accessToken && response.status == 418) { // if mfa required: authorize and try again!
+    if (!authorization && response.status == 418) { // if mfa required: authorize and try again!
       openTeller()
       return
     }

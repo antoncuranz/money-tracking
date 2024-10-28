@@ -12,6 +12,9 @@ class TransactionService:
         self.teller = teller
 
     def import_transactions(self, account):
+        if account.teller_id is None or account.teller_enrollment_id is None or account.teller_access_token is None:
+            raise TransactionService.MfaRequiredException()
+
         teller_response = self.teller.list_account_transactions(account)
 
         if "error" in teller_response and teller_response["error"]["code"] == "enrollment.disconnected.user_action.mfa_required":
