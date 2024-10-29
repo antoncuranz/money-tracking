@@ -105,7 +105,14 @@ const TransactionPage = () => {
             <Tabs value={currentAccount ? currentAccount.id.toString() : "-1"}>
               <TabsList>
                 {accounts.map(account =>
-                  <TabsTrigger key={account.id} value={account.id.toString()} onClick={() => setCurrentAccount(account)}>{account.name}</TabsTrigger>
+                  <TabsTrigger className="pl-2" key={account.id} value={account.id.toString()} onClick={() => setCurrentAccount(account)}>
+                    {account.name == "Savor" ?
+                      <img className="h-5 mr-2" src="https://ecm.capitalone.com/WCM/card/products/new-savor-card-art.png"/>
+                    :
+                      <img className="h-5 mr-2" src="https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/gold-delta-skymiles.png"/>
+                    }
+                    {account.name}
+                  </TabsTrigger>
                 )}
               </TabsList>
             </Tabs>
