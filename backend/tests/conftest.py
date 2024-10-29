@@ -12,6 +12,7 @@ from backend.clients.teller import ITellerClient
 from backend.service.balance_service import BalanceService
 from backend.service.exchange_service import ExchangeService
 from backend.service.payment_service import PaymentService
+from backend.service.transaction_service import TransactionService
 from backend.tests.mockclients.actual import MockActualClient
 from backend.tests.mockclients.exchangerates import MockExchangeRateClient
 from backend.tests.mockclients.teller import MockTellerClient
@@ -105,6 +106,14 @@ def exchange_service(app, exchangerates_mock):
 def payment_service(app, balance_service, exchange_service, actual_mock):
     service = PaymentService(balance_service, exchange_service, actual_mock)
     dependencies[PaymentService] = service
+    FlaskInjector(app=app, modules=[configure])
+
+    yield service
+
+@pytest.fixture()
+def transaction_service(app, teller_mock):
+    service = TransactionService(teller_mock)
+    dependencies[TransactionService] = service
     FlaskInjector(app=app, modules=[configure])
 
     yield service

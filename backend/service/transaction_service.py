@@ -1,30 +1,34 @@
-from backend.clients.teller import ITellerClient
+import re
+
+from backend.clients.teller import ITellerClient, TellerInteractionRequiredException
 from backend.models import Transaction, Credit, Payment
 from flask_injector import inject
 
 
 class TransactionService:
-    class MfaRequiredException(Exception):
-        pass
 
     @inject
     def __init__(self, teller: ITellerClient):
         self.teller = teller
 
     def import_transactions(self, account):
-        if account.teller_id is None or account.teller_enrollment_id is None or account.teller_access_token is None:
-            raise TransactionService.MfaRequiredException()
+        if account.teller_enrollment_id is None or account.teller_access_token is None:
+            raise TellerInteractionRequiredException()
+
+        if account.teller_id is None:
+            teller_account = self.teller.list_accounts(account)[0]
+            account.teller_id = teller_account["id"]
+            account.name = teller_account["name"]
+            account.institution = teller_account["institution"]["name"]
+            account.save()
 
         teller_response = self.teller.list_account_transactions(account)
-
-        if "error" in teller_response and teller_response["error"]["code"] == "enrollment.disconnected.user_action.mfa_required":
-            raise TransactionService.MfaRequiredException()
 
         # overwrite all transactions that are not imported!
         for teller_tx in teller_response:
             if teller_tx["type"] == "payment":
                 self.process_payment(account, teller_tx)
-            elif self.get_amount(teller_tx) < 0:
+            elif self.get_amount(teller_tx["amount"]) < 0:
                 self.process_credit(account, teller_tx)
             else:
                 self.process_transaction(account, teller_tx)
@@ -80,9 +84,14 @@ class TransactionService:
             "counterparty": tx["details"]["counterparty"]["name"],
             "description": tx["description"],
             "category": tx["details"]["category"],
-            "amount_usd": abs(self.get_amount(tx)),
+            "amount_usd": abs(self.get_amount(tx["amount"])),
             "status": Transaction.Status.POSTED.value if tx["status"] == "posted" else Transaction.Status.PENDING.value
         }
 
-    def get_amount(self, tx):
-        return int(tx["amount"].replace(".", ""))
+    def get_amount(self, amount_str):
+        pattern = r"^(-)?(\d*)(?:[.,](\d{0,2}))?$"
+        match = re.match(pattern, amount_str)
+        sign = -1 if match.group(1) else 1
+        euros = int(match.group(2)) if match.group(2) else 0
+        cents = int(match.group(3)) * 10 ** (2 - len(match.group(3))) if match.group(3) else 0
+        return sign * (euros * 100 + cents)

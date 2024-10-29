@@ -1,5 +1,6 @@
 from flask import abort, Blueprint, request
 
+from backend.clients.teller import TellerInteractionRequiredException
 from backend.models import *
 from backend.service.actual_service import ActualService
 from backend.service.exchange_service import ExchangeService
@@ -25,14 +26,9 @@ def import_transactions(account_id, transaction_service: TransactionService, exc
         account.teller_enrollment_id = enrollment
         account.save()
 
-    teller_id = request.args.get("teller_id")
-    if teller_id is not None:
-        account.teller_id = teller_id
-        account.save()
-
     try:
         transaction_service.import_transactions(account)
-    except TransactionService.MfaRequiredException:
+    except TellerInteractionRequiredException:
         return "", 418
 
     exchange_service.add_missing_eur_amounts(account)

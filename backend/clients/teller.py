@@ -1,11 +1,18 @@
 import requests
+from requests import JSONDecodeError
 
+
+class TellerInteractionRequiredException(Exception):
+    pass
 
 class ITellerClient:
     def get_account_balances(self, account):
         raise NotImplementedError
 
     def list_account_transactions(self, account):
+        raise NotImplementedError
+
+    def list_accounts(self, account):
         raise NotImplementedError
 
 
@@ -16,7 +23,11 @@ class TellerClient(ITellerClient):
         self.cert = cert
 
     def list_accounts(self, account):
-        return self._get('/accounts', account.teller_access_token)
+        response = self._get('/accounts', account.teller_access_token)
+        if response.ok:
+            return response.json()
+        else:
+            response.raise_for_status()
 
     def get_account_details(self, account):
         return self._get(f'/accounts/{account.teller_id}/details', account.teller_access_token)
@@ -33,6 +44,12 @@ class TellerClient(ITellerClient):
         if response.ok:
             return response.json()
         else:
+            try:
+                json = response.json()
+                if "error" in json and json["error"]["code"] == "enrollment.disconnected.user_action.mfa_required":
+                    raise TellerInteractionRequiredException()
+            except JSONDecodeError:
+                pass
             response.raise_for_status()
 
     def list_account_payees(self, account, scheme):

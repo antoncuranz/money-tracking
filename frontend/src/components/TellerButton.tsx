@@ -18,6 +18,7 @@ const TellerButton = ({account, updateData=() => {}}: Props) => {
     applicationId: import.meta.env.VITE_TELLER_APPLICATION_ID,
     environment: "development",
     enrollmentId: account.teller_enrollment_id ?? "",
+    selectAccount: "single",
     onSuccess: authorization => {
       console.log(authorization)
       onTellerButtonClick(authorization)
@@ -33,7 +34,7 @@ const TellerButton = ({account, updateData=() => {}}: Props) => {
 
     let url = "/api/import/" + account["id"]
     if (authorization)
-      url += "?access_token=" + authorization.accessToken + "&enrollment_id=" + authorization.enrollment.id + "&teller_id=" + authorization.user.id
+      url += "?access_token=" + authorization.accessToken + "&enrollment_id=" + authorization.enrollment.id
     const response = await fetch(url, {method: "POST"})
 
     if (!authorization && response.status == 418) { // if mfa required: authorize and try again!
