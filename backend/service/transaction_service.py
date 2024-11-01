@@ -83,14 +83,15 @@ class TransactionService:
             # Actual tx will be updated when payment is processed?
 
     def make_transaction_args(self, tx, account_id):
-        counterparty = tx["details"]["counterparty"]["name"] if "counterparty" in tx["details"] and "name" in tx["details"]["counterparty"] else ""
+        counterparty = tx["details"]["counterparty"]["name"] if tx["details"]["counterparty"] is not None else "unknown"
+        category = tx["details"]["category"] if tx["details"]["category"] is not None else "unknown"
         return {
             "account_id": account_id,
             "teller_id": tx["id"],
             "date": tx["date"],
             "counterparty": counterparty,
             "description": tx["description"],
-            "category": tx["details"]["category"],
+            "category": category,
             "amount_usd": abs(self.get_amount(tx["amount"])),
             "status": Transaction.Status.POSTED.value if tx["status"] == "posted" else Transaction.Status.PENDING.value
         }
