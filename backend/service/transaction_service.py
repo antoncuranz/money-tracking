@@ -1,4 +1,6 @@
+import json
 import re
+import traceback
 
 from backend.clients.teller import ITellerClient, TellerInteractionRequiredException
 from backend.models import Transaction, Credit, Payment
@@ -26,12 +28,16 @@ class TransactionService:
 
         # overwrite all transactions that are not imported!
         for teller_tx in teller_response:
-            if teller_tx["type"] == "payment":
-                self.process_payment(account, teller_tx)
-            elif self.get_amount(teller_tx["amount"]) < 0:
-                self.process_credit(account, teller_tx)
-            else:
-                self.process_transaction(account, teller_tx)
+            try:
+                if teller_tx["type"] == "payment":
+                    self.process_payment(account, teller_tx)
+                elif self.get_amount(teller_tx["amount"]) < 0:
+                    self.process_credit(account, teller_tx)
+                else:
+                    self.process_transaction(account, teller_tx)
+            except:
+                print("Error processing teller_tx: " + json.dumps(teller_tx))
+                traceback.print_exc()
 
         # delete all pending transactions that are not in teller_transactions!
         pending_ids = [tx["id"] for tx in teller_response if tx["status"] == "pending"]
@@ -77,11 +83,12 @@ class TransactionService:
             # Actual tx will be updated when payment is processed?
 
     def make_transaction_args(self, tx, account_id):
+        counterparty = tx["details"]["counterparty"]["name"] if "counterparty" in tx["details"] and "name" in tx["details"]["counterparty"] else ""
         return {
             "account_id": account_id,
             "teller_id": tx["id"],
             "date": tx["date"],
-            "counterparty": tx["details"]["counterparty"]["name"],
+            "counterparty": counterparty,
             "description": tx["description"],
             "category": tx["details"]["category"],
             "amount_usd": abs(self.get_amount(tx["amount"])),
