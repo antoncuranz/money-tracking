@@ -1,6 +1,6 @@
-import json
 import os
 
+from backend.api.util import stringify
 from backend.clients.actual import IActualClient
 from backend.config import Config
 from backend.models import Transaction, Payment
@@ -24,7 +24,7 @@ class ActualService:
             self.import_transaction(account, tx)
 
     def import_transaction(self, account, tx):
-        print("Importing transaction in Actual: " + json.dumps(tx))
+        print("Importing transaction in Actual: " + str(stringify(tx)))
         id = str(uuid.uuid4())
         self.actual.create_transaction(account.actual_id, self._create_actual_transaction(tx, id))
         tx.actual_id = id

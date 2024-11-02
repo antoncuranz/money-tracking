@@ -36,3 +36,27 @@ def import_transactions(account_id, transaction_service: TransactionService, exc
     actual_service.import_payments(account)
 
     return "", 204
+
+@imports.post("")
+def import_transactions_all_accounts(transaction_service: TransactionService, exchange_service: ExchangeService, actual_service: ActualService):
+    for account in Account.select():
+        print("Importing transactions for {} {} ({})".format(account.institution, account.name, str(account.id)))
+
+        try:
+            transaction_service.import_transactions(account)
+        except TellerInteractionRequiredException:
+            print("Teller interaction required")
+            continue
+
+        try:
+            exchange_service.add_missing_eur_amounts(account)
+        except:
+            print("Error adding missing eur_amounts")
+
+        try:
+            actual_service.import_transactions(account)
+            actual_service.import_payments(account)
+        except:
+            print("Error importing transactions into Actual")
+
+    return "", 204
