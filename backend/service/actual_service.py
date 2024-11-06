@@ -61,8 +61,16 @@ class ActualService:
             "imported_payee": tx.counterparty,
             "notes": tx.description,
         })
-        self.actual.patch_transaction(actual_account, main_split, {"amount": -tx.amount_eur})
-        self.actual.patch_transaction(actual_account, fee_split, {"amount": -fees_and_risk_eur})
+        self.actual.patch_transaction(actual_account, main_split, {
+            "amount": -tx.amount_eur,
+            "payee_name": tx.counterparty,
+            "imported_payee": tx.counterparty,
+        })
+        self.actual.patch_transaction(actual_account, fee_split, {
+            "amount": -fees_and_risk_eur,
+            "payee_name": tx.counterparty,
+            "imported_payee": tx.counterparty,
+        })
 
     def import_payments(self, account):
         payments = Payment.select().where(
