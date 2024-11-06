@@ -30,7 +30,14 @@ class ActualService:
         tx.actual_id = id
         tx.save()
 
-    def update_transactions(self, account, transactions):
+    def update_transactions(self, account, transactions=None):
+        if transactions is None:
+            transactions = Transaction.select().where(
+                (Transaction.status == Transaction.Status.POSTED.value) &
+                (Transaction.actual_id.is_null(False)) &
+                (Transaction.amount_eur.is_null(False)) &
+                (Transaction.account == account.id))
+
         for tx in transactions:
             self.update_transaction(account, tx)
 
@@ -49,26 +56,13 @@ class ActualService:
         self.actual.patch_transaction(actual_account, actual_tx, {
             "cleared": tx.status_enum == Transaction.Status.PAID,
             "amount": -(tx.amount_eur + fees_and_risk_eur),
+            "date": str(tx.date),
+            "payee_name": tx.counterparty,
+            "imported_payee": tx.counterparty,
+            "notes": tx.description,
         })
         self.actual.patch_transaction(actual_account, main_split, {"amount": -tx.amount_eur})
         self.actual.patch_transaction(actual_account, fee_split, {"amount": -fees_and_risk_eur})
-
-    def merge_splits(self, account, tx): # TODO: remove once all splits are merged
-        actual_account = account.actual_id
-
-        if tx.actual_id is None:
-            return
-
-        actual_tx = self.actual.get_transaction(actual_account, tx)
-
-        fx_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == Config.actual_fee_category)
-        ccy_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == Config.actual_ccy_category)
-
-        self.actual.patch_transaction(actual_account, fx_split, {
-            "notes": "FX Fees and CCY Risk",
-            "amount": fx_split["amount"] + ccy_split["amount"]
-        })
-        self.actual.delete_transaction(ccy_split["id"])
 
     def import_payments(self, account):
         payments = Payment.select().where(

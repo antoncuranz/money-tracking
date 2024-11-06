@@ -16,7 +16,6 @@ class Config:
     actual_encryption_passwd = os.getenv("ACTUAL_ENCRYPTION_PASSWD")
 
     actual_fee_category = os.getenv("ACTUAL_CAT_FX_FEES", "ff41dcbd-5962-4b32-b3fe-ce9d63cf9c25")
-    actual_ccy_category = os.getenv("ACTUAL_CAT_CCY_RISK", "82da7443-67e0-41b2-84fe-95e17676b5ec")
     # dynamic categories: ACTUAL_CAT_<TELLER_CATEGORY>
 
     ibkr_host = os.getenv("IBKR_HOST", "localhost")

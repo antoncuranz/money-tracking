@@ -21,33 +21,6 @@ def get_fee_summary():
     }
 
 
-@api.post("/api/actual/merge/<account_id>")
-def merge_all_splits(account_id, actual_service: ActualService):
-    try:
-        account = Account.get(Account.id == account_id)
-    except DoesNotExist:
-        abort(404)
-
-    transactions = Transaction.select().where(Transaction.actual_id.is_null(False))
-
-    for tx in transactions:
-        actual_service.merge_splits(account, tx)
-
-    return "", 204
-
-@api.post("/api/actual/merge/<account_id>/<tx_id>")
-def merge_splits(account_id, tx_id, actual_service: ActualService):
-    try:
-        account = Account.get(Account.id == account_id)
-        transaction = Transaction.get(Transaction.id == tx_id)
-    except DoesNotExist:
-        abort(404)
-
-    actual_service.merge_splits(account, transaction)
-
-    return "", 204
-
-
 @api.post("/api/actual/<account_id>")
 def import_transactions_to_actual(account_id, actual_service: ActualService):
     try:
@@ -56,6 +29,7 @@ def import_transactions_to_actual(account_id, actual_service: ActualService):
         abort(404)
 
     actual_service.import_transactions(account)
+    actual_service.update_transactions(account)
 
     return "", 204
 
