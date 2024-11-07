@@ -57,7 +57,6 @@ class ActualService:
             "cleared": tx.status_enum == Transaction.Status.PAID,
             "amount": -(tx.amount_eur + fees_and_risk_eur),
             "date": str(tx.date),
-            "payee_name": tx.counterparty,
             "imported_payee": tx.counterparty,
             "notes": tx.description,
         })
