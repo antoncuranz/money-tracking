@@ -5,3 +5,4 @@ peewee
 ibind
 gunicorn
 pytest
+debugpy
