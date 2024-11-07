@@ -62,12 +62,12 @@ class ActualService:
         })
         self.actual.patch_transaction(actual_account, main_split, {
             "amount": -tx.amount_eur,
-            "payee_name": tx.counterparty,
+            "date": str(tx.date),
             "imported_payee": tx.counterparty,
         })
         self.actual.patch_transaction(actual_account, fee_split, {
             "amount": -fees_and_risk_eur,
-            "payee_name": tx.counterparty,
+            "date": str(tx.date),
             "imported_payee": tx.counterparty,
         })
 
