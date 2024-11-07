@@ -29,10 +29,11 @@ class TransactionService:
         # overwrite all transactions that are not imported!
         for teller_tx in teller_response:
             try:
-                if teller_tx["type"] == "payment":
-                    self.process_payment(account, teller_tx)
-                elif self.get_amount(teller_tx["amount"]) < 0:
-                    self.process_credit(account, teller_tx)
+                if self.get_amount(teller_tx["amount"]) < 0:
+                    if teller_tx["type"] == "payment" or "MOBILE PAYMENT" in teller_tx["description"]:
+                        self.process_payment(account, teller_tx)
+                    else:
+                        self.process_credit(account, teller_tx)
                 else:
                     self.process_transaction(account, teller_tx)
             except:
