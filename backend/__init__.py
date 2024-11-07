@@ -55,6 +55,9 @@ def register_blueprints(app):
 
 
 def create_app():
+    import debugpy
+    debugpy.listen(("0.0.0.0", 5678))
+
     app = Flask(__name__)
     register_blueprints(app)
     FlaskInjector(app=app, modules=[configure])
