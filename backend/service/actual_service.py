@@ -81,8 +81,10 @@ class ActualService:
     def get_or_create_payee(self, tx, actual_tx, existing_payees):
         if actual_tx["payee"] == Config.actual_unknown_payee:
             if tx.counterparty in existing_payees:
+                print("Assigning existing payee for transaction with unknown payee ({})".format(tx.description))
                 return existing_payees[tx.counterparty]
             else:
+                print("Creating new payee for transaction with unknown payee ({})".format(tx.description))
                 payee = self.actual.create_payee(tx.counterparty)["data"]
                 existing_payees[tx.counterparty] = payee
                 return payee
