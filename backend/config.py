@@ -15,6 +15,7 @@ class Config:
     actual_sync_id = os.getenv("ACTUAL_SYNC_ID")
     actual_encryption_passwd = os.getenv("ACTUAL_ENCRYPTION_PASSWD")
 
+    actual_unknown_payee = os.getenv("ACTUAL_UNKNOWN_PAYEE")
     actual_fee_category = os.getenv("ACTUAL_CAT_FX_FEES", "ff41dcbd-5962-4b32-b3fe-ce9d63cf9c25")
     # dynamic categories: ACTUAL_CAT_<TELLER_CATEGORY>
 
