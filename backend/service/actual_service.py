@@ -44,8 +44,11 @@ class ActualService:
         for tx in transactions:
             self.update_transaction(account, tx, existing_payees)
 
-    def update_transaction(self, account, tx, existing_payees):
+    def update_transaction(self, account, tx, existing_payees=None):
         actual_account = account.actual_id
+        
+        if existing_payees is None:
+            existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees()['data']}
 
         if tx.actual_id is None:
             self.import_transaction(account, tx)
