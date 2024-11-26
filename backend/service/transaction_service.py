@@ -30,7 +30,7 @@ class TransactionService:
         for teller_tx in teller_response:
             try:
                 if self.get_amount(teller_tx["amount"]) < 0:
-                    if teller_tx["type"] == "payment" or "MOBILE PAYMENT" in teller_tx["description"]:
+                    if teller_tx["type"] == "payment" or "MOBILE PAYMENT" in teller_tx["description"] or "AUTOPAY PAYMENT" in teller_tx["description"]:
                         self.process_payment(account, teller_tx)
                     else:
                         self.process_credit(account, teller_tx)
