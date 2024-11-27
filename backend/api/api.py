@@ -21,6 +21,35 @@ def get_fee_summary():
     }
 
 
+@api.get("/api/dates/<year>/<month>")
+def get_due_dates(year, month):
+    selected_month = datetime.date(int(year), int(month), 1)
+
+    def next_month(date):
+        return (date.replace(day=1) + datetime.timedelta(days=40)).replace(day=1)
+    
+    def get_correct_month(due_day, offset, month):
+        if due_day > offset:
+            return month
+        else:
+            return next_month(month)
+
+    result = {}
+    for account in Account.select():
+        if account.due_day is None:
+            continue
+        result[account.id] = dict(color=(account.color if account.color else "black"))
+        
+        correct_month = get_correct_month(account.due_day, 25, selected_month)
+        result[account.id]["statement"] = (correct_month.replace(day=account.due_day) - datetime.timedelta(days=25)).isoformat()
+        
+        offset = account.autopay_offset if account.autopay_offset else 0
+        correct_month = get_correct_month(account.due_day, offset, selected_month)
+        result[account.id]["due"] = (correct_month.replace(day=account.due_day) - datetime.timedelta(days=offset)).isoformat()
+
+    return result
+
+
 @api.post("/api/actual/<account_id>")
 def import_transactions_to_actual(account_id, actual_service: ActualService):
     try:

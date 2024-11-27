@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 
 from flask import Blueprint
@@ -16,14 +17,37 @@ def get_balances(balance_service: BalanceService):
     exchanged = balance_service.calc_balance_exchanged()
     total = posted + pending - credits - exchanged
 
-    return {
+    return json.dumps({
+        "accounts": get_account_balances(),
         "total": total,
         "posted": posted,
         "pending": pending,
         "credits": credits,
         "exchanged": exchanged,
         "virtual_account": get_virtual_account_balance(balance_service)
-    }
+    })
+
+
+def get_account_balances():
+    result = {}
+    for account in Account.select():
+        posted_tx = Transaction.select(fn.SUM(Transaction.amount_usd)).where(
+            (Transaction.account == account.id) & (Transaction.status != Transaction.Status.PENDING.value)
+        ).scalar() or 0
+        posted_credits = Credit.select(fn.SUM(Credit.amount_usd)).where((Credit.account == account.id)).scalar() or 0
+        posted_payments = Payment.select(fn.SUM(Payment.amount_usd)).where((Payment.account == account.id)).scalar() or 0
+        
+        pending = Transaction.select(fn.SUM(Transaction.amount_usd)).where(
+            (Transaction.account == account.id) & (Transaction.status == Transaction.Status.PENDING.value) &
+            (Transaction.ignore.is_null() | ~Transaction.ignore)
+        ).scalar() or 0
+
+        result[account.id] = {
+            "posted": posted_tx - posted_credits - posted_payments,
+            "pending": pending
+        }
+        
+    return result
 
 
 def get_balance_posted():

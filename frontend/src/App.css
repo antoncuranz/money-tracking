@@ -16,3 +16,21 @@ body {
 .hover\:bg-muted\/50:hover {
     background-color: unset !important;
 }
+
+.cal-due {
+    border: none !important;
+    color: white !important;
+}
+
+.cal-statement {
+    border: 2px solid green;
+    background: none !important;
+}
+
+.cal-statement.bg-accent {
+    background-color: hsl(var(--accent)) !important;
+}
+
+.balance-separator:first-child {
+  margin-top: 0;
+}

@@ -6,6 +6,10 @@ type Account = {
   teller_enrollment_id?: string;
   name: string;
   institution: string;
+  due_day?: number;
+  autopay_offset?: number;
+  icon?: string;
+  color?: string;
 };
 
 type Credit = {
@@ -84,8 +88,20 @@ type Balances = {
   credits: number;
   exchanged: number;
   virtual_account: number;
+  accounts: { [id: string] : AccountBalance };
 };
+
+type AccountBalance = {
+  posted: number;
+  pending: number;
+}
 
 type FeeSummary = {
   fees_and_risk_eur: number;
+};
+
+type AccountDates = {
+  color: string;
+  due: string;
+  statement: string;
 };

@@ -41,8 +41,11 @@ const TransactionRow = ({transaction, updateTransactionAmount, readonly, selecta
 
   return (
     <TableRow onClick={onClick} className={getClasses()}>
-      <TableCell>{transaction.date.substring(0, 16)}</TableCell>
-      <TableCell>{transaction.counterparty}</TableCell>
+        <TableCell>{transaction.account_id}
+            {/*<img className="h-5 mr-2" src="{account.icon}" alt=""/>*/}
+        </TableCell>
+        <TableCell>{transaction.date.substring(0, 16)}</TableCell>
+        <TableCell>{transaction.counterparty}</TableCell>
       <TableCell>{transaction.description}</TableCell>
       <TableCell>{transaction.category}</TableCell>
       <TableCell className="text-right">

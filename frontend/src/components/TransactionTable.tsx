@@ -15,12 +15,13 @@ const TransactionTable = ({transactions, updateTransactionAmount, onTransactionC
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead style={{width: "150px"}}>Date</TableHead>
+          <TableHead>Acct.</TableHead>
+          <TableHead style={{width: "160px"}}>Date</TableHead>
           <TableHead>Counterparty</TableHead>
           <TableHead>Description</TableHead>
-          <TableHead style={{width: "200px"}}>Category</TableHead>
-          <TableHead className="text-right" style={{width: "200px"}}>Amount (USD)</TableHead>
-          <TableHead className="text-right" style={{width: "200px"}}>Amount (EUR)</TableHead>
+          <TableHead style={{width: "100px"}}>Category</TableHead>
+          <TableHead className="text-right" style={{width: "150px"}}>Amount (USD)</TableHead>
+          <TableHead className="text-right" style={{width: "150px"}}>Amount (EUR)</TableHead>
           <TableHead style={{width: "50px"}}>
             <span className="sr-only">Status</span>
           </TableHead>

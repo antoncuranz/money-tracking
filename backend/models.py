@@ -24,6 +24,10 @@ class Account(BaseModel):
     teller_enrollment_id = CharField(null=True)
     name = CharField()
     institution = CharField()
+    due_day = IntegerField(null=True)
+    autopay_offset = IntegerField(null=True)
+    icon = CharField(null=True)
+    color = CharField(null=True)
 
 
 class Payment(BaseModel):
