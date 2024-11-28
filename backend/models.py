@@ -28,6 +28,7 @@ class Account(BaseModel):
     autopay_offset = IntegerField(null=True)
     icon = CharField(null=True)
     color = CharField(null=True)
+    target_spend = IntegerField(null=True)
 
 
 class Payment(BaseModel):

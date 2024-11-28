@@ -31,6 +31,6 @@ body {
     background-color: hsl(var(--accent)) !important;
 }
 
-.balance-separator:first-child {
+.card-balance-container:first-child .balance-separator {
   margin-top: 0;
 }

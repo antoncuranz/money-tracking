@@ -10,6 +10,7 @@ type Account = {
   autopay_offset?: number;
   icon?: string;
   color?: string;
+  target_spend?: number;
 };
 
 type Credit = {
@@ -94,6 +95,8 @@ type Balances = {
 type AccountBalance = {
   posted: number;
   pending: number;
+  total_spent: number;
+  total_credits: number;
 }
 
 type FeeSummary = {

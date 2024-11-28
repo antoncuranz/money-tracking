@@ -44,7 +44,9 @@ def get_account_balances():
 
         result[account.id] = {
             "posted": posted_tx - posted_credits - posted_payments,
-            "pending": pending
+            "pending": pending,
+            "total_spent": posted_tx,
+            "total_credits": posted_credits
         }
         
     return result
