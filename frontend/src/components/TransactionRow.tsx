@@ -8,11 +8,12 @@ interface Props {
   transaction: Transaction,
   updateTransactionAmount?: (txId: number, newAmount: number|null) => void,
   onClick: MouseEventHandler<HTMLTableRowElement> | undefined;
+  account?: Account,
   readonly?: boolean,
   selectable?: boolean,
 }
 
-const TransactionRow = ({transaction, updateTransactionAmount, readonly, selectable, onClick}: Props) => {
+const TransactionRow = ({transaction, account, updateTransactionAmount, readonly, selectable, onClick}: Props) => {
 
   function updateAmount(newAmount: number|null) {
     if (updateTransactionAmount)
@@ -28,7 +29,7 @@ const TransactionRow = ({transaction, updateTransactionAmount, readonly, selecta
   }
 
   function getClasses() {
-    let classes = []
+    const classes = []
 
     if (selectable)
       classes.push("hover:bg-muted cursor-pointer")
@@ -40,12 +41,9 @@ const TransactionRow = ({transaction, updateTransactionAmount, readonly, selecta
   }
 
   return (
-    <TableRow onClick={onClick} className={getClasses()}>
-        <TableCell>{transaction.account_id}
-            {/*<img className="h-5 mr-2" src="{account.icon}" alt=""/>*/}
-        </TableCell>
-        <TableCell>{transaction.date.substring(0, 16)}</TableCell>
-        <TableCell>{transaction.counterparty}</TableCell>
+    <TableRow onClick={onClick} className={getClasses()} style={{borderLeftWidth: "4px", borderLeftColor: account?.color ?? "transparent"}}>
+      <TableCell>{transaction.date.substring(0, 16)}</TableCell>
+      <TableCell>{transaction.counterparty}</TableCell>
       <TableCell>{transaction.description}</TableCell>
       <TableCell>{transaction.category}</TableCell>
       <TableCell className="text-right">

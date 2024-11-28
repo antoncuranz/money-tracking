@@ -9,9 +9,10 @@ interface Props {
   disabled: boolean,
   selectCredit: () => void,
   unselectCredit: () => void,
+  account?: Account
 }
 
-const CreditRow = ({credit, selected, disabled, selectCredit, unselectCredit}: Props) => {
+const CreditRow = ({credit, account, selected, disabled, selectCredit, unselectCredit}: Props) => {
 
   function isCreditApplied() {
     return  credit.credittransaction_set != null && credit.credittransaction_set.length > 0
@@ -22,7 +23,7 @@ const CreditRow = ({credit, selected, disabled, selectCredit, unselectCredit}: P
   }
 
   return (
-    <TableRow>
+    <TableRow style={{borderLeftWidth: "4px", borderLeftColor: account?.color ?? "transparent"}}>
       <TableCell>{credit.date.substring(0, 16)}</TableCell>
       <TableCell>{credit.counterparty}</TableCell>
       <TableCell>{credit.description}</TableCell>

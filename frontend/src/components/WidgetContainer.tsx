@@ -20,7 +20,7 @@ const WidgetContainer = ({widgets, isMobile}: Props) => {
           <CardContent className="pb-0">
             <Accordion type="single" collapsible className="w-full">
               {widgets.map((w, idx) =>
-                <AccordionItem value={w.title} className={idx == widgets.length-1 ? "border-0" : ""}>
+                <AccordionItem key={w.title} value={w.title} className={idx == widgets.length-1 ? "border-0" : ""}>
                   <AccordionTrigger>{w.title}</AccordionTrigger>
                   <AccordionContent>
                     {w.content}
@@ -33,7 +33,7 @@ const WidgetContainer = ({widgets, isMobile}: Props) => {
         :
         <>
           {widgets.map(w =>
-            <Card className="mb-2">
+            <Card key={w.title} className="mb-2">
               {w.hideTitleDesktop ? w.content :
                 <>
                   <CardHeader>
