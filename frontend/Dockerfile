@@ -11,6 +11,7 @@ COPY --from=build-stage /dist /usr/share/nginx/html
 
 # substitute environment variables before starting nginx
 COPY substitute-env-vars.sh /docker-entrypoint.d/99-substitute-env-vars.sh
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
