@@ -27,7 +27,7 @@ const TransactionPage = () => {
   const [transactionAmounts, setTransactionAmounts] = useState<{[id: number]: number|null}>({})
   const [ctDialogOpen, setCtDialogOpen] = useState(false)
   
-  const isMobile = false
+  const isMobile = true
 
   useEffect(() => {
     initAccounts()
@@ -140,7 +140,7 @@ const TransactionPage = () => {
               ]} isMobile={isMobile}/>
             </div>
             <div className="flex-auto">
-              {credits.length > 0 &&
+              {false && credits.length > 0 &&
                   <Card className="mb-2 overflow-hidden">
                     <CardHeader className="pb-0">
                       <CardTitle>Credits</CardTitle>
@@ -159,6 +159,7 @@ const TransactionPage = () => {
                   <CardDescription/>
                 </CardHeader>
                 <CardContent className="p-0">
+                  <Separator className="balance-separator mt-4"/>
                   <TransactionTable transactions={transactions} updateTransactionAmount={updateTransactionAmount}
                                     readonly={creditSelection != null} selectable={creditSelection != null}
                                     onTransactionClick={openCreditTransactionDialog} accounts={accounts}/>
