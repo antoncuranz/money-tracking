@@ -12,7 +12,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import CreditTable from "@/components/CreditTable.tsx";
 import TransactionTable from "@/components/TransactionTable.tsx";
 import CreditTransactionDialog from "@/components/CreditTransactionDialog.tsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
 import {Account, Transaction, Credit, Balances} from "@/types.ts";
 
@@ -28,6 +28,7 @@ export function ClientOnly({
   balances: Balances,
 }) {
 
+  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions)
   const [currentAccount, setCurrentAccount] = useState<Account|null>(null)
   const [creditSelection, setCreditSelection] = useState<number|null>(null)
   const [transactionSelection, setTransactionSelection] = useState<Transaction|null>()
@@ -36,6 +37,15 @@ export function ClientOnly({
 
   const router = useRouter();
   const isMobile = false
+
+  useEffect(() => {
+    updateFilteredTransactions()
+  }, [currentAccount]);
+  function updateFilteredTransactions() {
+    setFilteredTransactions(transactions.filter(tx =>
+      currentAccount == null || tx.account_id == currentAccount.id)
+    )
+  }
 
   function updateTransactionAmount(txId: number, newAmount: number|null) {
     setChangedTransactionAmounts(prevAmounts => ({
@@ -136,7 +146,7 @@ export function ClientOnly({
                   <CardDescription/>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <TransactionTable transactions={transactions} updateTransactionAmount={updateTransactionAmount}
+                  <TransactionTable transactions={filteredTransactions} updateTransactionAmount={updateTransactionAmount}
                                     readonly={creditSelection != null} selectable={creditSelection != null}
                                     onTransactionClick={openCreditTransactionDialog} accounts={accounts}/>
                 </CardContent>
