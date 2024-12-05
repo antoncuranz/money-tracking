@@ -4,30 +4,28 @@ import {LoaderCircle, Save} from "lucide-react";
 import {useState} from "react";
 
 interface Props {
-  transactions: Transaction[],
-  transactionAmounts: {[id: number]: number|null},
+  changedTransactionAmounts: {[id: number]: number|null},
   updateData?: () => void,
 }
 
-const TxSaveButton = ({transactions, transactionAmounts, updateData=() => {}}: Props) => {
+const TxSaveButton = ({changedTransactionAmounts, updateData=() => {}}: Props) => {
   const [inProgress, setInProgress] = useState(false)
   const { toast } = useToast();
 
   async function onClick() {
     setInProgress(true)
 
-    const updatedTransactions = transactions.filter(tx => tx.amount_eur != transactionAmounts[tx.id])
-    console.log("updatedTransactions", updatedTransactions)
+    console.log("transactionAmounts", changedTransactionAmounts)
 
-    if (updatedTransactions.length == 0)
+    if (Object.keys(changedTransactionAmounts).length == 0)
       toast({title: "Nothing to do."})
 
     let savedSuccessfully = true
-    for (const tx of updatedTransactions) {
-      const amount = tx.amount_eur ?? "";
-      const response = await fetch("/api/transactions/" + tx.id + "?amount_eur=" + amount, {method: "PUT"})
+    for (const [txId, amount] of Object.entries(changedTransactionAmounts)) {
+      const response = await fetch("/api/transactions/" + txId + "?amount_eur=" + (amount ?? ""), {method: "PUT"})
+
       if (response.status != 200) {
-        toast({title: "Error updating transaction " + tx.id})
+        toast({title: "Error updating transaction " + txId})
         savedSuccessfully = false;
         break;
       }

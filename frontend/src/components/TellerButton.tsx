@@ -15,7 +15,7 @@ const TellerButton = ({account, updateData=() => {}}: Props) => {
   const { toast } = useToast();
 
   const { open: openTeller, ready: isTellerReady } = useTellerConnect({
-    applicationId: import.meta.env.VITE_TELLER_APPLICATION_ID,
+    applicationId: process.env.NEXT_PUBLIC_TELLER_APPLICATION_ID!,
     environment: "development",
     enrollmentId: account.teller_enrollment_id ?? "",
     selectAccount: "single",

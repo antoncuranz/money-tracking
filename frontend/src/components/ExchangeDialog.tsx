@@ -93,7 +93,6 @@ const ExchangeDialog = ({open, onClose}: Props) => {
                   mode="single"
                   selected={date}
                   onSelect={setDate}
-                  initialFocus
                 />
               </PopoverContent>
             </Popover>

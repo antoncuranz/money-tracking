@@ -1,49 +1,40 @@
-import './App.css'
+'use client'
+
+import {Button} from "@/components/ui/button.tsx";
+import {Coins} from "lucide-react";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
-import {Coins} from 'lucide-react';
-import {useToast} from "@/components/ui/use-toast.ts";
-import {useEffect, useState} from "react";
-import ExchangeDialog from "@/components/ExchangeDialog.tsx";
+import {formatAmount} from "@/components/util.ts";
 import ExchangeTable from "@/components/ExchangeTable.tsx";
 import PaymentTable from "@/components/PaymentTable.tsx";
-import {formatAmount} from "@/components/util.ts";
+import ExchangeDialog from "@/components/ExchangeDialog.tsx";
 import ExchangePaymentDialog from "@/components/ExchangePaymentDialog.tsx";
-import {Button} from "@/components/ui/button.tsx";
+import {useState} from "react";
+import {useToast} from "@/components/ui/use-toast.ts";
+import {useRouter} from "next/navigation";
 
-const ExchangePage = () => {
-  const [exchanges, setExchanges] = useState<Exchange[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [balances, setBalances] = useState<Balances|null>();
-
+export function ClientOnly({
+  exchanges,
+  payments,
+  balances
+}: {
+  exchanges: Exchange[],
+  payments: Payment[],
+  balances: Balances,
+}) {
   const [exchangeSelection, setExchangeSelection] = useState<number|null>(null)
   const [paymentSelection, setPaymentSelection] = useState<Payment>()
   const [epDialogOpen, setEpDialogOpen] = useState(false)
   const [exchangeDialogOpen, setExchangeDialogOpen] = useState(false)
 
   const { toast } = useToast();
-
-  useEffect(() => {
-    updateData()
-  }, []);
-  async function updateData() {
-    let response = await fetch("/api/exchanges?usable=true")
-    const exchanges = await response.json() as Exchange[]
-    setExchanges(exchanges)
-
-    response = await fetch("/api/payments")
-    const payments = await response.json() as Payment[]
-    setPayments(payments)
-
-    response = await fetch("/api/balance")
-    const balances = await response.json() as Balances
-    setBalances(balances)
-  }
+  const router = useRouter();
 
   async function deleteExchange(exId: number) {
     const url = "/api/exchanges/" + exId
     const response = await fetch(url, {method: "DELETE"})
+
     if (response.ok)
-      updateData()
+      router.refresh()
     else toast({
       title: "Error deleting Exchange",
       description: response.statusText
@@ -61,14 +52,14 @@ const ExchangePage = () => {
     setEpDialogOpen(false)
 
     if (needsUpdate)
-      updateData()
+      router.refresh()
   }
 
   function onExchangeDialogClose(needsUpdate: boolean) {
     setExchangeDialogOpen(false)
 
     if (needsUpdate)
-      updateData()
+      router.refresh()
   }
 
   async function processPayment(payment: Payment) {
@@ -81,7 +72,7 @@ const ExchangePage = () => {
         description: response.statusText
       })
 
-    updateData()
+    router.refresh()
   }
 
   return (<>
@@ -144,8 +135,6 @@ const ExchangePage = () => {
       </div>
       <ExchangeDialog open={exchangeDialogOpen} onClose={onExchangeDialogClose}/>
       <ExchangePaymentDialog open={epDialogOpen} onClose={onEpDialogClose} exchange={exchangeSelection!} payment={paymentSelection!}/>
-  </>
-)
+    </>
+  )
 }
-
-export default ExchangePage

@@ -1,25 +1,17 @@
-import './App.css'
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
-import {useEffect, useState} from "react";
 import {formatAmount} from "@/components/util.ts";
 import ArchiveTable from "@/components/ArchiveTable.tsx";
 
-const ArchivePage = () => {
-  const [fees, setFees] = useState<FeeSummary|null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+export function generateStaticParams() {
+  return [{ slug: [''] }]
+}
 
-  useEffect(() => {
-    updateData()
-  }, []);
-  async function updateData() {
-    let response = await fetch("/api/transactions?paid=true")
-    const transactions = await response.json() as Transaction[]
-    setTransactions(transactions)
+export default async function Page() {
+  const transactionsResponse = await fetch(process.env.BACKEND_URL + "/api/transactions?paid=true")
+  const transactions = await transactionsResponse.json() as Transaction[]
 
-    response = await fetch("/api/fee_summary")
-    const fees = await response.json() as FeeSummary
-    setFees(fees)
-  }
+  const feesResponse = await fetch(process.env.BACKEND_URL + "/api/fee_summary")
+  const fees = await feesResponse.json() as FeeSummary
 
   return (<>
       <div className="flex flex-col sm:gap-4 sm:py-4">
@@ -52,8 +44,6 @@ const ArchivePage = () => {
           </Card>
         </main>
       </div>
-  </>
-)
+    </>
+  )
 }
-
-export default ArchivePage
