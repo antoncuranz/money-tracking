@@ -54,7 +54,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-COPY substitute-env-vars.sh ./
+# custom entrypoint with environment variable substitution
+COPY docker-entrypoint.sh /
 
 USER nextjs
 
@@ -65,4 +66,4 @@ ENV PORT=3000
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
 ENV HOSTNAME="0.0.0.0"
-CMD ["./substitue-env-vars.sh", "&&", "node", "server.js"]
+CMD ["node", "server.js"]

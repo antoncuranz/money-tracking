@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    output: 'standalone',
+    output: "standalone",
     rewrites: async () => [
         {
-            source: '/api/:path*',
-            destination: 'http://127.0.0.1:5000/api/:path*',
+            source: "/api/:path*",
+            destination: process.env.BACKEND_URL + "/api/:path*",
         },
     ]
 }
