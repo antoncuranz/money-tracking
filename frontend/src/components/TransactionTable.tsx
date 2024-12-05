@@ -1,5 +1,6 @@
 import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import TransactionRow from "@/components/TransactionRow.tsx";
+import {Account, Transaction} from "@/types.ts";
 
 interface Props {
   transactions: Transaction[],

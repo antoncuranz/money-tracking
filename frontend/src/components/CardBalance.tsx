@@ -1,5 +1,6 @@
 import {formatAmount} from "@/components/util.ts";
 import {Progress} from "@/components/ui/progress.tsx";
+import {Account, Balances} from "@/types.ts";
 
 interface Props {
   account: Account,

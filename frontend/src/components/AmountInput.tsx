@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {FocusEvent, useEffect, useState} from 'react'
 import {Input} from "@/components/ui/input.tsx";
 import {useToast} from "@/components/ui/use-toast.ts";
 import {formatAmount} from "@/components/util.ts";
@@ -19,12 +19,11 @@ const AmountInput = ({amount, setAmount, className = "", disabled = false, decim
   useEffect(() => {
     updateAmount()
   }, [amount]);
-
   function updateAmount() {
     setStringAmount(formatAmount(amount, decimals))
   }
 
-  function onBlur(event: any) {
+  function onBlur(event: FocusEvent<HTMLInputElement>) {
     const newAmount = event.target.value
 
     try {

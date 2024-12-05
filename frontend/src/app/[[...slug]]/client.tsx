@@ -14,6 +14,7 @@ import TransactionTable from "@/components/TransactionTable.tsx";
 import CreditTransactionDialog from "@/components/CreditTransactionDialog.tsx";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
+import {Account, Transaction, Credit, Balances} from "@/types.ts";
 
 export function ClientOnly({
   accounts,

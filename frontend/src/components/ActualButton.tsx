@@ -2,6 +2,7 @@ import {useToast} from "@/components/ui/use-toast.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {Import, LoaderCircle} from "lucide-react";
 import {useState} from "react";
+import {Account} from "@/types.ts";
 
 interface Props {
   account: Account,

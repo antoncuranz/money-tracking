@@ -3,6 +3,7 @@ import {Button} from "@/components/ui/button.tsx";
 import {Check, DraftingCompass, LoaderCircle} from "lucide-react";
 import {formatAmount} from "@/components/util.ts";
 import {MouseEventHandler, useState} from "react";
+import {Payment} from "@/types.ts";
 
 interface Props {
   payment: Payment,

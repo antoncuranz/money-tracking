@@ -1,5 +1,6 @@
 import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import PaymentRow from "@/components/PaymentRow.tsx";
+import {Payment} from "@/types.ts";
 
 interface Props {
   payments: Payment[],

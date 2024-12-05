@@ -1,16 +1,17 @@
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {formatAmount} from "@/components/util.ts";
 import ArchiveTable from "@/components/ArchiveTable.tsx";
+import {Transaction, FeeSummary} from "@/types.ts";
 
 export function generateStaticParams() {
   return [{ slug: [''] }]
 }
 
 export default async function Page() {
-  const transactionsResponse = await fetch(process.env.BACKEND_URL + "/api/transactions?paid=true")
+  const transactionsResponse = await fetch(process.env.BACKEND_URL + "/api/transactions?paid=true", {cache: "no-cache"})
   const transactions = await transactionsResponse.json() as Transaction[]
 
-  const feesResponse = await fetch(process.env.BACKEND_URL + "/api/fee_summary")
+  const feesResponse = await fetch(process.env.BACKEND_URL + "/api/fee_summary", {cache: "no-cache"})
   const fees = await feesResponse.json() as FeeSummary
 
   return (<>

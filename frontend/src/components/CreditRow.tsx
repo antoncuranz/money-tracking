@@ -2,6 +2,7 @@ import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {Cable, Undo2} from "lucide-react";
 import {formatAmount} from "@/components/util.ts";
 import {Button} from "@/components/ui/button.tsx";
+import {Account, Credit} from "@/types.ts";
 
 interface Props {
   credit: Credit,

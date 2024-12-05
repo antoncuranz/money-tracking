@@ -1,4 +1,4 @@
-type Account = {
+export type Account = {
   id: number;
   actual_id: string;
   teller_id?: string;
@@ -13,7 +13,7 @@ type Account = {
   target_spend?: number;
 };
 
-type Credit = {
+export type Credit = {
   id: number;
   account_id: number;
   teller_id: string;
@@ -25,13 +25,13 @@ type Credit = {
   credittransaction_set: CreditTransaction[];
 };
 
-type CreditTransaction = {
+export type CreditTransaction = {
   amount: number;
   credit: Credit;
   transaction: Transaction;
 };
 
-type Transaction = {
+export type Transaction = {
   id: number;
   account_id: number;
   teller_id: string;
@@ -49,7 +49,7 @@ type Transaction = {
   ignore: boolean | null;
 };
 
-type Exchange = {
+export type Exchange = {
   id: number;
   actual_id: number | null;
   date: string;
@@ -61,13 +61,13 @@ type Exchange = {
   exchangepayment_set: ExchangePayment[];
 };
 
-type ExchangePayment = {
+export type ExchangePayment = {
   amount: number;
   exchange: Exchange;
   payment: Payment;
 };
 
-type Payment = {
+export type Payment = {
   id: number;
   account_id: number;
   teller_id: string;
@@ -82,7 +82,7 @@ type Payment = {
   exchangepayment_set: ExchangePayment[];
 };
 
-type Balances = {
+export type Balances = {
   total: number;
   posted: number;
   pending: number;
@@ -92,18 +92,18 @@ type Balances = {
   accounts: { [id: string] : AccountBalance };
 };
 
-type AccountBalance = {
+export type AccountBalance = {
   posted: number;
   pending: number;
   total_spent: number;
   total_credits: number;
 }
 
-type FeeSummary = {
+export type FeeSummary = {
   fees_and_risk_eur: number;
 };
 
-type AccountDates = {
+export type AccountDates = {
   color: string;
   due: string;
   statement: string;

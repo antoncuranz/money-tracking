@@ -1,5 +1,6 @@
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
+import {Account} from "@/types.ts";
 
 interface Props {
   accounts: Account[],

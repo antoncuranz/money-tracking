@@ -11,6 +11,7 @@ import ExchangePaymentDialog from "@/components/ExchangePaymentDialog.tsx";
 import {useState} from "react";
 import {useToast} from "@/components/ui/use-toast.ts";
 import {useRouter} from "next/navigation";
+import {Exchange, Payment, Balances} from "@/types.ts";
 
 export function ClientOnly({
   exchanges,

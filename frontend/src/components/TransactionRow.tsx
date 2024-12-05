@@ -3,6 +3,7 @@ import {Check, Clock} from "lucide-react";
 import AmountInput from "@/components/AmountInput.tsx";
 import {formatAmount} from "@/components/util.ts";
 import {MouseEventHandler} from "react";
+import {Account, Transaction} from "@/types.ts";
 
 interface Props {
   transaction: Transaction,

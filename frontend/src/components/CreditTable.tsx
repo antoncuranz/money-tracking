@@ -1,5 +1,6 @@
 import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import CreditRow from "@/components/CreditRow.tsx";
+import {Account, Credit} from "@/types.ts";
 
 interface Props {
   credits: Credit[],

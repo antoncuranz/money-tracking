@@ -4,6 +4,7 @@ import {LoaderCircle, Plug} from "lucide-react";
 import {useTellerConnect} from "teller-connect-react";
 import {useState} from "react";
 import {TellerConnectEnrollment} from "teller-connect-react/src/types";
+import {Account} from "@/types.ts";
 
 interface Props {
   account: Account,

@@ -1,5 +1,6 @@
 import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {formatAmount} from "@/components/util.ts";
+import {Transaction} from "@/types.ts";
 
 interface Props {
   transaction: Transaction,
