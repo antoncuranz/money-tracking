@@ -1,5 +1,5 @@
-import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import TransactionRow from "@/components/TransactionRow.tsx";
+import {useEffect, useRef, useState} from "react";
 
 interface Props {
   transactions: Transaction[],
@@ -11,29 +11,23 @@ interface Props {
 }
 
 const TransactionTable = ({transactions, accounts, updateTransactionAmount, onTransactionClick, readonly=true, selectable=false}: Props) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState("auto");
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const childrenHeight = containerRef.current.scrollHeight;
+      setHeight(childrenHeight + "px");
+    }
+  }, [transactions]);
 
   return (
-    <Table>
-      {/*<TableHeader>*/}
-      {/*  <TableRow>*/}
-      {/*    <TableHead style={{width: "160px"}}>Date</TableHead>*/}
-      {/*    <TableHead>Counterparty</TableHead>*/}
-      {/*    <TableHead>Description</TableHead>*/}
-      {/*    <TableHead style={{width: "100px"}}>Category</TableHead>*/}
-      {/*    <TableHead className="text-right" style={{width: "150px"}}>Amount (USD)</TableHead>*/}
-      {/*    <TableHead className="text-right" style={{width: "150px"}}>Amount (EUR)</TableHead>*/}
-      {/*    <TableHead style={{width: "50px"}}>*/}
-      {/*      <span className="sr-only">Status</span>*/}
-      {/*    </TableHead>*/}
-      {/*  </TableRow>*/}
-      {/*</TableHeader>*/}
-      <TableBody>
-        {transactions.map(tx =>
-          <TransactionRow key={tx.id} transaction={tx} updateTransactionAmount={updateTransactionAmount} account={accounts.find(a => a.id == tx.account_id)}
-                          readonly={readonly} selectable={selectable} onClick={() => onTransactionClick ? onTransactionClick(tx) : {}}/>
-        )}
-      </TableBody>
-    </Table>
+    <div ref={containerRef} className="w-full relative" style={{height: height}}>
+      {transactions.map(tx =>
+        <TransactionRow key={tx.id} transaction={tx} updateTransactionAmount={updateTransactionAmount} account={accounts.find(a => a.id == tx.account_id)}
+                        readonly={readonly} selectable={selectable} onClick={() => onTransactionClick ? onTransactionClick(tx) : {}}/>
+      )}
+    </div>
   )
 }
 
