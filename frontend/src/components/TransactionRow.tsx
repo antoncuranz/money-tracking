@@ -28,7 +28,7 @@ const TransactionRow = ({transaction, account, updateTransactionAmount, readonly
   }
 
   function getClasses() {
-    const classes = ["containers", "border-b"]
+    const classes = ["containers", "tx-row-border"]
 
     if (selectable)
       classes.push("hover:bg-muted cursor-pointer")

@@ -174,3 +174,7 @@ body {
 .grid {
   grid-template-columns: minmax(0, 1fr);
 }
+
+.tx-row-border:not(:last-child) {
+  box-shadow: 0 -1px 0 hsl(var(--border)) inset;
+}
