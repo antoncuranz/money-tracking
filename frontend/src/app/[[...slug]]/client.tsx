@@ -15,6 +15,7 @@ import CreditTransactionDialog from "@/components/CreditTransactionDialog.tsx";
 import {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
 import {Account, Transaction, Credit, Balances} from "@/types.ts";
+import {useMediaQuery} from "react-responsive";
 
 export function ClientOnly({
   accounts,
@@ -36,7 +37,7 @@ export function ClientOnly({
   const [ctDialogOpen, setCtDialogOpen] = useState(false)
 
   const router = useRouter();
-  const isMobile = false
+  const isMobile = useMediaQuery({ maxWidth: 750 })
 
   useEffect(() => {
     updateFilteredTransactions()
@@ -92,7 +93,7 @@ export function ClientOnly({
     <>
       <div className="flex flex-col sm:gap-4 sm:py-4">
         <main className="grid flex-1 items-start gap-2 p-4 sm:px-6 sm:py-0 md:gap-2">
-          <div className="flex justify-between">
+          <div className="flex justify-between h-10">
             <AccountSelector accounts={accounts} currentAccountId={currentAccount?.id ?? -1} isMobile={isMobile}
                              onValueChange={setCurrentAccountById}/>
             <div className="flex items-center gap-2">
@@ -126,14 +127,15 @@ export function ClientOnly({
                 }
               ]} isMobile={isMobile}/>
             </div>
-            <div className="flex-auto">
-              {credits.length > 0 &&
+            <div className="flex-auto min-w-0">
+              { credits.length > 0 &&
                   <Card className="mb-2 overflow-hidden">
                       <CardHeader className="pb-0">
                           <CardTitle>Credits</CardTitle>
                           <CardDescription/>
                       </CardHeader>
                       <CardContent className="p-0">
+                          <Separator className="balance-separator mt-4"/>
                           <CreditTable credits={credits} selectedCredit={creditSelection} accounts={accounts}
                                        selectCredit={onCreditSelection}
                                        unselectCredit={() => setCreditSelection(null)}/>
@@ -146,6 +148,7 @@ export function ClientOnly({
                   <CardDescription/>
                 </CardHeader>
                 <CardContent className="p-0">
+                  <Separator className="balance-separator mt-4"/>
                   <TransactionTable transactions={filteredTransactions} updateTransactionAmount={updateTransactionAmount}
                                     readonly={creditSelection != null} selectable={creditSelection != null}
                                     onTransactionClick={openCreditTransactionDialog} accounts={accounts}/>

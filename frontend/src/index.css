@@ -79,6 +79,11 @@
 
 body {
   /* disable zooming */
+  touch-action: pan-x pan-y;
+}
+
+body {
+  /* disable zooming */
   /*touch-action: pan-x pan-y;*/
 }
 
@@ -112,4 +117,60 @@ body {
 
 .card-balance-container:first-child .balance-separator {
   margin-top: 0;
+}
+
+/* TransactionRow */
+
+.containers {
+  display: flex;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 0.5rem 0.75rem 0.5rem 0.5rem;
+}
+
+.left > div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 5;
+  gap: 0.5rem 1rem;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: end;
+}
+
+@media only screen and (min-width: 900px) {
+  .left {
+    flex-direction: row;
+    align-items: center;
+  }
+  .right {
+    flex-direction: row-reverse;
+    align-items: center;
+  }
+}
+
+.price {
+  text-align: end;
+}
+
+.date {
+  flex-shrink: 0;
+}
+
+.grid {
+  grid-template-columns: minmax(0, 1fr);
 }
