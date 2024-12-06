@@ -39,7 +39,7 @@ const CreditRow = ({credit, account, selected, disabled, selectCredit, unselectC
             <Cable className="h-4 w-4"/>
           </Button>
         }
-        {!isCreditApplied() ?
+        {isCreditApplied() ?
           <div className="text-sm">
             <span className="line-through mr-1">{formatAmount(credit.amount_usd)}</span>
             <span style={{color: "green"}}>{formatAmount(credit.amount_usd - calculateCredit())}</span>
