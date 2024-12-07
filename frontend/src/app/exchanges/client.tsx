@@ -77,8 +77,6 @@ export function ClientOnly({
   }
 
   return (<>
-      <div className="flex flex-col sm:gap-4 sm:py-4">
-        <main className="grid flex-1 items-start gap-2 p-4 sm:px-6 sm:py-0 md:gap-2">
           <div className="flex items-center h-10">
             <div className="ml-auto flex items-center gap-2">
               <Button size="sm" className="h-8 gap-1" onClick={() => setExchangeDialogOpen(true)}>
@@ -132,8 +130,6 @@ export function ClientOnly({
                             onPaymentClick={openExchangePaymentDialog}/>
             </CardContent>
           </Card>
-        </main>
-      </div>
       <ExchangeDialog open={exchangeDialogOpen} onClose={onExchangeDialogClose}/>
       <ExchangePaymentDialog open={epDialogOpen} onClose={onEpDialogClose} exchange={exchangeSelection!} payment={paymentSelection!}/>
     </>

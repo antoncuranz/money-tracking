@@ -12,8 +12,8 @@ export default async function SkeletonCard() {
       <CardContent className="p-0">
         <Separator className="balance-separator mt-4"/>
         <div className="w-full relative">
-          {[...Array(3)].map(() =>
-            <div className="containers tx-row-border">
+          {[0,1,2].map(key =>
+            <div key={key} className="containers tx-row-border">
               <div className="left">
                 <Skeleton className="date h-6 w-32"/>
                 <Skeleton className="remoteName h-6 w-40"/>
