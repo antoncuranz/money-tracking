@@ -58,16 +58,16 @@ const TellerButton = () => {
   return (
     <>
       {currentAccount &&
-          <Button size="sm" className="h-8 gap-1" onClick={() => onTellerButtonClick()} disabled={inProgress || !isTellerReady}>
-            { inProgress ?
-              <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
-              :
-              <Plug className="h-3.5 w-3.5"/>
-            }
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-        Teller Connect
-      </span>
-          </Button>
+        <Button size="sm" className="h-8 gap-1" onClick={() => onTellerButtonClick()} disabled={inProgress || !isTellerReady}>
+          { inProgress ?
+            <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
+          :
+            <Plug className="h-3.5 w-3.5"/>
+          }
+          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+          Teller Connect
+          </span>
+        </Button>
       }
     </>
   )

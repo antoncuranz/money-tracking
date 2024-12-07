@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # substitute environment variables
-for file in /app/.next/*.js*;
+find /app/.next -type f -name "*.js" -print0 | while read -d $'\0' file
 do
   sed -i 's|NEXT_PUBLIC_TELLER_APPLICATION_ID_PLACEHOLDER|'${TELLER_APPLICATION_ID}'|g' $file
   sed -i 's|BACKEND_URL_PLACEHOLDER|'${BACKEND_URL}'|g' $file # not in use
