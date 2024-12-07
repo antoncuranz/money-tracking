@@ -47,16 +47,16 @@ export default async function Page() {
                 ]}/>
               </div>
               <div className="flex-auto min-w-0">
-                <ErrorBoundary fallback={<ErrorCard/>}>
-                  <Suspense fallback={<SkeletonCard/>}>
+                <Suspense fallback={<SkeletonCard/>}>
+                  <ErrorBoundary fallback={<ErrorCard/>}>
                     <CreditsCard accounts={accounts}/>
-                  </Suspense>
-                </ErrorBoundary>
-                <ErrorBoundary fallback={<ErrorCard/>}>
-                  <Suspense fallback={<SkeletonCard/>}>
+                  </ErrorBoundary>
+                </Suspense>
+                <Suspense fallback={<SkeletonCard/>}>
+                  <ErrorBoundary fallback={<ErrorCard/>}>
                     <TransactionsCard accounts={accounts}/>
-                  </Suspense>
-                </ErrorBoundary>
+                  </ErrorBoundary>
+                </Suspense>
               </div>
             </div>
           </main>
