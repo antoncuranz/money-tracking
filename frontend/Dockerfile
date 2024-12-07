@@ -55,7 +55,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # custom entrypoint with environment variable substitution
-COPY docker-entrypoint.sh /
+COPY docker-entrypoint.sh /usr/local/bin
 
 USER nextjs
 
