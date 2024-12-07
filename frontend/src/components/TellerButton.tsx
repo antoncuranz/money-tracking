@@ -1,24 +1,25 @@
+"use client"
+
 import {useToast} from "@/components/ui/use-toast.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {LoaderCircle, Plug} from "lucide-react";
 import {useTellerConnect} from "teller-connect-react";
 import {useState} from "react";
 import {TellerConnectEnrollment} from "teller-connect-react/src/types";
-import {Account} from "@/types.ts";
+import {useRouter} from "next/navigation";
+import {useSelectionState} from "@/components/SelectionStateProvider.tsx";
 
-interface Props {
-  account: Account,
-  updateData?: () => void,
-}
-
-const TellerButton = ({account, updateData=() => {}}: Props) => {
+const TellerButton = () => {
   const [inProgress, setInProgress] = useState(false)
-  const { toast } = useToast();
+
+  const { currentAccount } = useSelectionState()
+  const router = useRouter()
+  const { toast } = useToast()
 
   const { open: openTeller, ready: isTellerReady } = useTellerConnect({
     applicationId: process.env.NEXT_PUBLIC_TELLER_APPLICATION_ID!,
     environment: "development",
-    enrollmentId: account.teller_enrollment_id ?? "",
+    enrollmentId: currentAccount?.teller_enrollment_id ?? "",
     selectAccount: "single",
     onSuccess: authorization => {
       console.log(authorization)
@@ -33,7 +34,7 @@ const TellerButton = ({account, updateData=() => {}}: Props) => {
   async function onTellerButtonClick(authorization?: TellerConnectEnrollment) {
     setInProgress(true)
 
-    let url = "/api/import/" + account["id"]
+    let url = "/api/import/" + currentAccount!["id"]
     if (authorization)
       url += "?access_token=" + authorization.accessToken + "&enrollment_id=" + authorization.enrollment.id
     const response = await fetch(url, {method: "POST"})
@@ -50,23 +51,25 @@ const TellerButton = ({account, updateData=() => {}}: Props) => {
       })
     }
 
-    if (updateData)
-      updateData()
-
+    router.refresh()
     setInProgress(false)
   }
 
   return (
-    <Button size="sm" className="h-8 gap-1" onClick={() => onTellerButtonClick()} disabled={inProgress || !isTellerReady}>
-      { inProgress ?
-        <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
-      :
-        <Plug className="h-3.5 w-3.5"/>
-      }
-      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+    <>
+      {currentAccount &&
+          <Button size="sm" className="h-8 gap-1" onClick={() => onTellerButtonClick()} disabled={inProgress || !isTellerReady}>
+            { inProgress ?
+              <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
+              :
+              <Plug className="h-3.5 w-3.5"/>
+            }
+              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
         Teller Connect
       </span>
-    </Button>
+          </Button>
+      }
+    </>
   )
 }
 

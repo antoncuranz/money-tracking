@@ -152,17 +152,6 @@ body {
   align-items: end;
 }
 
-@media only screen and (min-width: 900px) {
-  .left {
-    flex-direction: row;
-    align-items: center;
-  }
-  .right {
-    flex-direction: row-reverse;
-    align-items: center;
-  }
-}
-
 .price {
   text-align: end;
 }
@@ -177,4 +166,25 @@ body {
 
 .tx-row-border:not(:last-child) {
   box-shadow: 0 -1px 0 hsl(var(--border)) inset;
+}
+
+@media only screen and (min-width: 900px) {
+  .left {
+    flex-direction: row;
+    align-items: center;
+  }
+  .right {
+    flex-direction: row-reverse;
+    align-items: center;
+  }
+}
+
+.not-mobile-flex {
+  display: flex;
+}
+
+@media only screen and (max-width: 750px) { /* keep in sync with ResponsiveStateProvider isMobile */
+  .not-mobile-flex {
+    display: unset;
+  }
 }

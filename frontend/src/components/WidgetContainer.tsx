@@ -1,6 +1,9 @@
+"use client"
+
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion.tsx";
 import React from "react";
+import {useResponsiveState} from "@/components/ResponsiveStateProvider.tsx";
 
 interface Props {
   widgets: {
@@ -8,10 +11,11 @@ interface Props {
     content: React.JSX.Element,
     hideTitleDesktop?: boolean
   }[],
-  isMobile: boolean
 }
 
-const WidgetContainer = ({widgets, isMobile}: Props) => {
+const WidgetContainer = ({widgets}: Props) => {
+
+  const { isMobile } = useResponsiveState()
   
   return (
     <>
@@ -30,7 +34,7 @@ const WidgetContainer = ({widgets, isMobile}: Props) => {
             </Accordion>
           </CardContent>
         </Card>
-        :
+      :
         <>
           {widgets.map(w =>
             <Card key={w.title} className="mb-2">

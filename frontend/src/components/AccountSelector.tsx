@@ -1,20 +1,32 @@
+"use client"
+
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
 import {Account} from "@/types.ts";
+import {useResponsiveState} from "@/components/ResponsiveStateProvider.tsx";
+import {useSelectionState} from "@/components/SelectionStateProvider.tsx";
 
 interface Props {
   accounts: Account[],
-  currentAccountId: number,
-  onValueChange?: (value: string) => void,
-  isMobile: boolean
 }
 
-const AccountSelector = ({accounts, currentAccountId, onValueChange, isMobile}: Props) => {
-  
+const AccountSelector = ({accounts}: Props) => {
+  const { currentAccount, setCurrentAccount } = useSelectionState()
+  const { isMobile } = useResponsiveState()
+
+  function setCurrentAccountById(id: string) {
+    const acct = accounts.find(a => a.id == parseInt(id))
+    setCurrentAccount(acct ?? null)
+  }
+
+  function getAccountId() {
+    return currentAccount?.id ?? -1
+  }
+
   return (
     <>
       {isMobile ?
-          <Select value={currentAccountId.toString()} onValueChange={onValueChange}>
+          <Select value={getAccountId().toString()} onValueChange={setCurrentAccountById}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select an account"/>
             </SelectTrigger>
@@ -27,8 +39,8 @@ const AccountSelector = ({accounts, currentAccountId, onValueChange, isMobile}: 
               </SelectGroup>
             </SelectContent>
           </Select>
-          :
-          <Tabs value={currentAccountId.toString()} onValueChange={onValueChange}>
+        :
+          <Tabs value={getAccountId().toString()} onValueChange={setCurrentAccountById}>
             <TabsList>
               <TabsTrigger className="pl-2" value="-1">All</TabsTrigger>
               {accounts.map(account =>

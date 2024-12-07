@@ -1,23 +1,65 @@
+"use client"
+
 import TransactionRow from "@/components/TransactionRow.tsx";
 import {Account, Transaction} from "@/types.ts";
+import {useEffect, useState} from "react";
+import CreditTransactionDialog from "@/components/CreditTransactionDialog.tsx";
+import {useRouter} from "next/navigation";
+import {useTransactionAmountState} from "@/components/TransactionAmountStateProvider.tsx";
+import {useSelectionState} from "@/components/SelectionStateProvider.tsx";
 
 interface Props {
   transactions: Transaction[],
   accounts: Account[],
-  updateTransactionAmount: (txId: number, newAmount: number|null) => void,
-  onTransactionClick: (tx: Transaction) => void,
-  readonly?: boolean,
-  selectable?: boolean,
 }
 
-const TransactionTable = ({transactions, accounts, updateTransactionAmount, onTransactionClick, readonly=true, selectable=false}: Props) => {
+const TransactionTable = ({transactions, accounts}: Props) => {
+  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions)
+  const [transactionSelection, setTransactionSelection] = useState<Transaction|null>()
+  const { changedTransactionAmounts, setChangedTransactionAmounts } = useTransactionAmountState()
+  const [ctDialogOpen, setCtDialogOpen] = useState(false)
+
+  const { currentAccount, creditSelection } = useSelectionState()
+
+  const router = useRouter();
+
+  useEffect(() => {
+    updateFilteredTransactions()
+  }, [currentAccount]);
+  function updateFilteredTransactions() {
+    setFilteredTransactions(transactions.filter(tx =>
+      currentAccount == null || tx.account_id == currentAccount.id)
+    )
+  }
+
+  function updateTransactionAmount(txId: number, newAmount: number|null) {
+    setChangedTransactionAmounts({ ...changedTransactionAmounts, [txId]: newAmount });
+  }
+
+  function openCreditTransactionDialog(tx: Transaction) {
+    if (creditSelection != null) {
+      setTransactionSelection(tx)
+      setCtDialogOpen(true)
+    }
+  }
+
+  function onDialogClose(needsUpdate: boolean) {
+    setCtDialogOpen(false)
+
+    if (needsUpdate)
+      router.refresh()
+  }
+
   return (
-    <div className="w-full relative">
-      {transactions.map(tx =>
-        <TransactionRow key={tx.id} transaction={tx} updateTransactionAmount={updateTransactionAmount} account={accounts.find(a => a.id == tx.account_id)}
-                        readonly={readonly} selectable={selectable} onClick={() => onTransactionClick ? onTransactionClick(tx) : {}}/>
-      )}
-    </div>
+    <>
+      <div className="w-full relative">
+        {filteredTransactions.map(tx =>
+          <TransactionRow key={tx.id} transaction={tx} updateTransactionAmount={updateTransactionAmount} account={accounts.find(a => a.id == tx.account_id)}
+                          readonly={creditSelection != null} selectable={creditSelection != null} onClick={() => openCreditTransactionDialog(tx)}/>
+        )}
+      </div>
+      <CreditTransactionDialog open={ctDialogOpen} onClose={onDialogClose} credit={creditSelection?.id ?? -1} transaction={transactionSelection!}/>
+    </>
   )
 }
 

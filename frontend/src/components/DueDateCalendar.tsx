@@ -1,3 +1,5 @@
+"use client"
+
 import {Calendar} from "@/components/ui/calendar.tsx";
 import {DayModifiers, ModifiersStyles} from "react-day-picker";
 import {CSSProperties, useEffect, useState} from "react";
