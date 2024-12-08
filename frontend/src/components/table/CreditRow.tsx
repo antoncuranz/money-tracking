@@ -24,7 +24,7 @@ export default function CreditRow({
   }
 
   return (
-    <TableRow account={account} date={credit.date.substring(0, 16)} remoteName={credit.counterparty} purpose={credit.description}>
+    <TableRow account={account} date={credit.date} remoteName={credit.counterparty} purpose={credit.description}>
       {selected ?
         <Button variant="outline" size="icon" onClick={unselectCredit}>
           <Undo2 className="h-4 w-4"/>

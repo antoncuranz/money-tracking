@@ -24,7 +24,7 @@ export default function ExchangeRow({
   }
 
   return (
-    <TableRow date={exchange.date.substring(0, 16)} remoteName={exchange.exchange_rate.toString()} purpose={formatAmount(exchange.amount_eur) + " € + " + formatAmount(exchange.fees_eur) + " € fees"}>
+    <TableRow date={exchange.date} remoteName={exchange.exchange_rate.toString()} purpose={formatAmount(exchange.amount_eur) + " € + " + formatAmount(exchange.fees_eur) + " € fees"}>
       <div>
         { selected ?
           <Button variant="outline" size="icon" onClick={unselectExchange}>

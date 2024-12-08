@@ -157,10 +157,11 @@ body {
 }
 
 .date {
+  width: 7.75rem;
   flex-shrink: 0;
 }
 
-.grid {
+main.grid {
   grid-template-columns: minmax(0, 1fr);
 }
 

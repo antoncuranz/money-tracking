@@ -41,7 +41,7 @@ export default function TransactionRow({
   }
 
   return (
-    <TableRow onClick={onClick} className={getClasses()} style={{ borderLeftStyle: transaction.status == 1 ? "dashed" : "solid" }} account={account} date={transaction.date.substring(0, 16)} remoteName={transaction.counterparty} purpose={transaction.description}>
+    <TableRow onClick={onClick} className={getClasses()} style={{ borderLeftStyle: transaction.status == 1 ? "dashed" : "solid" }} account={account} date={transaction.date} remoteName={transaction.counterparty} purpose={transaction.description}>
       <AmountInput className="w-24" amount={transaction.amount_eur} setAmount={updateAmount} disabled={readonly}/>
       <span className="price text-sm">
         { isCreditApplied() ?

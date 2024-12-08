@@ -24,7 +24,7 @@ export default function TableRow({
   return (
     <div onClick={onClick} className={"containers tx-row-border " + className} style={{...style, borderLeftWidth: "4px", borderLeftColor: account?.color ?? "transparent"}}>
       <div className="left">
-        <div className="date text-sm text-muted-foreground">{date}</div>
+        <div className="date text-sm text-muted-foreground">{date.substring(0, 16)}</div>
         <div className="remoteName font-medium">{remoteName}</div>
         <div className="purpose">{purpose}</div>
       </div>

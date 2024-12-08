@@ -1,39 +1,25 @@
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
-import {formatAmount} from "@/components/util.ts";
-import ArchiveTable from "@/components/table/ArchiveTable.tsx";
-import {fetchFees, fetchTransactions} from "@/requests.ts";
+import {Suspense} from "react";
+import SkeletonCard from "@/components/card/SkeletonCard.tsx";
+import ArchiveCard from "@/components/card/ArchiveCard.tsx";
+import FxFeesWidget from "@/components/widgets/FxFeesWidget.tsx";
+import SkeletonWidget from "@/components/widgets/SkeletonWidget.tsx";
+
+export const dynamic = 'force-dynamic'
 
 export default async function Page() {
-  const transactions = await fetchTransactions()
-  const fees = await fetchFees()
 
-  return (<>
-    <div className="grid grid-cols-2 gap-2 mb-2">
-      <Card>
-        <CardHeader className="pb-0">
-          <CardTitle>{formatAmount(fees?.fees_and_risk_eur ?? 0)}</CardTitle>
-          <CardDescription>
-            TOTAL FX FEES AND CCY RISK
-          </CardDescription>
-        </CardHeader>
-        <CardContent/>
-      </Card>
-      <Card>
-        <CardHeader className="pb-0">
-          <CardTitle>TODO</CardTitle>
-        </CardHeader>
-        <CardContent/>
-      </Card>
+  return (
+    <div className="not-mobile-flex gap-2 mb-2">
+      <div className="shrink-0" style={{minWidth: "18.1rem"}}>
+        <Suspense fallback={<SkeletonWidget/>}>
+          <FxFeesWidget/>
+        </Suspense>
+      </div>
+      <div className="flex-auto min-w-0">
+        <Suspense fallback={<SkeletonCard/>}>
+          <ArchiveCard/>
+        </Suspense>
+      </div>
     </div>
-    <Card className="mb-2">
-      <CardHeader className="pb-0">
-        <CardTitle>Transactions</CardTitle>
-        <CardDescription/>
-      </CardHeader>
-      <CardContent>
-        <ArchiveTable transactions={transactions}/>
-      </CardContent>
-    </Card>
-  </>
   )
 }

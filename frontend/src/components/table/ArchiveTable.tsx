@@ -1,35 +1,19 @@
-import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
-import {Transaction} from "@/types.ts";
+import {Account, Transaction} from "@/types.ts";
 import ArchiveRow from "@/components/table/ArchiveRow.tsx";
 
-interface Props {
+export default function ArchiveTable({
+  transactions,
+  accounts
+}: {
   transactions: Transaction[],
-}
-
-const ArchiveTable = ({transactions}: Props) => {
+  accounts: Account[],
+}) {
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead style={{width: "150px"}}>Date</TableHead>
-          <TableHead style={{width: "100px"}}>Account</TableHead>
-          <TableHead>Counterparty</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead className="text-right" style={{width: "200px"}}>Amount (EUR)</TableHead>
-          <TableHead className="text-right" style={{width: "200px"}}>Fees and Risk (EUR)</TableHead>
-          <TableHead style={{width: "50px"}}>
-            <span className="sr-only">Status</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {transactions.map(tx =>
-          <ArchiveRow key={tx["id"]} transaction={tx}/>
-        )}
-      </TableBody>
-    </Table>
+    <div className="w-full relative">
+      {transactions.map(tx =>
+        <ArchiveRow key={tx["id"]} transaction={tx} account={accounts.find(acct => acct.id == tx.account_id)}/>
+      )}
+    </div>
   )
 }
-
-export default ArchiveTable

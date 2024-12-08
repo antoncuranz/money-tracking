@@ -42,7 +42,7 @@ const PaymentRow = ({payment, account, selectable, onClick, onProcessPaymentClic
   }
 
   return (
-    <TableRow onClick={onClick} className={getClasses()} date={payment.date.substring(0, 16)} remoteName={payment.counterparty} purpose={payment.description} account={account}>
+    <TableRow onClick={onClick} className={getClasses()} date={payment.date} remoteName={payment.counterparty} purpose={payment.description} account={account}>
       <div>
         <span className="text-sm">{formatAmount(payment.amount_eur)} €</span>
         <Button variant="outline" size="icon" className="ml-2" disabled={isProcessButtonDisabled()}

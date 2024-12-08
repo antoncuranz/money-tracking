@@ -4,8 +4,8 @@ import ExchangesCard from "@/components/card/ExchangesCard.tsx";
 import SkeletonCard from "@/components/card/SkeletonCard.tsx";
 import PaymentsCard from "@/components/card/PaymentsCard.tsx";
 import VirtualAccountBalanceWidget from "@/components/widgets/VirtualAccountBalanceWidget.tsx";
-import {Skeleton} from "@/components/ui/skeleton.tsx";
 import ExchangeAmountWidget from "@/components/widgets/ExchangeAmountWidget.tsx";
+import SkeletonWidget from "@/components/widgets/SkeletonWidget.tsx";
 
 export const dynamic = 'force-dynamic'
 
@@ -21,10 +21,10 @@ export default async function Page() {
       </div>
       <div className="not-mobile-flex gap-2 mb-2">
         <div className="shrink-0" style={{minWidth: "18.1rem"}}>
-          <Suspense fallback={<Skeleton className="h-10"/>}>
+          <Suspense fallback={<SkeletonWidget/>}>
             <ExchangeAmountWidget/>
           </Suspense>
-          <Suspense fallback={<Skeleton className="h-10"/>}>
+          <Suspense fallback={<SkeletonWidget/>}>
             <VirtualAccountBalanceWidget/>
           </Suspense>
         </div>
