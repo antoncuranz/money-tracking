@@ -39,14 +39,16 @@ export default function ExchangeRow({
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
-      { isAppliedToPayment() ?
-        <div className="text-sm">
-          <span className="line-through mr-1">{formatAmount(exchange.amount_usd)}</span>
-          <span style={{color: "green"}}>{formatAmount(exchange.amount_usd - calculateAppliedAmount())}</span>
-        </div>
-      :
-        <span className="text-sm">{formatAmount(exchange.amount_usd)}</span>
-      }
+      <span className="price text-sm">
+        { isAppliedToPayment() ?
+          <>
+            <span className="line-through mr-1">{formatAmount(exchange.amount_usd)}</span>
+            <span style={{color: "green"}}>{formatAmount(exchange.amount_usd - calculateAppliedAmount())}</span>
+          </>
+        :
+          formatAmount(exchange.amount_usd)
+        }
+      </span>
     </TableRow>
   )
 }

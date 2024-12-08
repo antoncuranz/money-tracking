@@ -34,14 +34,16 @@ export default function CreditRow({
           <Cable className="h-4 w-4"/>
         </Button>
       }
-      {isCreditApplied() ?
-        <div className="text-sm">
-          <span className="line-through mr-1">{formatAmount(credit.amount_usd)}</span>
-          <span style={{color: "green"}}>{formatAmount(credit.amount_usd - calculateCredit())}</span>
-        </div>
+      <span className="price text-sm">
+        {isCreditApplied() ?
+          <>
+            <span className="line-through mr-1">{formatAmount(credit.amount_usd)}</span>
+            <span style={{color: "green"}}>{formatAmount(credit.amount_usd - calculateCredit())}</span>
+          </>
         :
-        <span className="text-sm">{formatAmount(credit.amount_usd)}</span>
-      }
+          formatAmount(credit.amount_usd)
+        }
+      </span>
     </TableRow>
-  )
+)
 }
