@@ -40,11 +40,12 @@ export default function ExchangeRow({
         </Button>
       </div>
       { isAppliedToPayment() ?
-        <>
+        <div className="text-sm">
           <span className="line-through mr-1">{formatAmount(exchange.amount_usd)}</span>
           <span style={{color: "green"}}>{formatAmount(exchange.amount_usd - calculateAppliedAmount())}</span>
-        </>
-        : formatAmount(exchange.amount_usd)
+        </div>
+      :
+        <span className="text-sm">{formatAmount(exchange.amount_usd)}</span>
       }
     </TableRow>
   )

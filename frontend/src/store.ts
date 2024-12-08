@@ -43,7 +43,23 @@ const createTransactionAmountSlice: StateCreator<
   putTransactionAmount: (id, amount) => set((state) => ({ changedTransactionAmounts: { ...state.changedTransactionAmounts, [id]: amount } })),
 })
 
-export const useStore = create<SelectionSlice & TransactionAmountSlice>()((...a) => ({
+type PrivacySlice = {
+  privacyMode: boolean;
+  togglePrivacyMode: () => void,
+};
+
+const createPrivacySlice: StateCreator<
+  PrivacySlice,
+  [],
+  [],
+  PrivacySlice
+> = (set) => ({
+  privacyMode: false,
+  togglePrivacyMode: () => set(state => ({ privacyMode: !state.privacyMode })),
+})
+
+export const useStore = create<SelectionSlice & TransactionAmountSlice & PrivacySlice>()((...a) => ({
   ...createSelectionSlice(...a),
   ...createTransactionAmountSlice(...a),
+  ...createPrivacySlice(...a),
 }))

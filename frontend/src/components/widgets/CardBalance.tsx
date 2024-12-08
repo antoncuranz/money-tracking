@@ -1,6 +1,7 @@
 import {formatAmount} from "@/components/util.ts";
 import {Progress} from "@/components/ui/progress.tsx";
 import {Account, Balances} from "@/types.ts";
+import PrivacyFilter from "@/components/PrivacyFilter.tsx";
 
 interface Props {
   account: Account,
@@ -23,12 +24,12 @@ const CardBalance = ({account, balances}: Props) => {
       <div className="inline-block flex-auto">
         <p className="font-medium">{account.name}</p>
         <p className="text-sm text-muted-foreground">{account.institution}</p>
-        <div className="mt-2">
+        <PrivacyFilter className="mt-2">
           <span className="font-medium">{formatAmount(balances.accounts[account.id].posted)}</span>
           <span className="text-sm text-muted-foreground"> + {formatAmount(balances.accounts[account.id].pending)} pending</span>
-        </div>
+        </PrivacyFilter>
         {account.target_spend &&
-            <div>
+            <PrivacyFilter>
               <Progress value={(getTotalSpent(account) - getTotalCredits(account)) / account.target_spend}
                         secondaryValue={getTotalSpent(account) / account.target_spend} className="mt-2"/>
               <span className="text-sm font-medium">{formatAmount(getTotalSpent(account))}</span>
@@ -36,7 +37,7 @@ const CardBalance = ({account, balances}: Props) => {
                   <span className="text-sm text-muted-foreground"> - {formatAmount(getTotalCredits(account))}</span>
               }
               <span className="text-sm font-medium float-right"> / {account.target_spend}</span>
-            </div>
+            </PrivacyFilter>
         }
       </div>
     </div>

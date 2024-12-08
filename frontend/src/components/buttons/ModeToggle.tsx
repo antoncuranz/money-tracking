@@ -11,9 +11,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {useStore} from "@/store.ts";
 
 export function ModeToggle() {
   const { setTheme } = useTheme()
+  const { togglePrivacyMode } = useStore()
 
   return (
     <DropdownMenu>
@@ -33,6 +35,9 @@ export function ModeToggle() {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("system")}>
           System
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => togglePrivacyMode()}>
+          Privacy
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
