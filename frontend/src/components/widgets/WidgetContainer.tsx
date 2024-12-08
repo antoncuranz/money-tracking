@@ -3,7 +3,7 @@
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion.tsx";
 import React from "react";
-import {useResponsiveState} from "@/components/ResponsiveStateProvider.tsx";
+import {useResponsiveState} from "@/components/provider/ResponsiveStateProvider.tsx";
 
 interface Props {
   widgets: {

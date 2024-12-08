@@ -1,10 +1,6 @@
 import {ClientOnly} from "@/app/exchanges/client.tsx";
 import {Exchange, Payment, Balances} from "@/types.ts";
 
-export function generateStaticParams() {
-  return [{ slug: [''] }]
-}
-
 export default async function Page() {
   const exchangesResponse = await fetch(process.env.BACKEND_URL + "/api/exchanges?usable=true", {cache: "no-cache"})
   const exchanges = await exchangesResponse.json() as Exchange[]

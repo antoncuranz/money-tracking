@@ -1,13 +1,11 @@
 import {Account, Credit} from "@/types.ts";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Separator} from "@/components/ui/separator.tsx";
-import CreditTable from "@/components/CreditTable.tsx";
+import CreditTable from "@/components/table/CreditTable.tsx";
 
-export default async function CreditsCard({
-  accounts
-}: {
-  accounts: Account[]
-}) {
+export default async function CreditsCard() {
+  const accountResponse = await fetch(process.env.BACKEND_URL + "/api/accounts", {cache: "no-cache"})
+  const accounts = await accountResponse.json() as Account[]
 
   const creditResponse = await fetch(process.env.BACKEND_URL + "/api/credits?usable=true", {cache: "no-cache"})
   const credits = await creditResponse.json() as Credit[]

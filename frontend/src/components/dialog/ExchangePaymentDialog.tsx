@@ -2,9 +2,9 @@ import {Button} from "@/components/ui/button.tsx";
 import {Dialog, DialogFooter, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {useEffect, useState} from "react";
-import AmountInput from "@/components/AmountInput.tsx";
 import {useToast} from "@/components/ui/use-toast.ts";
 import {Payment} from "@/types.ts";
+import AmountInput from "@/components/table/AmountInput.tsx";
 
 interface Props {
   open: boolean,

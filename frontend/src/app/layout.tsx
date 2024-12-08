@@ -1,9 +1,9 @@
 import type {Metadata, Viewport} from 'next'
 import '../index.css'
 import {Toaster} from "@/components/ui/toaster.tsx";
-import Navigation from "@/components/Navigation.tsx";
-import {ThemeProvider} from "@/components/ThemeProvider.tsx";
-import {ResponsiveStateProvider} from "@/components/ResponsiveStateProvider.tsx";
+import {ThemeProvider} from "@/components/provider/ThemeProvider.tsx";
+import {ResponsiveStateProvider} from "@/components/provider/ResponsiveStateProvider.tsx";
+import Navigation from "@/components/navigation/Navigation.tsx";
 
 export const metadata: Metadata = {
   title: "money-tracking",

@@ -1,12 +1,12 @@
 "use client"
 
-import TransactionRow from "@/components/TransactionRow.tsx";
 import {Account, Transaction} from "@/types.ts";
 import {useEffect, useState} from "react";
-import CreditTransactionDialog from "@/components/CreditTransactionDialog.tsx";
 import {useRouter} from "next/navigation";
-import {useTransactionAmountState} from "@/components/TransactionAmountStateProvider.tsx";
-import {useSelectionState} from "@/components/SelectionStateProvider.tsx";
+import {useTransactionAmountState} from "@/components/provider/TransactionAmountStateProvider.tsx";
+import TransactionRow from "@/components/table/TransactionRow.tsx";
+import CreditTransactionDialog from "@/components/dialog/CreditTransactionDialog.tsx";
+import {useSelectionState} from "@/components/provider/SelectionStateProvider.tsx";
 
 interface Props {
   transactions: Transaction[],

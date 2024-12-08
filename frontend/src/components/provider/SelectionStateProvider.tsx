@@ -7,7 +7,7 @@ type SelectionContextType = {
   currentAccount: Account | null;
   setCurrentAccount: (value: Account | null) => void;
   creditSelection: Credit | null;
-  setCreditSelection: (value: Credit | null) => void;
+  setCreditSelection: (value: Credit | null, accounts: Account[]) => void;
 };
 
 const SelectionContextDefaultValues: SelectionContextType = {
@@ -20,16 +20,14 @@ const SelectionContextDefaultValues: SelectionContextType = {
 const SelectionStateContext = createContext<SelectionContextType>(SelectionContextDefaultValues);
 
 export const SelectionStateProvider = ({
-  accounts,
   children
 }: {
-  accounts: Account[],
   children: React.ReactNode
 }) => {
   const [currentAccount, setCurrentAccount] = useState<Account|null>(null)
   const [creditSelection, setCreditSelectionInternal] = useState<Credit|null>(null)
 
-  function setCreditSelection(value: Credit | null) {
+  function setCreditSelection(value: Credit | null, accounts: Account[]) {
     setCreditSelectionInternal(value)
 
     if (!value)

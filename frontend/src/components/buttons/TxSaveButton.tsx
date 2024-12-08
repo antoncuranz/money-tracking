@@ -5,7 +5,7 @@ import {Button} from "@/components/ui/button.tsx";
 import {LoaderCircle, Save} from "lucide-react";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
-import {useTransactionAmountState} from "@/components/TransactionAmountStateProvider.tsx";
+import {useTransactionAmountState} from "@/components/provider/TransactionAmountStateProvider.tsx";
 
 const TxSaveButton = () => {
   const [inProgress, setInProgress] = useState(false)

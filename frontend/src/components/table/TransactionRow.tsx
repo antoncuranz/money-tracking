@@ -1,7 +1,7 @@
-import AmountInput from "@/components/AmountInput.tsx";
 import {formatAmount} from "@/components/util.ts";
 import {MouseEventHandler} from "react";
 import {Account, Transaction} from "@/types.ts";
+import AmountInput from "@/components/table/AmountInput.tsx";
 
 interface Props {
   transaction: Transaction,

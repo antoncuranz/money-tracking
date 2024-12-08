@@ -18,8 +18,8 @@ const CardBalance = ({account, balances}: Props) => {
   }
 
   return (
-    <div className="flex">
-      <img className="h-5 mr-2 mt-3 inline-block align-top flex-init" src={account.icon} alt=""/>
+    <div>
+      <img className="w-8 mr-2 mt-3 inline-block align-top flex-init" src={account.icon} alt=""/>
       <div className="inline-block flex-auto">
         <p className="font-medium">{account.name}</p>
         <p className="text-sm text-muted-foreground">{account.institution}</p>

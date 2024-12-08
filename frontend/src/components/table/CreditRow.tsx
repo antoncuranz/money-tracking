@@ -23,7 +23,7 @@ const CreditRow = ({credit, account, selected, disabled, selectCredit, unselectC
   }
 
   return (
-    <div className="containers border-b" style={{borderLeftWidth: "4px", borderLeftColor: account?.color ?? "transparent"}}>
+    <div className="containers tx-row-border" style={{borderLeftWidth: "4px", borderLeftColor: account?.color ?? "transparent"}}>
       <div className="left">
         <div className="date text-sm text-muted-foreground">{credit.date.substring(0, 16)}</div>
         <div className="remoteName font-medium">{credit.counterparty}</div>

@@ -4,14 +4,14 @@ import {Button} from "@/components/ui/button.tsx";
 import {Coins} from "lucide-react";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {formatAmount} from "@/components/util.ts";
-import ExchangeTable from "@/components/ExchangeTable.tsx";
-import PaymentTable from "@/components/PaymentTable.tsx";
-import ExchangeDialog from "@/components/ExchangeDialog.tsx";
-import ExchangePaymentDialog from "@/components/ExchangePaymentDialog.tsx";
 import {useState} from "react";
 import {useToast} from "@/components/ui/use-toast.ts";
 import {useRouter} from "next/navigation";
 import {Exchange, Payment, Balances} from "@/types.ts";
+import ExchangeTable from "@/components/table/ExchangeTable.tsx";
+import PaymentTable from "@/components/table/PaymentTable.tsx";
+import ExchangeDialog from "@/components/dialog/ExchangeDialog.tsx";
+import ExchangePaymentDialog from "@/components/dialog/ExchangePaymentDialog.tsx";
 
 export function ClientOnly({
   exchanges,

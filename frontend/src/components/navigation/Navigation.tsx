@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {ModeToggle} from "@/components/ModeToggle.tsx";
+import {ModeToggle} from "@/components/navigation/ModeToggle.tsx";
 
 export default function Navigation(){
   return (

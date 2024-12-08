@@ -1,7 +1,7 @@
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {formatAmount} from "@/components/util.ts";
-import ArchiveTable from "@/components/ArchiveTable.tsx";
 import {Transaction, FeeSummary} from "@/types.ts";
+import ArchiveTable from "@/components/table/ArchiveTable.tsx";
 
 export function generateStaticParams() {
   return [{ slug: [''] }]

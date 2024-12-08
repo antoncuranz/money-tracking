@@ -7,8 +7,8 @@ import {CalendarIcon} from "lucide-react";
 import {useState} from "react";
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
-import AmountInput from "@/components/AmountInput.tsx";
 import {useToast} from "@/components/ui/use-toast.ts";
+import AmountInput from "@/components/table/AmountInput.tsx";
 
 interface Props {
   open: boolean,

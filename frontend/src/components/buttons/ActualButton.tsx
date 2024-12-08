@@ -5,7 +5,7 @@ import {Button} from "@/components/ui/button.tsx";
 import {Import, LoaderCircle} from "lucide-react";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
-import {useSelectionState} from "@/components/SelectionStateProvider.tsx";
+import {useSelectionState} from "@/components/provider/SelectionStateProvider.tsx";
 
 const ActualButton = () => {
   const [inProgress, setInProgress] = useState(false)

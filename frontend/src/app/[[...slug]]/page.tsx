@@ -1,29 +1,25 @@
-import {Account} from "@/types.ts";
-import AccountSelector from "@/components/AccountSelector.tsx";
-import WidgetContainer from "@/components/WidgetContainer.tsx";
-import DueDateCalendar from "@/components/DueDateCalendar.tsx";
-import TransactionsCard from "@/components/TransactionsCard.tsx";
 import React, {Suspense} from "react";
-import CreditsCard from "@/components/CreditsCard.tsx";
-import SkeletonCard from "@/components/SkeletonCard.tsx";
-import BalancesWidget from "@/components/BalancesWidget.tsx";
-import ActualButton from "@/components/ActualButton.tsx";
-import TellerButton from "@/components/TellerButton.tsx";
-import TxSaveButton from "@/components/TxSaveButton.tsx";
-import {TransactionAmountStateProvider} from "@/components/TransactionAmountStateProvider.tsx";
-import {SelectionStateProvider} from "@/components/SelectionStateProvider.tsx";
-import {ErrorBoundary} from "react-error-boundary";
-import ErrorCard from "@/components/ErrorCard.tsx";
+import {Skeleton} from "@/components/ui/skeleton.tsx";
+import AccountSelector from "src/components/AccountSelector";
+import {SelectionStateProvider} from "@/components/provider/SelectionStateProvider.tsx";
+import {TransactionAmountStateProvider} from "@/components/provider/TransactionAmountStateProvider.tsx";
+import TellerButton from "@/components/buttons/TellerButton.tsx";
+import ActualButton from "@/components/buttons/ActualButton.tsx";
+import TxSaveButton from "@/components/buttons/TxSaveButton.tsx";
+import WidgetContainer from "@/components/widgets/WidgetContainer.tsx";
+import DueDateCalendar from "@/components/widgets/DueDateCalendar.tsx";
+import BalancesWidget from "@/components/widgets/BalancesWidget.tsx";
+import SkeletonCard from "@/components/card/SkeletonCard.tsx";
+import CreditsCard from "@/components/card/CreditsCard.tsx";
+import TransactionsCard from "@/components/card/TransactionsCard.tsx";
 
 export default async function Page() {
-  const accountResponse = await fetch(process.env.BACKEND_URL + "/api/accounts") // TODO: caching!
-  const accounts = await accountResponse.json() as Account[]
 
   return (
-    <SelectionStateProvider accounts={accounts}>
+    <SelectionStateProvider>
       <TransactionAmountStateProvider>
         <div className="flex justify-between h-10">
-          <AccountSelector accounts={accounts}/>
+          <AccountSelector/>
           <div className="flex items-center gap-2">
             <TellerButton/>
             <ActualButton/>
@@ -31,7 +27,7 @@ export default async function Page() {
           </div>
         </div>
         <div className="not-mobile-flex gap-2 mb-2">
-          <div className="flex-initial">
+          <div className="shrink-0" style={{minWidth: "18.1rem"}}>
             <WidgetContainer widgets={[
               {
                 title: "Calendar",
@@ -40,20 +36,20 @@ export default async function Page() {
               },
               {
                 title: "Balances",
-                content: <BalancesWidget accounts={accounts}/>
+                content: (
+                  <Suspense fallback={<Skeleton className="h-10"/>}>
+                    <BalancesWidget/>
+                  </Suspense>
+                )
               }
             ]}/>
           </div>
           <div className="flex-auto min-w-0">
             <Suspense fallback={<SkeletonCard/>}>
-              <ErrorBoundary fallback={<ErrorCard/>}>
-                <CreditsCard accounts={accounts}/>
-              </ErrorBoundary>
+              <CreditsCard/>
             </Suspense>
             <Suspense fallback={<SkeletonCard/>}>
-              <ErrorBoundary fallback={<ErrorCard/>}>
-                <TransactionsCard accounts={accounts}/>
-              </ErrorBoundary>
+              <TransactionsCard/>
             </Suspense>
           </div>
         </div>

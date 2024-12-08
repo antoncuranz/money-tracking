@@ -3,14 +3,14 @@
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
 import {Account} from "@/types.ts";
-import {useResponsiveState} from "@/components/ResponsiveStateProvider.tsx";
-import {useSelectionState} from "@/components/SelectionStateProvider.tsx";
+import {useSelectionState} from "@/components/provider/SelectionStateProvider.tsx";
+import {useResponsiveState} from "@/components/provider/ResponsiveStateProvider.tsx";
 
 interface Props {
   accounts: Account[],
 }
 
-const AccountSelector = ({accounts}: Props) => {
+const AccountSelectorClient = ({accounts}: Props) => {
   const { currentAccount, setCurrentAccount } = useSelectionState()
   const { isMobile } = useResponsiveState()
 
@@ -56,4 +56,4 @@ const AccountSelector = ({accounts}: Props) => {
   )
 }
 
-export default AccountSelector
+export default AccountSelectorClient

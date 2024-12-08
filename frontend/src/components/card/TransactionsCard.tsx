@@ -1,13 +1,11 @@
 import {Account, Transaction} from "@/types.ts";
-import TransactionTable from "@/components/TransactionTable.tsx";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Separator} from "@/components/ui/separator.tsx";
+import TransactionTable from "@/components/table/TransactionTable.tsx";
 
-export default async function TransactionsCard({
-  accounts
-}: {
-  accounts: Account[]
-}) {
+export default async function TransactionsCard() {
+  const accountResponse = await fetch(process.env.BACKEND_URL + "/api/accounts", {cache: "no-cache"})
+  const accounts = await accountResponse.json() as Account[]
 
   const txResponse = await fetch(process.env.BACKEND_URL + "/api/transactions?paid=false", {cache: "no-cache"})
   let transactions = await txResponse.json() as Transaction[]

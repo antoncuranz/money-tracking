@@ -1,6 +1,6 @@
 import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
-import ExchangeRow from "@/components/ExchangeRow.tsx";
 import {Exchange} from "@/types.ts";
+import ExchangeRow from "@/components/table/ExchangeRow.tsx";
 
 interface Props {
   exchanges: Exchange[],
