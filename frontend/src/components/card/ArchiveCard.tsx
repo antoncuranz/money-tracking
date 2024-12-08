@@ -7,7 +7,7 @@ export default async function ArchiveCard() {
   const transactions = await fetchTransactions()
 
   return (
-    <Card title="Payments">
+    <Card title="Paid Transactions">
         <ArchiveTable transactions={transactions} accounts={accounts}/>
     </Card>
   )
