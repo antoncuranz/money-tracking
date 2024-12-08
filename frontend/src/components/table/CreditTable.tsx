@@ -1,8 +1,8 @@
 "use client"
 
 import {Account, Credit} from "@/types.ts";
-import {useSelectionState} from "@/components/provider/SelectionStateProvider.tsx";
 import CreditRow from "@/components/table/CreditRow.tsx";
+import {useStore} from "@/store.ts";
 
 interface Props {
   credits: Credit[],
@@ -10,7 +10,7 @@ interface Props {
 }
 
 const CreditTable = ({credits, accounts}: Props) => {
-  const { creditSelection, setCreditSelection } = useSelectionState()
+  const { creditSelection, setCreditSelection } = useStore()
 
   return (
     <div className="w-full relative">

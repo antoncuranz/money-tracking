@@ -1,44 +1,65 @@
-import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
-import {Payment} from "@/types.ts";
+"use client"
+
+import {Account, Payment} from "@/types.ts";
 import PaymentRow from "@/components/table/PaymentRow.tsx";
+import ExchangePaymentDialog from "@/components/dialog/ExchangePaymentDialog.tsx";
+import {useState} from "react";
+import {useToast} from "@/components/ui/use-toast.ts";
+import {useRouter} from "next/navigation";
+import {useStore} from "@/store.ts";
 
-interface Props {
+export default function PaymentTable({
+  payments, accounts
+}: {
   payments: Payment[],
-  onPaymentClick: (payment: Payment) => void,
-  onProcessPaymentClick: (payment: Payment) => void,
-  showAccount?: boolean,
-  selectable?: boolean,
-}
+  accounts: Account[]
+}) {
+  const [paymentSelection, setPaymentSelection] = useState<Payment>()
+  const [epDialogOpen, setEpDialogOpen] = useState(false)
 
-const PaymentTable = ({payments, onPaymentClick, onProcessPaymentClick, showAccount=false, selectable=false}: Props) => {
+  const { exchangeSelection } = useStore()
+  const { toast } = useToast();
+  const router = useRouter();
+
+  function openExchangePaymentDialog(payment: Payment) {
+    if (exchangeSelection != null) {
+      setPaymentSelection(payment)
+      setEpDialogOpen(true)
+    }
+  }
+
+  function onEpDialogClose(needsUpdate: boolean) {
+    setEpDialogOpen(false)
+
+    if (needsUpdate)
+      router.refresh()
+  }
+
+  async function processPayment(payment: Payment) {
+    const url = "/api/accounts/" + payment.account_id + "/payments/" + payment.id
+    const response = await fetch(url, {method: "POST"})
+
+    if (!response.ok)
+      toast({
+        title: "Error processing Payment",
+        description: response.statusText
+      })
+
+    router.refresh()
+  }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead style={{width: "150px"}}>Date</TableHead>
-          { showAccount &&
-            <TableHead>Account</TableHead>
-          }
-          <TableHead>Counterparty</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead style={{width: "200px"}}>Category</TableHead>
-          <TableHead className="text-right" style={{width: "200px"}}>Amount (USD)</TableHead>
-          <TableHead className="text-right" style={{width: "200px"}}>Amount (EUR)</TableHead>
-          <TableHead style={{width: "50px"}}>
-            <span className="sr-only">Actions</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <>
+      <div className="w-full relative">
         {payments.map(payment =>
-          <PaymentRow key={payment.id} payment={payment} showAccount={showAccount} selectable={selectable}
-                      onProcessPaymentClick={() => onProcessPaymentClick(payment)}
-                      onClick={() => onPaymentClick ? onPaymentClick(payment) : {}}/>
+          <PaymentRow key={payment.id} payment={payment} account={accounts.find(acct => acct.id == payment.account_id)}
+                                       selectable={exchangeSelection != null}
+                                       onProcessPaymentClick={() => processPayment(payment)}
+                                       onClick={() => openExchangePaymentDialog(payment)}/>
         )}
-      </TableBody>
-    </Table>
+      </div>
+      <ExchangePaymentDialog open={epDialogOpen} onClose={onEpDialogClose} exchange={exchangeSelection!}
+                             payment={paymentSelection!}/>
+    </>
   )
 }
-
-export default PaymentTable

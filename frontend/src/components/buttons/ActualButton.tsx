@@ -5,11 +5,11 @@ import {Button} from "@/components/ui/button.tsx";
 import {Import, LoaderCircle} from "lucide-react";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
-import {useSelectionState} from "@/components/provider/SelectionStateProvider.tsx";
+import {useStore} from "@/store.ts";
 
 const ActualButton = () => {
   const [inProgress, setInProgress] = useState(false)
-  const { currentAccount } = useSelectionState()
+  const { currentAccount } = useStore()
   const router = useRouter()
   const { toast } = useToast();
 

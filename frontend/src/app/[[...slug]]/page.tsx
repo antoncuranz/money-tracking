@@ -1,8 +1,6 @@
 import React, {Suspense} from "react";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
 import AccountSelector from "src/components/AccountSelector";
-import {SelectionStateProvider} from "@/components/provider/SelectionStateProvider.tsx";
-import {TransactionAmountStateProvider} from "@/components/provider/TransactionAmountStateProvider.tsx";
 import TellerButton from "@/components/buttons/TellerButton.tsx";
 import ActualButton from "@/components/buttons/ActualButton.tsx";
 import TxSaveButton from "@/components/buttons/TxSaveButton.tsx";
@@ -16,44 +14,42 @@ import TransactionsCard from "@/components/card/TransactionsCard.tsx";
 export default async function Page() {
 
   return (
-    <SelectionStateProvider>
-      <TransactionAmountStateProvider>
-        <div className="flex justify-between h-10">
-          <AccountSelector/>
-          <div className="flex items-center gap-2">
-            <TellerButton/>
-            <ActualButton/>
-            <TxSaveButton/>
-          </div>
+    <>
+      <div className="flex justify-between h-10">
+        <AccountSelector/>
+        <div className="flex items-center gap-2">
+          <TellerButton/>
+          <ActualButton/>
+          <TxSaveButton/>
         </div>
-        <div className="not-mobile-flex gap-2 mb-2">
-          <div className="shrink-0" style={{minWidth: "18.1rem"}}>
-            <WidgetContainer widgets={[
-              {
-                title: "Calendar",
-                content: <DueDateCalendar/>,
-                hideTitleDesktop: true
-              },
-              {
-                title: "Balances",
-                content: (
-                  <Suspense fallback={<Skeleton className="h-10"/>}>
-                    <BalancesWidget/>
-                  </Suspense>
-                )
-              }
-            ]}/>
-          </div>
-          <div className="flex-auto min-w-0">
-            <Suspense fallback={<SkeletonCard/>}>
-              <CreditsCard/>
-            </Suspense>
-            <Suspense fallback={<SkeletonCard/>}>
-              <TransactionsCard/>
-            </Suspense>
-          </div>
+      </div>
+      <div className="not-mobile-flex gap-2 mb-2">
+        <div className="shrink-0" style={{minWidth: "18.1rem"}}>
+          <WidgetContainer widgets={[
+            {
+              title: "Calendar",
+              content: <DueDateCalendar/>,
+              hideTitleDesktop: true
+            },
+            {
+              title: "Balances",
+              content: (
+                <Suspense fallback={<Skeleton className="h-10"/>}>
+                  <BalancesWidget/>
+                </Suspense>
+              )
+            }
+          ]}/>
         </div>
-      </TransactionAmountStateProvider>
-    </SelectionStateProvider>
+        <div className="flex-auto min-w-0">
+          <Suspense fallback={<SkeletonCard/>}>
+            <CreditsCard/>
+          </Suspense>
+          <Suspense fallback={<SkeletonCard/>}>
+            <TransactionsCard/>
+          </Suspense>
+        </div>
+      </div>
+    </>
   )
 }

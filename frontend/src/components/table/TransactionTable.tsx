@@ -3,10 +3,9 @@
 import {Account, Transaction} from "@/types.ts";
 import {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
-import {useTransactionAmountState} from "@/components/provider/TransactionAmountStateProvider.tsx";
 import TransactionRow from "@/components/table/TransactionRow.tsx";
 import CreditTransactionDialog from "@/components/dialog/CreditTransactionDialog.tsx";
-import {useSelectionState} from "@/components/provider/SelectionStateProvider.tsx";
+import {useStore} from "@/store.ts";
 
 interface Props {
   transactions: Transaction[],
@@ -16,10 +15,9 @@ interface Props {
 const TransactionTable = ({transactions, accounts}: Props) => {
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions)
   const [transactionSelection, setTransactionSelection] = useState<Transaction|null>()
-  const { changedTransactionAmounts, setChangedTransactionAmounts } = useTransactionAmountState()
   const [ctDialogOpen, setCtDialogOpen] = useState(false)
 
-  const { currentAccount, creditSelection } = useSelectionState()
+  const { currentAccount, creditSelection, putTransactionAmount } = useStore()
 
   const router = useRouter();
 
@@ -30,10 +28,6 @@ const TransactionTable = ({transactions, accounts}: Props) => {
     setFilteredTransactions(transactions.filter(tx =>
       currentAccount == null || tx.account_id == currentAccount.id)
     )
-  }
-
-  function updateTransactionAmount(txId: number, newAmount: number|null) {
-    setChangedTransactionAmounts({ ...changedTransactionAmounts, [txId]: newAmount });
   }
 
   function openCreditTransactionDialog(tx: Transaction) {
@@ -54,7 +48,7 @@ const TransactionTable = ({transactions, accounts}: Props) => {
     <>
       <div className="w-full relative">
         {filteredTransactions.map(tx =>
-          <TransactionRow key={tx.id} transaction={tx} updateTransactionAmount={updateTransactionAmount} account={accounts.find(a => a.id == tx.account_id)}
+          <TransactionRow key={tx.id} transaction={tx} updateTransactionAmount={putTransactionAmount} account={accounts.find(a => a.id == tx.account_id)}
                           readonly={creditSelection != null} selectable={creditSelection != null} onClick={() => openCreditTransactionDialog(tx)}/>
         )}
       </div>

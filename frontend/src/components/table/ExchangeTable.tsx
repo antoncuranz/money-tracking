@@ -1,41 +1,41 @@
-import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
+"use client"
+
 import {Exchange} from "@/types.ts";
 import ExchangeRow from "@/components/table/ExchangeRow.tsx";
+import {useToast} from "@/components/ui/use-toast.ts";
+import {useRouter} from "next/navigation";
+import {useStore} from "@/store.ts";
 
-interface Props {
-  exchanges: Exchange[],
-  selectedExchange: number|null,
-  selectExchange: (id: number) => void,
-  unselectExchange: () => void,
-  deleteExchange: (id: number) => void,
-}
+export default function ExchangeTable({
+  exchanges
+}: {
+  exchanges: Exchange[]
+}) {
+  const { exchangeSelection, setExchangeSelection } = useStore()
+  const { toast } = useToast();
+  const router = useRouter();
 
-const ExchangeTable = ({exchanges, selectedExchange=null, selectExchange, unselectExchange, deleteExchange}: Props) => {
+  async function deleteExchange(exId: number) {
+    const url = "/api/exchanges/" + exId
+    const response = await fetch(url, {method: "DELETE"})
+
+    if (response.ok)
+      router.refresh()
+    else toast({
+      title: "Error deleting Exchange",
+      description: response.statusText
+    })
+  }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead style={{width: "150px"}}>Date</TableHead>
-          <TableHead>Exchange rate</TableHead>
-          <TableHead className="text-right" style={{width: "200px"}}>Amount (USD)</TableHead>
-          <TableHead className="text-right" style={{width: "200px"}}>Amount (EUR)</TableHead>
-          <TableHead className="text-right" style={{width: "200px"}}>Paid (EUR)</TableHead>
-          <TableHead className="text-right" style={{width: "200px"}}>Fees (EUR)</TableHead>
-          <TableHead style={{width: "120px"}}>
-            <span className="sr-only">Actions</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {exchanges.map(exchange =>
-          <ExchangeRow key={exchange["id"]} exchange={exchange} selected={selectedExchange == exchange["id"]} disabled={selectedExchange != null}
-                       selectExchange={() => selectExchange(exchange["id"])} deleteExchange={() => deleteExchange(exchange["id"])}
-                       unselectExchange={unselectExchange}/>
-        )}
-      </TableBody>
-    </Table>
+    <div className="w-full relative">
+      {exchanges.map(exchange =>
+        <ExchangeRow key={exchange["id"]} exchange={exchange} selected={exchangeSelection == exchange["id"]}
+                     disabled={exchangeSelection != null}
+                     selectExchange={() => setExchangeSelection(exchange["id"])}
+                     deleteExchange={() => deleteExchange(exchange["id"])}
+                     unselectExchange={() => setExchangeSelection(null)}/>
+      )}
+    </div>
   )
 }
-
-export default ExchangeTable

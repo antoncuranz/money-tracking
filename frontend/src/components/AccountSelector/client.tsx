@@ -3,14 +3,14 @@
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
 import {Account} from "@/types.ts";
-import {useSelectionState} from "@/components/provider/SelectionStateProvider.tsx";
+import {useStore} from "@/store.ts";
 
 interface Props {
   accounts: Account[],
 }
 
 const AccountSelectorClient = ({accounts}: Props) => {
-  const { currentAccount, setCurrentAccount } = useSelectionState()
+  const { currentAccount, setCurrentAccount } = useStore()
 
   function setCurrentAccountById(id: string) {
     const acct = accounts.find(a => a.id == parseInt(id))

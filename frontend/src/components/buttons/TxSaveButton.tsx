@@ -5,11 +5,11 @@ import {Button} from "@/components/ui/button.tsx";
 import {LoaderCircle, Save} from "lucide-react";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
-import {useTransactionAmountState} from "@/components/provider/TransactionAmountStateProvider.tsx";
+import {useStore} from "@/store.ts";
 
 const TxSaveButton = () => {
   const [inProgress, setInProgress] = useState(false)
-  const { changedTransactionAmounts, setChangedTransactionAmounts } = useTransactionAmountState()
+  const { changedTransactionAmounts, clearTransactionAmounts } = useStore()
   const router = useRouter()
   const { toast } = useToast();
 
@@ -31,7 +31,7 @@ const TxSaveButton = () => {
 
     setInProgress(false)
     if (savedSuccessfully) {
-      setChangedTransactionAmounts({})
+      clearTransactionAmounts()
       router.refresh()
     }
   }

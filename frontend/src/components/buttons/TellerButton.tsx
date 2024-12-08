@@ -7,12 +7,12 @@ import {useTellerConnect} from "teller-connect-react";
 import {useState} from "react";
 import {TellerConnectEnrollment} from "teller-connect-react/src/types";
 import {useRouter} from "next/navigation";
-import {useSelectionState} from "@/components/provider/SelectionStateProvider.tsx";
+import {useStore} from "@/store.ts";
 
 const TellerButton = () => {
   const [inProgress, setInProgress] = useState(false)
 
-  const { currentAccount } = useSelectionState()
+  const { currentAccount } = useStore()
   const router = useRouter()
   const { toast } = useToast()
 

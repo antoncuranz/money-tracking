@@ -10,7 +10,7 @@ export default async function SkeletonCard() {
         <CardDescription/>
       </CardHeader>
       <CardContent className="p-0">
-        <Separator className="balance-separator mt-4"/>
+        <Separator className="mt-4"/>
         <div className="w-full relative">
           {[0,1,2].map(key =>
             <div key={key} className="containers tx-row-border">
