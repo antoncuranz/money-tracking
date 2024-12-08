@@ -63,7 +63,7 @@ const ExchangePaymentDialog = ({open, onClose, payment, exchange}: Props) => {
               id="amount_eur"
               className="col-span-3"
               amount={amount}
-              setAmount={setAmount}
+              updateAmount={setAmount}
             />
           </div>
         </div>

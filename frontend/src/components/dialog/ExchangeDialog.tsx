@@ -105,7 +105,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
               id="amount_usd"
               className="col-span-3"
               amount={amountUsd}
-              setAmount={setAmountUsd}
+              updateAmount={setAmountUsd}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -116,7 +116,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
               id="rate"
               className="col-span-3"
               amount={exchangeRate}
-              setAmount={setExchangeRate}
+              updateAmount={setExchangeRate}
               decimals={7}
             />
           </div>
@@ -128,7 +128,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
               id="fees_eur"
               className="col-span-3"
               amount={getAmountEur()}
-              setAmount={() => {
+              updateAmount={() => {
               }}
               disabled
             />
@@ -141,7 +141,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
               id="amount_eur"
               className="col-span-3"
               amount={paidEur}
-              setAmount={setPaidEur}
+              updateAmount={setPaidEur}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -152,7 +152,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
               id="fees_eur"
               className="col-span-3"
               amount={getFeesEur()}
-              setAmount={() => {
+              updateAmount={() => {
               }}
               disabled
             />

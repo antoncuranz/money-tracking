@@ -1,6 +1,5 @@
 import os
 
-from backend.api.payments import get_payments
 from backend.api.util import stringify
 from backend.clients.actual import IActualClient
 from backend.config import Config
@@ -8,17 +7,18 @@ from backend.models import Transaction, Payment
 from flask_injector import inject
 import uuid
 
+from backend.service.exchange_service import ExchangeService
 
 class ActualService:
     @inject
-    def __init__(self, actual: IActualClient):
+    def __init__(self, actual: IActualClient, exchange_service: ExchangeService):
         self.actual = actual
+        self.exchange_service = exchange_service
 
     def import_transactions(self, account):
         transactions = Transaction.select().where(
             (Transaction.status != Transaction.Status.PENDING.value) &
             (Transaction.actual_id.is_null()) &
-            (Transaction.amount_eur.is_null(False)) &
             (Transaction.account == account.id))
 
         for tx in transactions:
@@ -115,10 +115,11 @@ class ActualService:
 
     def _create_actual_transaction(self, tx, id):
         category = os.getenv("ACTUAL_CAT_" + tx.category.upper(), None)
+        amount_eur = tx.amount_eur or self.exchange_service.guess_amount_eur(tx) or 0
         return {
             "id": id,
             "date": str(tx.date),
-            "amount": -tx.amount_eur,
+            "amount": -amount_eur,
             "payee_name": tx.counterparty,
             "imported_payee": tx.counterparty,
             "category": category,
@@ -127,7 +128,7 @@ class ActualService:
             "cleared": False,
             "subtransactions": [
                 {
-                    "amount": -tx.amount_eur,
+                    "amount": -amount_eur,
                     "category": category,
                     "notes": "Original value in EUR"
                 },

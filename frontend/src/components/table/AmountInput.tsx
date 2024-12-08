@@ -2,24 +2,29 @@ import {FocusEvent, useEffect, useState} from 'react'
 import {Input} from "@/components/ui/input.tsx";
 import {useToast} from "@/components/ui/use-toast.ts";
 import {formatAmount} from "@/components/util.ts";
+import {cn} from "@/lib/utils.ts";
 
 interface Props {
   amount: number|null,
-  setAmount: (newAmount: number|null) => void,
+  updateAmount: (newAmount: number|null) => void,
   className?: string,
   disabled?: boolean,
   decimals?: number,
   id?: string,
+  placeholder?: string,
+  warnPredicate?: (value: number|null) => boolean
 }
 
-const AmountInput = ({amount, setAmount, className = "", disabled = false, decimals = 2, id}: Props) => {
+const AmountInput = ({amount, updateAmount, className, disabled = false, decimals = 2, id, placeholder, warnPredicate}: Props) => {
   const [stringAmount, setStringAmount] = useState("")
+  const [warning, setWarning] = useState(false)
   const { toast } = useToast();
 
   useEffect(() => {
-    updateAmount()
+    updateAmountInternal()
   }, [amount]);
-  function updateAmount() {
+  function updateAmountInternal() {
+    setWarning(amount != null && warnPredicate != null && warnPredicate(amount))
     setStringAmount(formatAmount(amount, decimals))
   }
 
@@ -28,10 +33,12 @@ const AmountInput = ({amount, setAmount, className = "", disabled = false, decim
 
     try {
       const newValue = newAmount ? parseMonetaryValue(newAmount) : null
-      setAmount(newValue)
+      updateAmount(newValue)
+      setStringAmount(formatAmount(newValue, decimals))
+      setWarning(newValue != null && warnPredicate != null && warnPredicate(newValue))
     } catch (e) {
       toast({title: "Unable to parse amount"})
-      updateAmount()
+      updateAmountInternal()
     }
   }
 
@@ -53,8 +60,8 @@ const AmountInput = ({amount, setAmount, className = "", disabled = false, decim
   }
 
   return (
-    <Input id={id} value={stringAmount} onChange={e => setStringAmount(e.target.value)}
-           onBlur={onBlur} className={className + " text-right"} disabled={disabled}/>
+    <Input id={id} value={stringAmount} placeholder={placeholder} onChange={e => setStringAmount(e.target.value)}
+           onBlur={onBlur} className={cn(className, "text-right", warning && "text-yellow-600")} disabled={disabled}/>
   )
 }
 

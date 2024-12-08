@@ -5,12 +5,18 @@ from backend.models import Account, Transaction
 from peewee import DoesNotExist
 
 from backend.service.actual_service import ActualService
+from backend.service.exchange_service import ExchangeService
 
 transactions = Blueprint("transactions", __name__, url_prefix="/api/transactions")
 
+def map_transaction(transaction: Transaction, exchange_service: ExchangeService):
+    dict = stringify(transaction)
+    dict["guessed_amount_eur"] = exchange_service.guess_amount_eur(transaction)
+    return dict
+
 
 @transactions.get("")
-def get_transactions():
+def get_transactions(exchange_service: ExchangeService):
     try:
         account_str = request.args.get("account")
         account_id = None if not account_str else int(account_str)
@@ -33,7 +39,7 @@ def get_transactions():
         query = query & (Transaction.account == account_id)
 
     transactions = Transaction.select().where(query).order_by(-Transaction.date)
-    return [stringify(tx) for tx in transactions]
+    return [map_transaction(tx, exchange_service) for tx in transactions]
 
 
 @transactions.put("/<tx_id>")

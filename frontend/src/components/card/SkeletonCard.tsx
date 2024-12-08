@@ -1,12 +1,20 @@
 import {Skeleton} from "@/components/ui/skeleton.tsx";
-import {Card, CardContent, CardDescription, CardHeader} from "@/components/ui/card.tsx";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Separator} from "@/components/ui/separator.tsx";
 
-export default async function SkeletonCard() {
+export default async function SkeletonCard({
+  title
+}: {
+  title?: string
+}) {
   return (
     <Card className="mb-2 overflow-hidden">
       <CardHeader className="pb-0">
-        <Skeleton className="h-6 w-48"/>
+        {title ?
+          <CardTitle>{title}</CardTitle>
+        :
+          <Skeleton className="h-6 w-48"/>
+        }
         <CardDescription/>
       </CardHeader>
       <CardContent className="p-0">

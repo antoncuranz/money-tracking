@@ -1,8 +1,9 @@
-import {Suspense} from "react";
+import React, {Suspense} from "react";
 import SkeletonCard from "@/components/card/SkeletonCard.tsx";
 import ArchiveCard from "@/components/card/ArchiveCard.tsx";
 import FxFeesWidget from "@/components/widgets/FxFeesWidget.tsx";
 import SkeletonWidget from "@/components/widgets/SkeletonWidget.tsx";
+import {ErrorBoundary} from "react-error-boundary";
 
 export const dynamic = 'force-dynamic'
 
@@ -17,7 +18,9 @@ export default async function Page() {
       </div>
       <div className="flex-auto min-w-0">
         <Suspense fallback={<SkeletonCard/>}>
-          <ArchiveCard/>
+          <ErrorBoundary fallback={<SkeletonCard title="Error"/>}>
+            <ArchiveCard/>
+          </ErrorBoundary>
         </Suspense>
       </div>
     </div>

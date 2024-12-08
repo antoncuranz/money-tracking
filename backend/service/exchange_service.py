@@ -10,22 +10,18 @@ class ExchangeService:
         self.mastercard = mastercard
         self.exchangeratesio = exchangeratesio
 
-    def add_missing_eur_amounts(self, account):
+    def fetch_exchange_rates(self, account, source: ExchangeRate.Source = ExchangeRate.Source.MASTERCARD):
         transactions = Transaction.select().where((Transaction.account == account.id) & (Transaction.amount_eur.is_null()))
-        if len(transactions) > 15:
-            print("Too many transactions!")
-            return
+        [self.get_exchange_rate(date, source) for date in set([tx.date for tx in transactions])]
 
-        exchange_rates = self.get_exchange_rates(set([tx.date for tx in transactions]), ExchangeRate.Source.MASTERCARD)
+    def guess_amount_eur(self, transaction: Transaction):
+        try:
+            exchange_rate = self.get_exchange_rate(transaction.date)
+            return int(transaction.amount_usd / exchange_rate)
+        except:
+            return None
 
-        for tx in transactions:
-            tx.amount_eur = self.get_amount_eur(tx, exchange_rates)
-            tx.save()
-
-    def get_exchange_rates(self, dates, source: ExchangeRate.Source):
-        return dict(zip(dates, [self.get_exchange_rate(date, source) for date in dates]))
-
-    def get_exchange_rate(self, date, source: ExchangeRate.Source):
+    def get_exchange_rate(self, date, source: ExchangeRate.Source = ExchangeRate.Source.MASTERCARD):
         try:
             return ExchangeRate.get(date=date, source=source.value).exchange_rate
         except DoesNotExist:
@@ -35,10 +31,3 @@ class ExchangeService:
                 return self.exchangeratesio.get_conversion_rate(date)
             else:
                 raise Exception("Not implemented")
-
-    def get_amount_eur(self, tx, exchange_rates):
-        date = tx.date
-        if date not in exchange_rates or not exchange_rates[date]:
-            return None
-        else:
-            return int(tx.amount_usd / exchange_rates[date])

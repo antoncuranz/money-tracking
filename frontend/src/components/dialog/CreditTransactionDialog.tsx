@@ -82,7 +82,7 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
               id="credit"
               className="col-span-3"
               amount={appliedCredit}
-              setAmount={setAppliedCredit}
+              updateAmount={setAppliedCredit}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -102,7 +102,7 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
                   id="amount_eur"
                   className="col-span-3"
                   amount={adjustedAmt}
-                  setAmount={amt => amt ? setAdjustedAmt(amt) : setAdjustedAmt(0)}
+                  updateAmount={amt => amt ? setAdjustedAmt(amt) : setAdjustedAmt(0)}
                 />
               </div>
             }

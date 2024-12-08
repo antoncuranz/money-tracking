@@ -31,9 +31,8 @@ def import_transactions(account_id, transaction_service: TransactionService, exc
     except TellerInteractionRequiredException:
         return "", 418
 
-    exchange_service.add_missing_eur_amounts(account)
+    exchange_service.fetch_exchange_rates(account)
     actual_service.import_transactions(account)
-    actual_service.import_payments(account)
 
     return "", 204
 
@@ -49,9 +48,9 @@ def import_transactions_all_accounts(transaction_service: TransactionService, ex
             continue
 
         try:
-            exchange_service.add_missing_eur_amounts(account)
+            exchange_service.fetch_exchange_rates(account)
         except:
-            print("Error adding missing eur_amounts")
+            print("Error fetching exchange rates")
 
         try:
             actual_service.import_transactions(account)

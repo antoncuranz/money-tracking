@@ -10,6 +10,7 @@ import BalancesWidget from "@/components/widgets/BalancesWidget.tsx";
 import SkeletonCard from "@/components/card/SkeletonCard.tsx";
 import CreditsCard from "@/components/card/CreditsCard.tsx";
 import TransactionsCard from "@/components/card/TransactionsCard.tsx";
+import {ErrorBoundary} from "react-error-boundary";
 
 export default async function Page() {
 
@@ -43,10 +44,14 @@ export default async function Page() {
         </div>
         <div className="flex-auto min-w-0">
           <Suspense fallback={<SkeletonCard/>}>
-            <CreditsCard/>
+            <ErrorBoundary fallback={<SkeletonCard title="Error loading Credits"/>}>
+              <CreditsCard/>
+            </ErrorBoundary>
           </Suspense>
           <Suspense fallback={<SkeletonCard/>}>
-            <TransactionsCard/>
+            <ErrorBoundary fallback={<SkeletonCard title="Error loading Transactions"/>}>
+              <TransactionsCard/>
+            </ErrorBoundary>
           </Suspense>
         </div>
       </div>

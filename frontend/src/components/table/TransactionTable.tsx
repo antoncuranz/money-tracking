@@ -17,7 +17,7 @@ const TransactionTable = ({transactions, accounts}: Props) => {
   const [transactionSelection, setTransactionSelection] = useState<Transaction|null>()
   const [ctDialogOpen, setCtDialogOpen] = useState(false)
 
-  const { currentAccount, creditSelection, putTransactionAmount } = useStore()
+  const { currentAccount, creditSelection } = useStore()
 
   const router = useRouter();
 
@@ -48,7 +48,7 @@ const TransactionTable = ({transactions, accounts}: Props) => {
     <>
       <div className="w-full relative">
         {filteredTransactions.map(tx =>
-          <TransactionRow key={tx.id} transaction={tx} updateTransactionAmount={putTransactionAmount} account={accounts.find(a => a.id == tx.account_id)}
+          <TransactionRow key={tx.id} transaction={tx} account={accounts.find(a => a.id == tx.account_id)}
                           readonly={creditSelection != null} selectable={creditSelection != null} onClick={() => openCreditTransactionDialog(tx)}/>
         )}
       </div>

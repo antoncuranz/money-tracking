@@ -22,6 +22,7 @@ class Account(BaseModel):
     teller_id = CharField(null=True)
     teller_access_token = CharField(null=True)
     teller_enrollment_id = CharField(null=True)
+    # teller_last_import = DateTimeField(null=True)
     name = CharField()
     institution = CharField()
     due_day = IntegerField(null=True)

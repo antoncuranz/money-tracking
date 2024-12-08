@@ -42,6 +42,7 @@ export type Transaction = {
   category: string;
   amount_usd: number;
   amount_eur: number | null;
+  guessed_amount_eur: number | null;
   status: number;
   payment: number | null;
   fees_and_risk_eur: number | null;

@@ -37,7 +37,7 @@ def configure(binder):
     exchange_service = ExchangeService(mastercard, exchangeratesio)
 
     binder.bind(TransactionService, to=TransactionService(teller), scope=singleton)
-    binder.bind(ActualService, to=ActualService(actual), scope=singleton)
+    binder.bind(ActualService, to=ActualService(actual, exchange_service), scope=singleton)
     binder.bind(ExchangeService, to=exchange_service, scope=singleton)
     binder.bind(BalanceService, to=balance_service, scope=singleton)
     binder.bind(PaymentService, to=PaymentService(balance_service, exchange_service, actual), scope=singleton)
