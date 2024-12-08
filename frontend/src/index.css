@@ -183,8 +183,21 @@ body {
   display: flex;
 }
 
+.mobile, .mobile-flex {
+  display: none;
+}
+
 @media only screen and (max-width: 750px) { /* keep in sync with ResponsiveStateProvider isMobile */
   .not-mobile-flex {
     display: unset;
+  }
+  .mobile {
+    display: block;
+  }
+  .mobile-flex {
+    display: flex;
+  }
+  .not-mobile {
+    display: none;
   }
 }
