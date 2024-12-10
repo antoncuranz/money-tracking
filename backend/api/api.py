@@ -1,4 +1,4 @@
-from flask import abort, Blueprint
+from flask import abort, Blueprint, g, request
 
 from backend.clients.actual import IActualClient
 from backend.models import *
@@ -6,6 +6,14 @@ from backend.service.actual_service import ActualService
 from backend.service.payment_service import PaymentService
 
 api = Blueprint("api", __name__)
+
+@api.before_app_request
+def extract_username():
+    username = request.headers.get("X-Auth-Request-Preferred-Username")
+    if not username:
+        abort(401, description="Unauthorized: Username is required.")
+
+    g.username = username
 
 
 # TODO: move to other blueprints

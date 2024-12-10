@@ -1,7 +1,12 @@
 import {Account, Balances, Credit, Exchange, FeeSummary, Payment, Transaction} from "@/types.ts";
+import {headers} from "next/headers";
 
 async function fetchData(url: string) {
-  const response = await fetch(process.env.BACKEND_URL + url, {cache: "no-cache"})
+  const usernameHeader = "X-Auth-Request-Preferred-Username"
+  const response = await fetch(process.env.BACKEND_URL + url, {
+    headers: {[usernameHeader]: (await headers()).get(usernameHeader)!},
+    cache: "no-cache"
+  })
   if (!response.ok) {
     throw new Error("Failed to fetch data");
   }

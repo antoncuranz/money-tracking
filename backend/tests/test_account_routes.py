@@ -2,7 +2,7 @@ import json
 
 from backend import Account
 from backend.tests.conftest import with_test_db
-from backend.tests.fixtures import ACCOUNT_1
+from backend.tests.fixtures import ACCOUNT_1, ALICE_USER
 
 
 @with_test_db((Account,))
@@ -11,7 +11,7 @@ def test_get_accounts(client):
     Account.create(**ACCOUNT_1)
 
     # Act
-    response = client.get("/api/accounts")
+    response = client.get("/api/accounts", headers=ALICE_USER)
     parsed = json.loads(response.data)
 
     # Assert
@@ -28,7 +28,7 @@ def test_get_balances(app, client, teller_mock):
     account_id = Account.create(**ACCOUNT_1)
 
     # Act
-    response = client.get(f"/api/accounts/{account_id}/balances")
+    response = client.get(f"/api/accounts/{account_id}/balances", headers=ALICE_USER)
     parsed = json.loads(response.data)
 
     # Assert

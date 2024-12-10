@@ -1,6 +1,6 @@
 from backend import Account, Transaction, ExchangeRate, Credit, Payment, CreditTransaction, ExchangePayment, Exchange
 from backend.tests.conftest import with_test_db
-from backend.tests.fixtures import ACCOUNT_1
+from backend.tests.fixtures import ACCOUNT_1, ALICE_USER
 import pytest
 from peewee import DoesNotExist
 
@@ -13,7 +13,7 @@ from peewee import DoesNotExist
 #
 #     # Act
 #     try:
-#         response = client.post(f"/api/import/{account_id}")
+#         response = client.post(f"/api/import/{account_id}", headers=ALICE_USER)
 #     finally:
 #         teller_mock.set_mfa_required(False)
 #
@@ -27,7 +27,7 @@ def test_import_transactions(app, client, teller_mock, exchangerates_mock, actua
     account = Account.create(**ACCOUNT_1)
 
     # Act
-    response = client.post(f"/api/import/{account}")
+    response = client.post(f"/api/import/{account}", headers=ALICE_USER)
     transactions = Transaction.select()
     credits = Credit.select()
     payments = Payment.select()
@@ -51,7 +51,7 @@ def test_import_transactions(app, client, teller_mock, exchangerates_mock, actua
     teller_mock.set_transactions(account.teller_id, [])
 
     # Act 2
-    response = client.post(f"/api/import/{account}")
+    response = client.post(f"/api/import/{account}", headers=ALICE_USER)
     transactions = Transaction.select()
     credits = Credit.select()
     payments = Payment.select()

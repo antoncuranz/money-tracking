@@ -2,7 +2,7 @@ import json
 
 from backend import Account, Transaction
 from backend.tests.conftest import with_test_db
-from backend.tests.fixtures import ACCOUNT_1
+from backend.tests.fixtures import ACCOUNT_1, ALICE_USER
 
 
 @with_test_db((Account, Transaction))
@@ -12,7 +12,7 @@ def test_get_all_transactions(client):
     Account.create(**ACCOUNT_1)
 
     # Act
-    response = client.get("/api/accounts")
+    response = client.get("/api/accounts", headers=ALICE_USER)
     parsed = json.loads(response.data)
 
     # Assert

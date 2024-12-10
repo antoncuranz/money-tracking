@@ -5,7 +5,8 @@ from peewee import DoesNotExist
 
 from backend import Exchange, ExchangePayment, Payment, Account, Transaction
 from backend.tests.conftest import with_test_db
-from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, EXCHANGE_2, ACCOUNT_1, EXCHANGE_1_JSON
+from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, EXCHANGE_2, ACCOUNT_1, EXCHANGE_1_JSON, \
+    ALICE_USER
 
 
 @with_test_db((Exchange, ExchangePayment))
@@ -14,7 +15,7 @@ def test_get_exchanges(client):
     exchange = Exchange.create(**EXCHANGE_1)
 
     # Act
-    response = client.get("/api/exchanges")
+    response = client.get("/api/exchanges", headers=ALICE_USER)
     parsed = json.loads(response.data)
 
     # Assert
@@ -28,7 +29,7 @@ def test_post_exchange(client):
     # Arrange
 
     # Act
-    response = client.post("/api/exchanges", json=EXCHANGE_1_JSON)
+    response = client.post("/api/exchanges", json=EXCHANGE_1_JSON, headers=ALICE_USER)
 
     # Assert
     assert response.status_code == 200
@@ -44,7 +45,7 @@ def test_delete_exchange(client):
     exchange = Exchange.create(**EXCHANGE_1)
 
     # Act
-    response = client.delete(f"/api/exchanges/{exchange}")
+    response = client.delete(f"/api/exchanges/{exchange}", headers=ALICE_USER)
 
     # Assert
     assert response.status_code == 204
@@ -61,7 +62,7 @@ def test_delete_assigned_exchange_500(client):
     ExchangePayment.create(exchange=exchange, payment=payment, amount=1)
 
     # Act
-    response = client.delete(f"/api/exchanges/{exchange}")
+    response = client.delete(f"/api/exchanges/{exchange}", headers=ALICE_USER)
 
     # Assert
     assert response.status_code == 500
@@ -77,7 +78,7 @@ def test_update_exchange(app, client, balance_service):
     assert payment.amount_usd == exchange.amount_usd
 
     # Act
-    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={exchange.amount_usd}")
+    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={exchange.amount_usd}", headers=ALICE_USER)
 
     # Assert
     assert response.status_code == 204
@@ -95,7 +96,7 @@ def test_update_exchange_amount_larger_than_payment_500(app, client, balance_ser
     assert payment.amount_usd < exchange.amount_usd
 
     # Act
-    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={exchange.amount_usd}")
+    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={exchange.amount_usd}", headers=ALICE_USER)
 
     # Assert
     assert response.status_code == 500
@@ -114,7 +115,7 @@ def test_update_exchange_amount_larger_than_remaining_payment_500(app, client, b
     assert balance_service.calc_payment_remaining(payment) < exchange.amount_usd
 
     # Act
-    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={exchange.amount_usd}")
+    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={exchange.amount_usd}", headers=ALICE_USER)
 
     # Assert
     assert response.status_code == 500
@@ -130,7 +131,7 @@ def test_update_exchange_amount_larger_than_exchange_500(app, client, balance_se
     assert payment.amount_usd > exchange.amount_usd
 
     # Act
-    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={payment.amount_usd}")
+    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={payment.amount_usd}", headers=ALICE_USER)
 
     # Assert
     assert response.status_code == 500
@@ -147,7 +148,7 @@ def test_update_exchange_on_processed_payment_404(app, client, balance_service):
     ExchangePayment.create(exchange=exchange, payment=payment, amount=1)
 
     # Act
-    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={exchange.amount_usd}")
+    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={exchange.amount_usd}", headers=ALICE_USER)
 
     # Assert
     assert response.status_code == 404
@@ -162,7 +163,7 @@ def test_update_exchange_delete_exchange_payment(app, client, balance_service):
     ExchangePayment.create(exchange=exchange, payment=payment, amount=1)
 
     # Act
-    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={0}")
+    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={0}", headers=ALICE_USER)
 
     # Assert
     assert response.status_code == 204
@@ -183,7 +184,7 @@ def test_update_exchange_reduce_amount(app, client, balance_service):
     assert payment.amount_usd == exchange.amount_usd
 
     # Act
-    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={exchange.amount_usd-10}")
+    response = client.put(f"/api/exchanges/{exchange}?payment={payment}&amount={exchange.amount_usd-10}", headers=ALICE_USER)
 
     # Assert
     assert response.status_code == 204
@@ -202,7 +203,7 @@ def test_get_usable_exchanges(app, client, balance_service):
     exchange2 = Exchange.create(**EXCHANGE_2)
 
     # Act
-    response = client.get(f"/api/exchanges?usable=true")
+    response = client.get(f"/api/exchanges?usable=true", headers=ALICE_USER)
 
     # Assert
     assert response.status_code == 200

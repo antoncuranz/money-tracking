@@ -14,10 +14,7 @@ const DueDateCalendar = () => {
     updateDates()
   }, []);
   async function updateDates() {
-    const today = new Date()
-    const datesResponse = await fetch("/api/dates/" + today.getFullYear() + "/" + (today.getMonth()+1))
-    const dueDates = await datesResponse.json() as { [id: string] : AccountDates; }
-    setDueDates(dueDates)
+    await onCalendarMonthChange(new Date())
   }
   
   function getModifiers(): DayModifiers {
