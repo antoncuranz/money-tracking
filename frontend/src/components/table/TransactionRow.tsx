@@ -15,7 +15,7 @@ export default function TransactionRow({
   selectable?: boolean,
 }) {
 
-  const { putTransactionAmount } = useStore()
+  const { putTransactionAmount, clearTransactionAmount } = useStore()
 
   function isCreditApplied() {
     return  transaction.credittransaction_set != null && transaction.credittransaction_set.length > 0
@@ -45,9 +45,16 @@ export default function TransactionRow({
     return difference/transaction.guessed_amount_eur > 0.02
   }
 
+  function updateTransactionAmount(transaction: Transaction, amount: number | null) {
+    if (transaction.amount_eur == amount)
+      clearTransactionAmount(transaction.id)
+    else
+      putTransactionAmount(transaction.id, amount)
+  }
+
   return (
     <TableRow onClick={onClick} className={getClasses()} style={{ borderLeftStyle: transaction.status == 1 ? "dashed" : "solid" }} account={account} date={transaction.date} remoteName={transaction.counterparty} purpose={transaction.description}>
-      <AmountInput className="w-24 placeholder:opacity-50" amount={transaction.amount_eur} placeholder={formatAmount(transaction.guessed_amount_eur)} updateAmount={amount => putTransactionAmount(transaction.id, amount)} disabled={readonly} warnPredicate={amount => largeDeviation(transaction, amount)}/>
+      <AmountInput className="w-24 placeholder:opacity-50" amount={transaction.amount_eur} placeholder={formatAmount(transaction.guessed_amount_eur)} updateAmount={amount => updateTransactionAmount(transaction, amount)} disabled={readonly} warnPredicate={amount => largeDeviation(transaction, amount)}/>
       <span className="price text-sm">
         { isCreditApplied() ?
           <>

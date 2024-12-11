@@ -29,6 +29,7 @@ const createSelectionSlice: StateCreator<
 type TransactionAmountSlice = {
   changedTransactionAmounts: {[id: number]: number|null};
   clearTransactionAmounts: () => void,
+  clearTransactionAmount: (id: number) => void,
   putTransactionAmount: (id: number, amount: number|null) => void,
 };
 
@@ -40,6 +41,11 @@ const createTransactionAmountSlice: StateCreator<
 > = (set) => ({
   changedTransactionAmounts: {},
   clearTransactionAmounts: () => set(() => ({ changedTransactionAmounts: {} })),
+  clearTransactionAmount: (id) => set((state) => {
+    const newChangedTransactionAmounts = state.changedTransactionAmounts
+    delete newChangedTransactionAmounts[id]
+    return ({ changedTransactionAmounts: newChangedTransactionAmounts })
+  }),
   putTransactionAmount: (id, amount) => set((state) => ({ changedTransactionAmounts: { ...state.changedTransactionAmounts, [id]: amount } })),
 })
 

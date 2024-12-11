@@ -1,7 +1,7 @@
 "use client"
 
 import {Account, Transaction} from "@/types.ts";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {useRouter} from "next/navigation";
 import TransactionRow from "@/components/table/TransactionRow.tsx";
 import CreditTransactionDialog from "@/components/dialog/CreditTransactionDialog.tsx";
@@ -13,7 +13,6 @@ interface Props {
 }
 
 const TransactionTable = ({transactions, accounts}: Props) => {
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions)
   const [transactionSelection, setTransactionSelection] = useState<Transaction|null>()
   const [ctDialogOpen, setCtDialogOpen] = useState(false)
 
@@ -21,13 +20,8 @@ const TransactionTable = ({transactions, accounts}: Props) => {
 
   const router = useRouter();
 
-  useEffect(() => {
-    updateFilteredTransactions()
-  }, [currentAccount]);
-  function updateFilteredTransactions() {
-    setFilteredTransactions(transactions.filter(tx =>
-      currentAccount == null || tx.account_id == currentAccount.id)
-    )
+  function getFilteredTransactions() {
+    return transactions.filter(tx => currentAccount == null || tx.account_id == currentAccount.id)
   }
 
   function openCreditTransactionDialog(tx: Transaction) {
@@ -47,7 +41,7 @@ const TransactionTable = ({transactions, accounts}: Props) => {
   return (
     <>
       <div className="w-full relative">
-        {filteredTransactions.map(tx =>
+        {getFilteredTransactions().map(tx =>
           <TransactionRow key={tx.id} transaction={tx} account={accounts.find(a => a.id == tx.account_id)}
                           readonly={creditSelection != null} selectable={creditSelection != null} onClick={() => openCreditTransactionDialog(tx)}/>
         )}
