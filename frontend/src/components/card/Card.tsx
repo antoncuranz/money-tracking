@@ -1,20 +1,24 @@
-import {Card as InternalCard, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
+import {Card as InternalCard, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Separator} from "@/components/ui/separator.tsx";
 import React from "react";
 
 export default async function Card({
   title,
-  children
+  children,
+  headerSlot
 }: {
   title: string,
-  children: React.ReactNode
+  children: React.ReactNode,
+  headerSlot?: React.ReactNode
 }) {
 
   return (
     <InternalCard className="mb-2 overflow-hidden">
-      <CardHeader className="pb-0">
-        <CardTitle>{title}</CardTitle>
-        <CardDescription/>
+      <CardHeader className="pb-0 flex-row justify-between" style={{height: "3.375rem"}}>
+        <CardTitle>
+          {title}
+        </CardTitle>
+        {headerSlot}
       </CardHeader>
       <CardContent className="p-0">
         <Separator className="mt-4"/>

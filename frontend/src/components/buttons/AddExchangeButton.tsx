@@ -19,7 +19,7 @@ export default function AddExchangeButton () {
 
   return (
     <>
-      <Button size="sm" className="h-8 gap-1" onClick={() => setExchangeDialogOpen(true)}>
+      <Button size="sm" className="h-8 gap-1 mt-0 self-end" onClick={() => setExchangeDialogOpen(true)}>
         <Coins className="h-3.5 w-3.5"/>
         <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
           Add Exchange

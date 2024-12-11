@@ -1,5 +1,4 @@
 import React, {Suspense} from "react";
-import AddExchangeButton from "@/components/buttons/AddExchangeButton.tsx";
 import ExchangesCard from "@/components/card/ExchangesCard.tsx";
 import SkeletonCard from "@/components/card/SkeletonCard.tsx";
 import PaymentsCard from "@/components/card/PaymentsCard.tsx";
@@ -14,12 +13,6 @@ export default async function Page() {
 
   return (
     <>
-      <div className="flex justify-between h-10">
-        <div/>
-        <div className="flex items-center gap-2">
-          <AddExchangeButton/>
-        </div>
-      </div>
       <div className="not-mobile-flex gap-2 mb-2">
         <div className="shrink-0" style={{minWidth: "18.1rem"}}>
           <Suspense fallback={<SkeletonWidget/>}>

@@ -38,7 +38,7 @@ export default function TransactionRow({
   }
 
   function largeDeviation(transaction: Transaction, value: number|null) {
-    if (!transaction.guessed_amount_eur || !value)
+    if (!transaction.guessed_amount_eur || value == null)
       return false
 
     const difference = Math.abs(transaction.guessed_amount_eur - value)
