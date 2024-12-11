@@ -1,4 +1,4 @@
-from flask import abort, Blueprint, request
+from flask import abort, Blueprint, request, g
 
 from backend.api.util import stringify, parse_boolean
 from backend.models import Account, Transaction
@@ -24,7 +24,7 @@ def get_transactions(exchange_service: ExchangeService):
     except (ValueError, TypeError):
         abort(400)
 
-    query = True
+    query = (Account.user == g.user.id)
 
     if paid is True:
         query = query & (Transaction.status == Transaction.Status.PAID.value)
@@ -32,13 +32,9 @@ def get_transactions(exchange_service: ExchangeService):
         query = query & (Transaction.status != Transaction.Status.PAID.value)
 
     if account_id is not None:
-        try:
-            Account.get(Account.id == account_id)
-        except DoesNotExist:
-            abort(404)
         query = query & (Transaction.account == account_id)
 
-    transactions = Transaction.select().where(query).order_by(-Transaction.date)
+    transactions = Transaction.select().join(Account).where(query).order_by(-Transaction.date)
     return [map_transaction(tx, exchange_service) for tx in transactions]
 
 

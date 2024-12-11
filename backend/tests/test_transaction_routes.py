@@ -1,18 +1,19 @@
 import json
 
-from backend import Account, Transaction
+from backend import Account, Transaction, User
 from backend.tests.conftest import with_test_db
-from backend.tests.fixtures import ACCOUNT_1, ALICE_USER
+from backend.tests.fixtures import ACCOUNT_1, ALICE_AUTH, ALICE_USER
 
 
-@with_test_db((Account, Transaction))
+@with_test_db((User, Account, Transaction))
 def test_get_all_transactions(client):
     # TODO
     # Arrange
+    User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
 
     # Act
-    response = client.get("/api/accounts", headers=ALICE_USER)
+    response = client.get("/api/accounts", headers=ALICE_AUTH)
     parsed = json.loads(response.data)
 
     # Assert

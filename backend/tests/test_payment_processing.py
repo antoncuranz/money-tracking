@@ -3,9 +3,10 @@ from backend.tests.conftest import with_test_db
 from backend.tests.fixtures import *
 
 
-@with_test_db((Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
+@with_test_db((User, Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_payment_processing_good_ccy_risk(client, balance_service, payment_service):
     # Arrange
+    User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)
 
     payment, exchange = setup_tables([
@@ -17,7 +18,7 @@ def test_payment_processing_good_ccy_risk(client, balance_service, payment_servi
     ], exchange_rate=1.1)
 
     # Act
-    response = client.post(f"/api/accounts/{account}/payments/{payment}", headers=ALICE_USER)
+    response = client.post(f"/api/accounts/{account}/payments/{payment}", headers=ALICE_AUTH)
 
     # Assert (general checks)
     sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fees_and_risk_eur)) \
@@ -48,9 +49,10 @@ def test_payment_processing_good_ccy_risk(client, balance_service, payment_servi
     assert tx5.fees_and_risk_eur == -327
 
 
-@with_test_db((Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
+@with_test_db((User, Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_payment_processing_bad_ccy_risk(client, balance_service, payment_service):
     # Arrange
+    User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)
 
     payment, exchange = setup_tables([
@@ -62,7 +64,7 @@ def test_payment_processing_bad_ccy_risk(client, balance_service, payment_servic
     ], exchange_rate=1.0)
 
     # Act
-    response = client.post(f"/api/accounts/{account}/payments/{payment}", headers=ALICE_USER)
+    response = client.post(f"/api/accounts/{account}/payments/{payment}", headers=ALICE_AUTH)
 
     # Assert (general checks)
     sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fees_and_risk_eur)) \
@@ -93,9 +95,10 @@ def test_payment_processing_bad_ccy_risk(client, balance_service, payment_servic
     assert tx5.fees_and_risk_eur == 120
 
 
-@with_test_db((Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
+@with_test_db((User, Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_payment_processing_applied_credit(client, balance_service, payment_service):
     # Arrange
+    User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)
 
     payment, exchange = setup_tables([
@@ -109,7 +112,7 @@ def test_payment_processing_applied_credit(client, balance_service, payment_serv
     ], exchange_rate=1.0)
 
     # Act
-    response = client.post(f"/api/accounts/{account}/payments/{payment}", headers=ALICE_USER)
+    response = client.post(f"/api/accounts/{account}/payments/{payment}", headers=ALICE_AUTH)
 
     # Assert (general checks)
     sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fees_and_risk_eur)) \
@@ -173,9 +176,10 @@ def setup_tables(transactions, credits=[], exchange_rate=1.0):
     return payment, exchange
 
 
-@with_test_db((Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
+@with_test_db((User, Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_payment_processing_with_multiple_exchanges(client, balance_service, payment_service):
     # Arrange
+    User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)
     for tx in TRANSACTIONS:
         Transaction.create(**tx)
@@ -188,7 +192,7 @@ def test_payment_processing_with_multiple_exchanges(client, balance_service, pay
         ExchangeRate.create(**er)
 
     # Act
-    response = client.post(f"/api/accounts/{account}/payments/{payment}", headers=ALICE_USER)
+    response = client.post(f"/api/accounts/{account}/payments/{payment}", headers=ALICE_AUTH)
 
     # Assert
     sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fees_and_risk_eur)) \
@@ -203,9 +207,10 @@ def test_payment_processing_with_multiple_exchanges(client, balance_service, pay
     assert balance_service.calc_exchange_remaining(ex1) == 0
     assert balance_service.calc_exchange_remaining(ex2) == ex2.amount_usd - (payment.amount_usd - ex1.amount_usd)
 
-@with_test_db((Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
+@with_test_db((User, Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_payment_processing_with_multiple_exchanges_real_case(client, balance_service, payment_service):
     # Arrange
+    User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)
 
     Transaction.create(
@@ -240,7 +245,7 @@ def test_payment_processing_with_multiple_exchanges_real_case(client, balance_se
     ExchangeRate.create(date="2024-09-19", source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=1.11590)
 
     # Act
-    response = client.post(f"/api/accounts/{account}/payments/{payment}", headers=ALICE_USER)
+    response = client.post(f"/api/accounts/{account}/payments/{payment}", headers=ALICE_AUTH)
 
     # Assert
     sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fees_and_risk_eur)) \
@@ -254,9 +259,10 @@ def test_payment_processing_with_multiple_exchanges_real_case(client, balance_se
     assert sum_usd == payment.amount_usd
 
 
-@with_test_db((Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
+@with_test_db((User, Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_payment_processing_with_multiple_exchanges_real_case_2(client, balance_service, payment_service):
     # Arrange
+    User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)
 
     Transaction.create(
@@ -288,7 +294,7 @@ def test_payment_processing_with_multiple_exchanges_real_case_2(client, balance_
     ExchangeRate.create(date="2024-08-20", source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=1.11276)
 
     # Act
-    response = client.post(f"/api/accounts/{account}/payments/{payment}", headers=ALICE_USER)
+    response = client.post(f"/api/accounts/{account}/payments/{payment}", headers=ALICE_AUTH)
 
     # Assert
     sum_eur = Transaction.select(fn.SUM(Transaction.amount_eur + Transaction.fees_and_risk_eur)) \

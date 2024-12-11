@@ -3,47 +3,40 @@ from flask_injector import inject
 
 
 class IActualClient:
-    def create_transaction(self, account_id, transaction):
+    def create_transaction(self, account, transaction):
         raise NotImplementedError
 
-    def get_transaction(self, account_id, tx):
+    def get_transaction(self, account, tx):
         raise NotImplementedError
 
-    def patch_transaction(self, account_id, actual_tx, updated_fields):
+    def patch_transaction(self, account, actual_tx, updated_fields):
         raise NotImplementedError
 
-    def delete_transaction(self, actual_id):
+    def delete_transaction(self, user, actual_id):
         raise NotImplementedError
 
-    def get_payees(self):
+    def get_payees(self, user):
         raise NotImplementedError
 
-    # def get_payee(self, payee_id):
-    #     raise NotImplementedError
-
-    def create_payee(self, payee_name):
+    def create_payee(self, user, payee_name):
         raise NotImplementedError
-
-    # def update_payee(self, payee_id, payee_name):
-    #     raise NotImplementedError
 
 
 class ActualClient(IActualClient):
     @inject
-    def __init__(self, api_key, budget_sync_id, base_url, encryption_passwd=None):
+    def __init__(self, api_key, base_url):
         self.api_key = api_key
-        self.budget_sync_id = budget_sync_id
         self.base_url = base_url
-        self.encryption_passwd = encryption_passwd
 
-    def create_transaction(self, account_id, transaction):
-        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/accounts/{account_id}/transactions"
+    def create_transaction(self, account, transaction):
+        user = account.user
+        url = f"{self.base_url}/v1/budgets/{user.budget_sync_id}/accounts/{account.actual_id}/transactions"
         headers = {
             "x-api-key": self.api_key,
             "Content-Type": "application/json",
         }
-        if self.encryption_passwd is not None:
-            headers["budget-encryption-password"] = self.encryption_passwd
+        if user.encryption_passwd is not None:
+            headers["budget-encryption-password"] = user.encryption_passwd
 
         payload = {
             "transaction": transaction
@@ -56,14 +49,15 @@ class ActualClient(IActualClient):
         else:
             response.raise_for_status()
 
-    def get_transaction(self, account_id, tx):
-        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/accounts/{account_id}/transactions" \
+    def get_transaction(self, account, tx):
+        user = account.user
+        url = f"{self.base_url}/v1/budgets/{user.budget_sync_id}/accounts/{account.actual_id}/transactions" \
               + f"?since_date={tx.date}&until_date={tx.date}"
         headers = {
             "x-api-key": self.api_key,
         }
-        if self.encryption_passwd is not None:
-            headers["budget-encryption-password"] = self.encryption_passwd
+        if user.encryption_passwd is not None:
+            headers["budget-encryption-password"] = user.encryption_passwd
 
         response = requests.get(url, headers=headers)
 
@@ -73,14 +67,15 @@ class ActualClient(IActualClient):
         else:
             response.raise_for_status()
 
-    def patch_transaction(self, account_id, actual_tx, updated_fields):
-        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/transactions/{actual_tx["id"]}"
+    def patch_transaction(self, account, actual_tx, updated_fields):
+        user = account.user
+        url = f"{self.base_url}/v1/budgets/{user.budget_sync_id}/transactions/{actual_tx["id"]}"
         headers = {
             "x-api-key": self.api_key,
             "Content-Type": "application/json",
         }
-        if self.encryption_passwd is not None:
-            headers["budget-encryption-password"] = self.encryption_passwd
+        if user.encryption_passwd is not None:
+            headers["budget-encryption-password"] = user.encryption_passwd
 
         payload = {
             "transaction": actual_tx | updated_fields
@@ -93,13 +88,13 @@ class ActualClient(IActualClient):
         else:
             response.raise_for_status()
 
-    def delete_transaction(self, actual_id):
-        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/transactions/{actual_id}"
+    def delete_transaction(self, user, actual_id):
+        url = f"{self.base_url}/v1/budgets/{user.budget_sync_id}/transactions/{actual_id}"
         headers = {
             'x-api-key': self.api_key
         }
-        if self.encryption_passwd is not None:
-            headers["budget-encryption-password"] = self.encryption_passwd
+        if user.encryption_passwd is not None:
+            headers["budget-encryption-password"] = user.encryption_passwd
 
         response = requests.delete(url, headers=headers)
 
@@ -108,28 +103,13 @@ class ActualClient(IActualClient):
         else:
             response.raise_for_status()
             
-    def get_payees(self):
-        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/payees"
+    def get_payees(self, user):
+        url = f"{self.base_url}/v1/budgets/{user.budget_sync_id}/payees"
         headers = {
             "x-api-key": self.api_key,
         }
-        if self.encryption_passwd is not None:
-            headers["budget-encryption-password"] = self.encryption_passwd
-
-        response = requests.get(url, headers=headers)
-
-        if response.ok:
-            return response.json()
-        else:
-            response.raise_for_status()
-            
-    def get_payee(self, payee_id):
-        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/payees/{payee_id}"
-        headers = {
-            "x-api-key": self.api_key,
-        }
-        if self.encryption_passwd is not None:
-            headers["budget-encryption-password"] = self.encryption_passwd
+        if user.encryption_passwd is not None:
+            headers["budget-encryption-password"] = user.encryption_passwd
 
         response = requests.get(url, headers=headers)
 
@@ -138,36 +118,18 @@ class ActualClient(IActualClient):
         else:
             response.raise_for_status()
 
-    def create_payee(self, payee_name):
-        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/payees"
+    def create_payee(self, user, payee_name):
+        url = f"{self.base_url}/v1/budgets/{user.budget_sync_id}/payees"
         headers = {
             "x-api-key": self.api_key,
             "Content-Type": "application/json",
         }
-        if self.encryption_passwd is not None:
-            headers["budget-encryption-password"] = self.encryption_passwd
+        if user.encryption_passwd is not None:
+            headers["budget-encryption-password"] = user.encryption_passwd
 
         payload = dict(payee=dict(name=payee_name))
 
         response = requests.post(url, headers=headers, json=payload)
-
-        if response.ok:
-            return response.json()
-        else:
-            response.raise_for_status()
-            
-    def update_payee(self, payee_id, payee_name):
-        url = f"{self.base_url}/v1/budgets/{self.budget_sync_id}/payees/{payee_id}"
-        headers = {
-            "x-api-key": self.api_key,
-            "Content-Type": "application/json",
-        }
-        if self.encryption_passwd is not None:
-            headers["budget-encryption-password"] = self.encryption_passwd
-
-        payload = dict(payee=dict(name=payee_name))
-
-        response = requests.patch(url, headers=headers, json=payload)
 
         if response.ok:
             return response.json()

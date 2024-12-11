@@ -16,8 +16,17 @@ class BaseModel(Model):
         database = db
 
 
+class User(BaseModel):
+    id = AutoField()
+    name = CharField()
+    super_user = BooleanField(default=False)
+    actual_sync_id = CharField(null=True)
+    actual_encryption_password = CharField(null=True)
+
+
 class Account(BaseModel):
     id = AutoField()
+    user = ForeignKeyField(User, backref="accounts")
     actual_id = CharField()
     teller_id = CharField(null=True)
     teller_access_token = CharField(null=True)
@@ -44,6 +53,7 @@ class Payment(BaseModel):
     amount_usd = IntegerField()
     amount_eur = IntegerField(null=True)
     processed = BooleanField(default=False)
+    # pending = BooleanField(default=False) # to allow processing payment directly after statement posted
 
 
 class Exchange(BaseModel):

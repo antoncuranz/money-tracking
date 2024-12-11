@@ -1,4 +1,4 @@
-from flask import abort, Blueprint, request
+from flask import abort, Blueprint, request, g
 
 from backend.api.util import stringify, parse_boolean
 from backend.models import *
@@ -16,7 +16,7 @@ def get_credits():
     except (ValueError, TypeError):
         abort(400)
 
-    query = True
+    query = (Account.user == g.user.id)
     if usable is True:
         query = query & (Credit.amount_usd > fn.COALESCE(
             CreditTransaction.select(fn.SUM(CreditTransaction.amount)).join(Transaction)
@@ -30,7 +30,7 @@ def get_credits():
             abort(404)
         query = query & (Credit.account == account_id)
 
-    credits = Credit.select().where(query).order_by(-Credit.date)
+    credits = Credit.select().join(Account).where(query).order_by(-Credit.date)
     return [stringify(credit) for credit in credits]
 
 

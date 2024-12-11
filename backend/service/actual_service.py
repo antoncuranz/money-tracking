@@ -27,7 +27,7 @@ class ActualService:
     def import_transaction(self, account, tx):
         print("Importing transaction in Actual: " + str(stringify(tx)))
         id = str(uuid.uuid4())
-        self.actual.create_transaction(account.actual_id, self._create_actual_transaction(tx, id))
+        self.actual.create_transaction(account, self._create_actual_transaction(tx, id))
         tx.actual_id = id
         tx.save()
 
@@ -39,7 +39,7 @@ class ActualService:
                 (Transaction.amount_eur.is_null(False)) &
                 (Transaction.account == account.id))
             
-        existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees()['data']}
+        existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees(account.user)['data']}
 
         for tx in transactions:
             self.update_transaction(account, tx, existing_payees)
@@ -48,19 +48,19 @@ class ActualService:
         actual_account = account.actual_id
         
         if existing_payees is None:
-            existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees()['data']}
+            existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees(account.user)['data']}
 
         if tx.actual_id is None:
             self.import_transaction(account, tx)
 
-        actual_tx = self.actual.get_transaction(actual_account, tx)
-        payee = self.get_or_create_payee(tx, actual_tx, existing_payees)
+        actual_tx = self.actual.get_transaction(account, tx)
+        payee = self.get_or_create_payee(account.user, tx, actual_tx, existing_payees)
 
         fee_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == Config.actual_fee_category)
         main_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] != Config.actual_fee_category)
 
         fees_and_risk_eur = tx.fees_and_risk_eur if tx.fees_and_risk_eur is not None else 0
-        self.actual.patch_transaction(actual_account, actual_tx, {
+        self.actual.patch_transaction(account, actual_tx, {
             "cleared": tx.status_enum == Transaction.Status.PAID,
             "amount": -(tx.amount_eur + fees_and_risk_eur),
             "date": str(tx.date),
@@ -68,27 +68,27 @@ class ActualService:
             "imported_payee": tx.counterparty,
             "notes": tx.description,
         })
-        self.actual.patch_transaction(actual_account, main_split, {
+        self.actual.patch_transaction(account, main_split, {
             "amount": -tx.amount_eur,
             "date": str(tx.date),
             "payee": payee,
             "imported_payee": tx.counterparty,
         })
-        self.actual.patch_transaction(actual_account, fee_split, {
+        self.actual.patch_transaction(account, fee_split, {
             "amount": -fees_and_risk_eur,
             "date": str(tx.date),
             "payee": payee,
             "imported_payee": tx.counterparty,
         })
         
-    def get_or_create_payee(self, tx, actual_tx, existing_payees):
+    def get_or_create_payee(self, user, tx, actual_tx, existing_payees):
         if actual_tx["payee"] == Config.actual_unknown_payee:
             if tx.counterparty in existing_payees:
                 print("Assigning existing payee for transaction with unknown payee ({})".format(tx.description))
                 return existing_payees[tx.counterparty]
             else:
                 print("Creating new payee for transaction with unknown payee ({})".format(tx.description))
-                payee = self.actual.create_payee(tx.counterparty)["data"]
+                payee = self.actual.create_payee(user, tx.counterparty)["data"]
                 existing_payees[tx.counterparty] = payee
                 return payee
         else:
@@ -109,7 +109,7 @@ class ActualService:
             raise Exception("Error: Payment not processed or already imported!")
 
         id = str(uuid.uuid4())
-        self.actual.create_transaction(account.actual_id, self._create_actual_payment(payment, id))
+        self.actual.create_transaction(account, self._create_actual_payment(payment, id))
         payment.actual_id = id
         payment.save()
 

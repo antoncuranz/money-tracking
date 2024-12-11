@@ -1,4 +1,4 @@
-from flask import abort, Blueprint
+from flask import abort, Blueprint, g
 
 from backend.clients.teller import ITellerClient
 from backend.models import Account
@@ -9,7 +9,8 @@ accounts = Blueprint("accounts", __name__, url_prefix="/api/accounts")
 
 @accounts.get("")
 def get_accounts():
-    return list(Account.select().order_by(Account.id).dicts())
+    accounts = Account.select().where(Account.user == g.user.id).order_by(Account.id)
+    return list(accounts.dicts())
 
 
 @accounts.get("/<account_id>/balances")

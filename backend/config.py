@@ -12,8 +12,6 @@ class Config:
 
     actual_base_url = os.getenv("ACTUAL_BASE_URL", "http://localhost:5007")
     actual_api_key = os.getenv("ACTUAL_API_KEY")
-    actual_sync_id = os.getenv("ACTUAL_SYNC_ID")
-    actual_encryption_passwd = os.getenv("ACTUAL_ENCRYPTION_PASSWD")
 
     actual_unknown_payee = os.getenv("ACTUAL_UNKNOWN_PAYEE")
     actual_fee_category = os.getenv("ACTUAL_CAT_FX_FEES", "ff41dcbd-5962-4b32-b3fe-ce9d63cf9c25")

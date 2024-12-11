@@ -3,10 +3,10 @@ from backend.clients.actual import IActualClient
 
 
 class MockActualClient(IActualClient):
-    def create_transaction(self, account_id, transaction):
+    def create_transaction(self, account, transaction):
         pass
 
-    def get_transaction(self, account_id, tx):
+    def get_transaction(self, account, tx):
         return {
             "id": 1,
             "date": "2024-01-01",
@@ -31,13 +31,13 @@ class MockActualClient(IActualClient):
             ]
         }
 
-    def patch_transaction(self, account_id, actual_tx, updated_fields):
+    def patch_transaction(self, account, actual_tx, updated_fields):
         pass
 
-    def delete_transaction(self, actual_id):
+    def delete_transaction(self, user, actual_id):
         pass
     
-    def get_payees(self):
+    def get_payees(self, user):
         return {
           "data": [
             {
@@ -49,13 +49,7 @@ class MockActualClient(IActualClient):
           ]
         }
 
-    def create_payee(self, payee_name):
+    def create_payee(self, user, payee_name):
         return {
             "data": "5b4837d7-f147-4c7c-a315-b21ad484ba4a"
         }
-    
-    # def get_payee(self, payee_id):
-    #     raise NotImplementedError
-
-    # def update_payee(self, payee_id, payee_name):
-    #     raise NotImplementedError

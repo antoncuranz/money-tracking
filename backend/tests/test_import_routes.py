@@ -1,6 +1,7 @@
-from backend import Account, Transaction, ExchangeRate, Credit, Payment, CreditTransaction, ExchangePayment, Exchange
+from backend import Account, Transaction, ExchangeRate, Credit, Payment, CreditTransaction, ExchangePayment, Exchange, \
+    User
 from backend.tests.conftest import with_test_db
-from backend.tests.fixtures import ACCOUNT_1, ALICE_USER
+from backend.tests.fixtures import ACCOUNT_1, ALICE_AUTH, ALICE_USER
 import pytest
 from peewee import DoesNotExist
 
@@ -21,13 +22,14 @@ from peewee import DoesNotExist
 #     assert response.status_code == 418
 
 
-@with_test_db((Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
+@with_test_db((User, Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_import_transactions(app, client, teller_mock, exchangerates_mock, actual_mock):
     # Arrange
+    User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)
 
     # Act
-    response = client.post(f"/api/import/{account}", headers=ALICE_USER)
+    response = client.post(f"/api/import/{account}", headers=ALICE_AUTH)
     transactions = Transaction.select()
     credits = Credit.select()
     payments = Payment.select()
@@ -51,7 +53,7 @@ def test_import_transactions(app, client, teller_mock, exchangerates_mock, actua
     teller_mock.set_transactions(account.teller_id, [])
 
     # Act 2
-    response = client.post(f"/api/import/{account}", headers=ALICE_USER)
+    response = client.post(f"/api/import/{account}", headers=ALICE_AUTH)
     transactions = Transaction.select()
     credits = Credit.select()
     payments = Payment.select()

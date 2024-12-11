@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from flask import abort, Blueprint, request
+from flask import abort, Blueprint, request, g
 
 from backend.api.util import stringify, parse_boolean
 from backend.models import *
@@ -15,6 +15,9 @@ def get_exchanges():
         usable = parse_boolean(request.args.get("usable"))
     except (ValueError, TypeError):
         abort(400)
+
+    if not g.user.super_user:
+        abort(401)
 
     query = True
     if usable is True:

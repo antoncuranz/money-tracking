@@ -13,7 +13,10 @@ def extract_username():
     if not username:
         abort(401, description="Unauthorized: Username is required.")
 
-    g.username = username
+    try:
+        g.user = User.get(User.name == username)
+    except DoesNotExist:
+        abort(401, description="Unauthorized: User not found in database.")
 
 
 # TODO: move to other blueprints
@@ -43,7 +46,7 @@ def get_due_dates(year, month):
             return next_month(month)
 
     result = {}
-    for account in Account.select():
+    for account in Account.select().where(Account.user == g.user.id):
         if account.due_day is None:
             continue
         result[account.id] = dict(color=(account.color if account.color else "black"))
@@ -125,6 +128,6 @@ def unprocess_payment(account_id, payment_id, actual_service: ActualService, act
 
     actual_service.update_transactions(account, transactions)
     if payment_actual_id is not None:
-        actual.delete_transaction(payment_actual_id)
+        actual.delete_transaction(account.user, payment_actual_id)
 
     return "", 204

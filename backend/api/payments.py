@@ -1,4 +1,4 @@
-from flask import abort, Blueprint, request
+from flask import abort, Blueprint, request, g
 
 from backend.api.util import stringify, parse_boolean
 from backend.models import Account, Payment
@@ -16,7 +16,7 @@ def get_payments():
     except (ValueError, TypeError):
         abort(400)
 
-    query = True
+    query = (Account.user == g.user.id)
 
     if processed is not None:
         query = query & (Payment.processed == processed)
@@ -28,7 +28,7 @@ def get_payments():
             abort(404)
         query = query & (Payment.account == account_id)
 
-    payments = Payment.select().where(query).order_by(-Payment.date)
+    payments = Payment.select().join(Account).where(query).order_by(-Payment.date)
     return [stringify(payment) for payment in payments]
 
 

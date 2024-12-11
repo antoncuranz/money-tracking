@@ -1,10 +1,13 @@
 from backend import ExchangeRate
 
-ALICE_USER = {"X-Auth-Request-Preferred-Username": "alice"}
-BOB_USER = {"X-Auth-Request-Preferred-Username": "bob"}
+ALICE_AUTH = {"X-Auth-Request-Preferred-Username": "alice"}
+BOB_AUTH = {"X-Auth-Request-Preferred-Username": "bob"}
+
+ALICE_USER = dict(id=1, name="alice", super_user=True)
+BOB_USER = dict(id=2, name="bob")
 
 ACCOUNT_1 = dict(
-    actual_id="actual_test_acc_1", name="Test Account 1", institution="Institution 1",
+    user_id=1, actual_id="actual_test_acc_1", name="Test Account 1", institution="Institution 1",
     teller_id="teller_test_acc_1", teller_enrollment_id="teller_enr_1", teller_access_token="teller_token_1"
 )
 

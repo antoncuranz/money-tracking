@@ -1,9 +1,13 @@
 import {fetchExchanges} from "@/requests.ts";
 import Card from "@/components/card/Card.tsx";
 import ExchangeTable from "@/components/table/ExchangeTable.tsx";
+import {Exchange} from "@/types.ts";
 
 export default async function ExchangesCard() {
-  const exchanges = await fetchExchanges()
+  let exchanges: Exchange[] = []
+  try {
+    exchanges = await fetchExchanges()
+  } catch (e) { /* probably unauthorized */ }
 
   return (
     <>

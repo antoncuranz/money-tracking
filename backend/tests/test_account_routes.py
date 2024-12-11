@@ -1,17 +1,18 @@
 import json
 
-from backend import Account
+from backend import Account, User
 from backend.tests.conftest import with_test_db
-from backend.tests.fixtures import ACCOUNT_1, ALICE_USER
+from backend.tests.fixtures import ACCOUNT_1, ALICE_AUTH, ALICE_USER
 
 
-@with_test_db((Account,))
+@with_test_db((User, Account,))
 def test_get_accounts(client):
     # Arrange
+    User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
 
     # Act
-    response = client.get("/api/accounts", headers=ALICE_USER)
+    response = client.get("/api/accounts", headers=ALICE_AUTH)
     parsed = json.loads(response.data)
 
     # Assert
@@ -22,13 +23,14 @@ def test_get_accounts(client):
     assert parsed[0]["institution"] == ACCOUNT_1["institution"]
 
 
-@with_test_db((Account,))
-def test_get_balances(app, client, teller_mock):
+@with_test_db((User, Account,))
+def test_get_balances(client, teller_mock):
     # Arrange
+    User.create(**ALICE_USER)
     account_id = Account.create(**ACCOUNT_1)
 
     # Act
-    response = client.get(f"/api/accounts/{account_id}/balances", headers=ALICE_USER)
+    response = client.get(f"/api/accounts/{account_id}/balances", headers=ALICE_AUTH)
     parsed = json.loads(response.data)
 
     # Assert
