@@ -55,7 +55,7 @@ class TransactionService:
             return
 
         id = teller_tx["id"]
-        model, created = model.get_or_create(
+        result, created = model.get_or_create(
             teller_id=id,
             defaults=self.make_transaction_args(teller_tx, account.id)
         )
@@ -67,7 +67,7 @@ class TransactionService:
 
     def process_transaction(self, account, teller_tx):
         id = teller_tx["id"]
-        model, created = Transaction.get_or_create(
+        result, created = Transaction.get_or_create(
             teller_id=id,
             defaults=self.make_transaction_args(teller_tx, account.id)
         )
