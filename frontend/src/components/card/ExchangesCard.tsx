@@ -12,12 +12,8 @@ export default async function ExchangesCard() {
   } catch (e) { /* probably unauthorized */ }
 
   return (
-    <>
-      {exchanges.length > 0 &&
-        <Card title="Exchanges" headerSlot={<AddExchangeButton/>}>
-            <ExchangeTable exchanges={exchanges}/>
-        </Card>
-      }
-    </>
+    <Card title="Exchanges" headerSlot={<AddExchangeButton/>}>
+        <ExchangeTable exchanges={exchanges}/>
+    </Card>
   )
 }

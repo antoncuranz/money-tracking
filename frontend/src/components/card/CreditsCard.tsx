@@ -7,12 +7,8 @@ export default async function CreditsCard() {
   const credits = await fetchCredits()
 
   return (
-    <>
-      {credits.length > 0 &&
-        <Card title="Credits">
-            <CreditTable credits={credits} accounts={accounts}/>
-        </Card>
-      }
-    </>
+    <Card title="Credits">
+        <CreditTable credits={credits} accounts={accounts}/>
+    </Card>
   )
 }

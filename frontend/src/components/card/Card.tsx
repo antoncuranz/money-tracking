@@ -13,7 +13,7 @@ export default async function Card({
 }) {
 
   return (
-    <InternalCard className="mb-2 overflow-hidden">
+    <InternalCard className="mb-2 overflow-hidden card">
       <CardHeader className="pb-0 flex-row justify-between" style={{height: "3.375rem"}}>
         <CardTitle>
           {title}

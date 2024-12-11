@@ -28,7 +28,7 @@ export default function ExchangeTable({
   }
 
   return (
-    <div className="w-full relative">
+    <div className="w-full relative card-table">
       {exchanges.map(exchange =>
         <ExchangeRow key={exchange["id"]} exchange={exchange} selected={exchangeSelection == exchange["id"]}
                      disabled={exchangeSelection != null}

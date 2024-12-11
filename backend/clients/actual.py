@@ -30,7 +30,7 @@ class ActualClient(IActualClient):
 
     def create_transaction(self, account, transaction):
         user = account.user
-        url = f"{self.base_url}/v1/budgets/{user.budget_sync_id}/accounts/{account.actual_id}/transactions"
+        url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/accounts/{account.actual_id}/transactions"
         headers = {
             "x-api-key": self.api_key,
             "Content-Type": "application/json",
@@ -51,7 +51,7 @@ class ActualClient(IActualClient):
 
     def get_transaction(self, account, tx):
         user = account.user
-        url = f"{self.base_url}/v1/budgets/{user.budget_sync_id}/accounts/{account.actual_id}/transactions" \
+        url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/accounts/{account.actual_id}/transactions" \
               + f"?since_date={tx.date}&until_date={tx.date}"
         headers = {
             "x-api-key": self.api_key,
@@ -69,7 +69,7 @@ class ActualClient(IActualClient):
 
     def patch_transaction(self, account, actual_tx, updated_fields):
         user = account.user
-        url = f"{self.base_url}/v1/budgets/{user.budget_sync_id}/transactions/{actual_tx["id"]}"
+        url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/transactions/{actual_tx["id"]}"
         headers = {
             "x-api-key": self.api_key,
             "Content-Type": "application/json",
@@ -89,7 +89,7 @@ class ActualClient(IActualClient):
             response.raise_for_status()
 
     def delete_transaction(self, user, actual_id):
-        url = f"{self.base_url}/v1/budgets/{user.budget_sync_id}/transactions/{actual_id}"
+        url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/transactions/{actual_id}"
         headers = {
             'x-api-key': self.api_key
         }
@@ -104,7 +104,7 @@ class ActualClient(IActualClient):
             response.raise_for_status()
             
     def get_payees(self, user):
-        url = f"{self.base_url}/v1/budgets/{user.budget_sync_id}/payees"
+        url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/payees"
         headers = {
             "x-api-key": self.api_key,
         }
@@ -119,7 +119,7 @@ class ActualClient(IActualClient):
             response.raise_for_status()
 
     def create_payee(self, user, payee_name):
-        url = f"{self.base_url}/v1/budgets/{user.budget_sync_id}/payees"
+        url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/payees"
         headers = {
             "x-api-key": self.api_key,
             "Content-Type": "application/json",

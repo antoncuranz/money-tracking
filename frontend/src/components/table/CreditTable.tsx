@@ -10,11 +10,15 @@ interface Props {
 }
 
 const CreditTable = ({credits, accounts}: Props) => {
-  const { creditSelection, setCreditSelection } = useStore()
+  const { creditSelection, setCreditSelection, currentAccount } = useStore()
+
+  function getFilteredCredits() {
+    return credits.filter(tx => currentAccount == null || tx.account_id == currentAccount.id)
+  }
 
   return (
-    <div className="w-full relative">
-      {credits.map(credit =>
+    <div className="w-full relative card-table">
+      {getFilteredCredits().map(credit =>
         <CreditRow key={credit.id} credit={credit} selected={creditSelection?.id == credit.id} disabled={creditSelection != null}
                    selectCredit={() => setCreditSelection(credit, accounts)} unselectCredit={() => setCreditSelection(null, accounts)}
                    account={accounts.find(a => a.id == credit.account_id)}/>

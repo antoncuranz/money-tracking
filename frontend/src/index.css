@@ -194,3 +194,7 @@ main.grid {
 .redacted:not(:hover) {
   font-family: "Redacted Script";
 }
+
+.card:has(.card-table:empty) {
+  display: none;
+}
