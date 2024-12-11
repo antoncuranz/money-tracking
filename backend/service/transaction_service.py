@@ -61,7 +61,7 @@ class TransactionService:
         )
 
         if not created:
-            model.update(self.make_transaction_args(teller_tx, account.id, include_amount=False, include_unknown=False)) \
+            model.update(self.make_transaction_args(teller_tx, account.id, include_amount_and_status=False, include_unknown=False)) \
                 .where(model.teller_id == id) \
                 .execute()
 
@@ -79,17 +79,17 @@ class TransactionService:
             # TODO: update Actual transactions?
             # Actual tx will be updated when payment is processed?
 
-    def make_transaction_args(self, tx, account_id, include_amount=True, include_unknown=True):
+    def make_transaction_args(self, tx, account_id, include_amount_and_status=True, include_unknown=True):
         args = { # always available args
             "account_id": account_id,
             "teller_id": tx["id"],
             "date": tx["date"],
             "description": tx["description"],
-            "status": Transaction.Status.POSTED.value if tx["status"] == "posted" else Transaction.Status.PENDING.value
         }
 
-        if include_amount:
+        if include_amount_and_status:
             args["amount_usd"] = abs(self.get_amount(tx["amount"]))
+            args["status"] = Transaction.Status.POSTED.value if tx["status"] == "posted" else Transaction.Status.PENDING.value
 
         if include_unknown:
             args["counterparty"] = "unknown"

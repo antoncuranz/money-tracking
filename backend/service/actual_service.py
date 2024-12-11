@@ -45,8 +45,6 @@ class ActualService:
             self.update_transaction(account, tx, existing_payees)
 
     def update_transaction(self, account, tx, existing_payees=None):
-        actual_account = account.actual_id
-        
         if existing_payees is None:
             existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees(account.user)['data']}
 
@@ -59,17 +57,18 @@ class ActualService:
         fee_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == Config.actual_fee_category)
         main_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] != Config.actual_fee_category)
 
+        amount_eur = tx.amount_eur or self.exchange_service.guess_amount_eur(tx) or 0
         fees_and_risk_eur = tx.fees_and_risk_eur if tx.fees_and_risk_eur is not None else 0
         self.actual.patch_transaction(account, actual_tx, {
             "cleared": tx.status_enum == Transaction.Status.PAID,
-            "amount": -(tx.amount_eur + fees_and_risk_eur),
+            "amount": -(amount_eur + fees_and_risk_eur),
             "date": str(tx.date),
             "payee": payee,
             "imported_payee": tx.counterparty,
             "notes": tx.description,
         })
         self.actual.patch_transaction(account, main_split, {
-            "amount": -tx.amount_eur,
+            "amount": -amount_eur,
             "date": str(tx.date),
             "payee": payee,
             "imported_payee": tx.counterparty,
