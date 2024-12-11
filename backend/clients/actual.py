@@ -35,8 +35,8 @@ class ActualClient(IActualClient):
             "x-api-key": self.api_key,
             "Content-Type": "application/json",
         }
-        if user.encryption_passwd is not None:
-            headers["budget-encryption-password"] = user.encryption_passwd
+        if user.actual_encryption_password is not None:
+            headers["budget-encryption-password"] = user.actual_encryption_password
 
         payload = {
             "transaction": transaction
@@ -56,8 +56,8 @@ class ActualClient(IActualClient):
         headers = {
             "x-api-key": self.api_key,
         }
-        if user.encryption_passwd is not None:
-            headers["budget-encryption-password"] = user.encryption_passwd
+        if user.actual_encryption_password is not None:
+            headers["budget-encryption-password"] = user.actual_encryption_password
 
         response = requests.get(url, headers=headers)
 
@@ -74,8 +74,8 @@ class ActualClient(IActualClient):
             "x-api-key": self.api_key,
             "Content-Type": "application/json",
         }
-        if user.encryption_passwd is not None:
-            headers["budget-encryption-password"] = user.encryption_passwd
+        if user.actual_encryption_password is not None:
+            headers["budget-encryption-password"] = user.actual_encryption_password
 
         payload = {
             "transaction": actual_tx | updated_fields
@@ -93,8 +93,8 @@ class ActualClient(IActualClient):
         headers = {
             'x-api-key': self.api_key
         }
-        if user.encryption_passwd is not None:
-            headers["budget-encryption-password"] = user.encryption_passwd
+        if user.actual_encryption_password is not None:
+            headers["budget-encryption-password"] = user.actual_encryption_password
 
         response = requests.delete(url, headers=headers)
 
@@ -108,8 +108,8 @@ class ActualClient(IActualClient):
         headers = {
             "x-api-key": self.api_key,
         }
-        if user.encryption_passwd is not None:
-            headers["budget-encryption-password"] = user.encryption_passwd
+        if user.actual_encryption_password is not None:
+            headers["budget-encryption-password"] = user.actual_encryption_password
 
         response = requests.get(url, headers=headers)
 
@@ -124,8 +124,8 @@ class ActualClient(IActualClient):
             "x-api-key": self.api_key,
             "Content-Type": "application/json",
         }
-        if user.encryption_passwd is not None:
-            headers["budget-encryption-password"] = user.encryption_passwd
+        if user.actual_encryption_password is not None:
+            headers["budget-encryption-password"] = user.actual_encryption_password
 
         payload = dict(payee=dict(name=payee_name))
 
