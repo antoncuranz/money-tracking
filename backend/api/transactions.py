@@ -44,7 +44,7 @@ def update_transaction(tx_id, actual_service: ActualService):
         amount_eur_str = request.args.get("amount_eur")
         amount_eur = None if not amount_eur_str else int(amount_eur_str)
         transaction = Transaction.get(Transaction.id == tx_id)
-        account = Account.get(Account.id == transaction.account)
+        account = Account.get((Account.user == g.user.id) & (Account.id == transaction.account))
     except DoesNotExist:
         abort(404)
     except (ValueError, TypeError):

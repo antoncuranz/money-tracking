@@ -11,13 +11,13 @@ exchanges = Blueprint("exchanges", __name__, url_prefix="/api/exchanges")
 
 @exchanges.get("")
 def get_exchanges():
+    if not g.user.super_user:
+        abort(401)
+        
     try:
         usable = parse_boolean(request.args.get("usable"))
     except (ValueError, TypeError):
         abort(400)
-
-    if not g.user.super_user:
-        abort(401)
 
     query = True
     if usable is True:
@@ -32,6 +32,9 @@ def get_exchanges():
 
 @exchanges.post("")
 def post_exchange():
+    if not g.user.super_user:
+        abort(401)
+        
     json = request.json
 
     exchange_rate = Decimal(json["exchange_rate"]) / 10000000
@@ -46,6 +49,9 @@ def post_exchange():
 
 @exchanges.delete("/<exchange_id>")
 def delete_exchange(exchange_id):
+    if not g.user.super_user:
+        abort(401)
+        
     try:
         exchange = Exchange.get(Exchange.id == exchange_id)
     except DoesNotExist:
@@ -60,6 +66,9 @@ def delete_exchange(exchange_id):
 
 @exchanges.put("/<exchange_id>")
 def update_exchange(exchange_id, balance_service: BalanceService):
+    if not g.user.super_user:
+        abort(401)
+        
     try:
         amount = int(request.args.get("amount"))
         payment_id = int(request.args.get("payment"))

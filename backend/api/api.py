@@ -23,7 +23,7 @@ def extract_username():
 
 
 @api.get("/api/fee_summary")
-def get_fee_summary():
+def get_fee_summary(): # TODO: user
     fees_and_risk_eur = Transaction.select(fn.SUM(Transaction.fees_and_risk_eur)) \
             .where(Transaction.status == Transaction.Status.PAID.value).scalar()
 
@@ -64,10 +64,11 @@ def get_due_dates(year, month):
 @api.post("/api/actual/<account_id>")
 def import_transactions_to_actual(account_id, actual_service: ActualService):
     try:
-        account = Account.get(Account.id == account_id)
+        account = Account.get((Account.user == g.user.id) & (Account.id == account_id))
     except DoesNotExist:
         abort(404)
 
+    # TODO: consider super_user status
     actual_service.import_transactions(account)
     actual_service.update_transactions(account)
 
@@ -79,11 +80,11 @@ def process_payment(account_id, payment_id, payment_service: PaymentService, act
     try:
         # transactions = request.args.get("transactions")
         # transactions = [] if not transactions else [int(n) for n in transactions.split(",")]
+        account = Account.get((Account.user == g.user.id) & (Account.id == account_id))
         payment = Payment.get(
             (Payment.id == payment_id) &
             (Payment.account == account_id)
         )
-        account = Account.get(Account.id == account_id)
     except DoesNotExist:
         abort(404)
     except (ValueError, TypeError):
@@ -99,17 +100,18 @@ def process_payment(account_id, payment_id, payment_service: PaymentService, act
 @api.delete("/api/accounts/<account_id>/payments/<payment_id>")
 def unprocess_payment(account_id, payment_id, actual_service: ActualService, actual: IActualClient):
     try:
+        account = Account.get((Account.user == g.user.id) & (Account.id == account_id))
         payment = Payment.get(
             (Payment.id == payment_id) &
             (Payment.account == account_id)
         )
-        account = Account.get(Account.id == account_id)
     except DoesNotExist:
         abort(404)
     except (ValueError, TypeError):
         abort(400)
 
     transactions = Transaction.select().where(
+        (Transaction.account == account_id) &
         (Transaction.payment == payment_id) &
         (Transaction.status == Transaction.Status.PAID.value)
     )

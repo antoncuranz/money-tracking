@@ -1,4 +1,4 @@
-from flask import abort, Blueprint, request
+from flask import abort, Blueprint, request, g
 
 from backend.clients.teller import TellerInteractionRequiredException
 from backend.models import *
@@ -12,7 +12,7 @@ imports = Blueprint("imports", __name__, url_prefix="/api/import")
 @imports.post("/<account_id>")
 def import_transactions(account_id, transaction_service: TransactionService, exchange_service: ExchangeService, actual_service: ActualService):
     try:
-        account = Account.get(Account.id == account_id)
+        account = Account.get((Account.user == g.user.id) & (Account.id == account_id))
     except DoesNotExist:
         abort(404)
 

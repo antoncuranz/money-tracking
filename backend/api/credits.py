@@ -45,6 +45,7 @@ def update_credit(credit_id, balance_service: BalanceService):
             (Transaction.status != Transaction.Status.PAID.value)
         )
         credit = Credit.get((Credit.id == credit_id) & (Credit.account == tx.account_id))
+        Account.get((Account.user == g.user.id) & (Account.id == credit.account))
     except DoesNotExist:
         abort(404)
     except (ValueError, TypeError):

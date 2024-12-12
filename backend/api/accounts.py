@@ -16,7 +16,7 @@ def get_accounts():
 @accounts.get("/<account_id>/balances")
 def get_balances(account_id, teller: ITellerClient):
     try:
-        account = Account.get(Account.id == account_id)
+        account = Account.get((Account.user == g.user.id) & (Account.id == account_id))
     except DoesNotExist:
         abort(404)
     return teller.get_account_balances(account)

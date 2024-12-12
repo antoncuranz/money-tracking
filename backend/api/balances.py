@@ -10,7 +10,7 @@ balances = Blueprint("balances", __name__, url_prefix="/api/balance")
 
 
 @balances.get("")
-def get_balances(balance_service: BalanceService):
+def get_balances(balance_service: BalanceService): # TODO: user
     posted = get_balance_posted()
     pending = get_balance_pending()
     credits = get_balance_credits(balance_service)
