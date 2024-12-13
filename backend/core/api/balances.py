@@ -4,7 +4,7 @@ from decimal import Decimal
 from flask import Blueprint
 
 from backend.models import *
-from backend.service.balance_service import BalanceService
+from backend.core.service.balance_service import BalanceService
 
 balances = Blueprint("balances", __name__, url_prefix="/api/balance")
 

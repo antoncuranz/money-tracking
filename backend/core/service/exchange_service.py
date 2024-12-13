@@ -1,4 +1,4 @@
-from backend.clients.exchangerates import IExchangeRateClient
+from backend.core.client.exchangerates_client import IExchangeRateClient
 from backend.models import Transaction, ExchangeRate
 from peewee import DoesNotExist
 from flask_injector import inject

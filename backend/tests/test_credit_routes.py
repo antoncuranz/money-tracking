@@ -3,7 +3,7 @@ import json
 import pytest
 from peewee import DoesNotExist
 
-from backend import Account, Transaction, Credit, CreditTransaction, Payment, User
+from backend.models import Account, Transaction, Credit, CreditTransaction, Payment, User
 from backend.tests.conftest import with_test_db
 from backend.tests.fixtures import ACCOUNT_1, CREDIT_1, TX_1, TX_2, TX_3, CREDIT_2, ALICE_AUTH, ALICE_USER
 

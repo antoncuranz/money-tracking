@@ -5,14 +5,15 @@ from flask import Flask
 from flask_injector import FlaskInjector, singleton
 from peewee import SqliteDatabase
 
-from backend import register_blueprints
-from backend.clients.actual import IActualClient
-from backend.clients.exchangerates import IExchangeRateClient
-from backend.clients.teller import ITellerClient
-from backend.service.balance_service import BalanceService
-from backend.service.exchange_service import ExchangeService
-from backend.service.payment_service import PaymentService
-from backend.service.transaction_service import TransactionService
+from backend import register_blueprints, TransactionService, ActualService
+from backend.core.client.exchangerates_client import IExchangeRateClient
+from backend.core.service.account_service import AccountService
+from backend.core.service.balance_service import BalanceService
+from backend.core.service.exchange_service import ExchangeService
+from backend.core.service.payment_service import PaymentService
+from backend.data_export.actual_client import IActualClient
+from backend.data_import.teller_client import ITellerClient
+from backend.data_import.teller_service import TellerService
 from backend.tests.mockclients.actual import MockActualClient
 from backend.tests.mockclients.exchangerates import MockExchangeRateClient
 from backend.tests.mockclients.teller import MockTellerClient
@@ -85,6 +86,24 @@ def actual_mock(app):
 
 
 @pytest.fixture()
+def account_service(app):
+    service = AccountService()
+    dependencies[AccountService] = service
+    FlaskInjector(app=app, modules=[configure])
+
+    yield service
+
+
+@pytest.fixture()
+def transaction_service(app, teller_service, actual_service):
+    service = TransactionService(teller_service, actual_service)
+    dependencies[TransactionService] = service
+    FlaskInjector(app=app, modules=[configure])
+
+    yield service
+
+
+@pytest.fixture()
 def balance_service(app):
     service = BalanceService()
     dependencies[BalanceService] = service
@@ -103,17 +122,26 @@ def exchange_service(app, exchangerates_mock):
 
 
 @pytest.fixture()
-def payment_service(app, balance_service, exchange_service, actual_mock):
-    service = PaymentService(balance_service, exchange_service, actual_mock)
+def payment_service(app, balance_service, exchange_service, actual_service):
+    service = PaymentService(balance_service, exchange_service, actual_service)
     dependencies[PaymentService] = service
     FlaskInjector(app=app, modules=[configure])
 
     yield service
 
 @pytest.fixture()
-def transaction_service(app, teller_mock):
-    service = TransactionService(teller_mock)
-    dependencies[TransactionService] = service
+def teller_service(app, teller_mock):
+    service = TellerService(teller_mock)
+    dependencies[TellerService] = service
+    FlaskInjector(app=app, modules=[configure])
+
+    yield service
+
+
+@pytest.fixture()
+def actual_service(app, exchange_service, actual_mock):
+    service = ActualService(actual_mock, exchange_service)
+    dependencies[ActualService] = service
     FlaskInjector(app=app, modules=[configure])
 
     yield service

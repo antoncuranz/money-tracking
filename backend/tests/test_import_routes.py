@@ -1,4 +1,4 @@
-from backend import Account, Transaction, ExchangeRate, Credit, Payment, CreditTransaction, ExchangePayment, Exchange, \
+from backend.models import Account, Transaction, ExchangeRate, Credit, Payment, CreditTransaction, ExchangePayment, Exchange, \
     User
 from backend.tests.conftest import with_test_db
 from backend.tests.fixtures import ACCOUNT_1, ALICE_AUTH, ALICE_USER

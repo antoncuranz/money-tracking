@@ -1,7 +1,7 @@
 import requests
 from flask_injector import inject
 
-from backend import ExchangeRate
+from backend.models import ExchangeRate
 
 
 class IExchangeRateClient:

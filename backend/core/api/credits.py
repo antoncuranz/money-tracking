@@ -1,8 +1,8 @@
 from flask import abort, Blueprint, request, g
 
-from backend.api.util import stringify, parse_boolean
+from backend.core.util import stringify, parse_boolean
 from backend.models import *
-from backend.service.balance_service import BalanceService
+from backend.core.service.balance_service import BalanceService
 
 credits = Blueprint("credits", __name__, url_prefix="/api/credits")
 

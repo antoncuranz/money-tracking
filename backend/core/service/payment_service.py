@@ -1,20 +1,73 @@
 from flask_injector import inject
 from decimal import Decimal
 
-from backend.clients.actual import IActualClient
-from backend.models import Transaction, db, Exchange, ExchangePayment
-from backend.service.balance_service import BalanceService
-from backend.service.exchange_service import ExchangeService
+from backend.models import Transaction, db, Exchange, ExchangePayment, Payment, Account
+from backend.core.service.balance_service import BalanceService
+from backend.core.service.exchange_service import ExchangeService
+from backend.data_export.actual_service import ActualService
 
 
 class PaymentService:
     @inject
-    def __init__(self, balance_service: BalanceService, exchange_service: ExchangeService, actual: IActualClient):
+    def __init__(self, balance_service: BalanceService, exchange_service: ExchangeService, actual_service: ActualService):
         self.balance_service = balance_service
         self.exchange_service = exchange_service
-        self.actual = actual
+        self.actual_service = actual_service
+    
+    def get_payments(self, user, account_id, processed=None):
+        query = (Account.user == user.id)
 
-    def process_payment_auto(self, payment):
+        if processed is not None:
+            query = query & (Payment.processed == processed)
+
+        if account_id is not None:
+            query = query & (Payment.account == account_id)
+
+        return Payment.select().join(Account).where(query).order_by(-Payment.date)
+        
+    def process_payment(self, user, payment_id, transactions=None):
+        """
+        Raises
+        ------
+        DoesNotExist
+            If a payment with the given `payment_id` does not exist or does not belong to the given `user`.
+        """
+        payment = Payment.get(Payment.id == payment_id)
+        account = Account.get((Account.user == user.id) & (Account.id == payment.account))
+
+        if not transactions:
+            transactions = self._guess_transactions_to_process(payment)
+        
+        processed_transactions = self._process_payment(payment, transactions)
+        
+        self.actual_service.update_transactions(account, processed_transactions)
+        self.actual_service.export_payment(account, payment)
+    
+    def unprocess_payment(self, user, payment_id):
+        payment = Payment.get(Payment.id == payment_id)
+        account = Account.get((Account.user == user.id) & (Account.id == payment.account))
+
+        transactions = Transaction.select().where(
+            (Transaction.account == account.id) &
+            (Transaction.payment == payment_id) &
+            (Transaction.status == Transaction.Status.PAID.value)
+        )
+        for tx in transactions:
+            tx.status_enum = Transaction.Status.POSTED
+            tx.payment = None
+            tx.fees_and_risk_eur = None
+            tx.save()
+
+        payment.processed = False
+        payment.amount_eur = None
+        payment.actual_id = None
+        payment.save()
+
+        self.actual_service.update_transactions(account, transactions)
+        if payment.actual_id is not None:
+            self.actual_service.delete_transaction(account.user, payment.actual_id)
+
+    def _guess_transactions_to_process(self, payment):
         transactions = Transaction.select().where(
             (Transaction.status == Transaction.Status.POSTED.value) &
             (Transaction.account == payment.account)
@@ -34,11 +87,10 @@ class PaymentService:
             else:
                 break
 
-        self.process_payment(payment, process_tx)
         return process_tx
 
     @db.atomic()
-    def process_payment(self, payment, transactions):
+    def _process_payment(self, payment, transactions):
         if payment.processed or len(payment.transactions) > 0:
             raise Exception("Error: Payment was already processed!")
 

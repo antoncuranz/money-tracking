@@ -1,12 +1,12 @@
 import json
 
-from backend import Account, Transaction, User
+from backend.models import Account, Transaction, User
 from backend.tests.conftest import with_test_db
 from backend.tests.fixtures import ACCOUNT_1, ALICE_AUTH, ALICE_USER
 
 
 @with_test_db((User, Account, Transaction))
-def test_get_all_transactions(client):
+def test_get_all_transactions(client, transaction_service):
     # TODO
     # Arrange
     User.create(**ALICE_USER)

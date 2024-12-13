@@ -1,5 +1,5 @@
-from backend import Config
-from backend.clients.actual import IActualClient
+from backend import IActualClient
+from backend.models import Config
 
 
 class MockActualClient(IActualClient):

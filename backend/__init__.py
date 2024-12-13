@@ -1,23 +1,24 @@
 from flask import Flask
 from flask_injector import FlaskInjector, singleton
 
-from backend.api.payments import payments
 from backend.models import *
-from backend.api.api import api
-from backend.api.balances import balances
-from backend.api.imports import imports
-from backend.api.exchanges import exchanges
-from backend.api.credits import credits
-from backend.api.accounts import accounts
-from backend.api.transactions import transactions
-from backend.clients.actual import IActualClient, ActualClient
-from backend.clients.exchangerates import ExchangeratesApiIoClient, MastercardClient
-from backend.clients.teller import TellerClient, ITellerClient
-from backend.service.actual_service import ActualService
-from backend.service.balance_service import BalanceService
-from backend.service.exchange_service import ExchangeService
-from backend.service.payment_service import PaymentService
-from backend.service.transaction_service import TransactionService
+from backend.core.client.exchangerates_client import MastercardClient, ExchangeratesApiIoClient
+from backend.data_import.teller_client import TellerClient, ITellerClient
+from backend.data_export.actual_client import ActualClient, IActualClient
+from backend.core.service.balance_service import BalanceService
+from backend.core.service.exchange_service import ExchangeService
+from backend.core.service.transaction_service import TransactionService
+from backend.data_import.teller_service import TellerService
+from backend.data_export.actual_service import ActualService
+from backend.core.service.payment_service import PaymentService
+from backend.core.api.api import api
+from backend.core.api.balances import balances
+from backend.core.api.credits import credits
+from backend.core.api.accounts import accounts
+from backend.data_import.api import imports
+from backend.core.api.payments import payments
+from backend.core.api.transactions import transactions
+from backend.core.api.exchanges import exchanges
 
 
 def configure(binder):
@@ -25,22 +26,23 @@ def configure(binder):
     actual = ActualClient(Config.actual_api_key, Config.actual_base_url)
     mastercard = MastercardClient()
     exchangeratesio = ExchangeratesApiIoClient(Config.exchangeratesio_access_key)
-    # ibkr = IbkrClient(Config.ibkr_host, Config.ibkr_port)
 
     binder.bind(ITellerClient, to=teller, scope=singleton)
     binder.bind(IActualClient, to=actual, scope=singleton)
     binder.bind(MastercardClient, to=mastercard, scope=singleton)
     binder.bind(ExchangeratesApiIoClient, to=exchangeratesio, scope=singleton)
-    # binder.bind(IbkrClient, to=ibkr, scope=singleton)
 
     balance_service = BalanceService()
     exchange_service = ExchangeService(mastercard, exchangeratesio)
+    teller_service = TellerService(teller)
+    actual_service = ActualService(actual, exchange_service)
 
-    binder.bind(TransactionService, to=TransactionService(teller), scope=singleton)
-    binder.bind(ActualService, to=ActualService(actual, exchange_service), scope=singleton)
+    binder.bind(TellerService, to=teller_service, scope=singleton)
+    binder.bind(ActualService, to=actual_service, scope=singleton)
     binder.bind(ExchangeService, to=exchange_service, scope=singleton)
     binder.bind(BalanceService, to=balance_service, scope=singleton)
-    binder.bind(PaymentService, to=PaymentService(balance_service, exchange_service, actual), scope=singleton)
+    binder.bind(TransactionService, to=TransactionService(teller_service, actual_service), scope=singleton)
+    binder.bind(PaymentService, to=PaymentService(balance_service, exchange_service, actual_service), scope=singleton)
 
 
 def register_blueprints(app):

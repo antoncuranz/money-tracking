@@ -1,13 +1,13 @@
 import os
 
-from backend.api.util import stringify
-from backend.clients.actual import IActualClient
+from backend.core.util import stringify
+from backend.data_export.actual_client import IActualClient
 from backend.config import Config
 from backend.models import Transaction, Payment
 from flask_injector import inject
 import uuid
 
-from backend.service.exchange_service import ExchangeService
+from backend.core.service.exchange_service import ExchangeService
 
 class ActualService:
     @inject
@@ -15,16 +15,16 @@ class ActualService:
         self.actual = actual
         self.exchange_service = exchange_service
 
-    def import_transactions(self, account):
+    def export_transactions(self, account):
         transactions = Transaction.select().where(
             (Transaction.status != Transaction.Status.PENDING.value) &
             (Transaction.actual_id.is_null()) &
             (Transaction.account == account.id))
 
         for tx in transactions:
-            self.import_transaction(account, tx)
+            self.export_transaction(account, tx)
 
-    def import_transaction(self, account, tx):
+    def export_transaction(self, account, tx):
         print("Importing transaction in Actual: " + str(stringify(tx)))
         id = str(uuid.uuid4())
         self.actual.create_transaction(account, self._create_actual_transaction(tx, id))
@@ -49,10 +49,10 @@ class ActualService:
             existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees(account.user)['data']}
 
         if tx.actual_id is None:
-            self.import_transaction(account, tx)
+            self.export_transaction(account, tx)
 
         actual_tx = self.actual.get_transaction(account, tx)
-        payee = self.get_or_create_payee(account.user, tx, actual_tx, existing_payees)
+        payee = self._get_or_create_payee(account.user, tx, actual_tx, existing_payees)
 
         fee_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == Config.actual_fee_category)
         main_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] != Config.actual_fee_category)
@@ -80,20 +80,7 @@ class ActualService:
             "imported_payee": tx.counterparty,
         })
         
-    def get_or_create_payee(self, user, tx, actual_tx, existing_payees):
-        if actual_tx["payee"] == Config.actual_unknown_payee:
-            if tx.counterparty in existing_payees:
-                print("Assigning existing payee for transaction with unknown payee ({})".format(tx.description))
-                return existing_payees[tx.counterparty]
-            else:
-                print("Creating new payee for transaction with unknown payee ({})".format(tx.description))
-                payee = self.actual.create_payee(user, tx.counterparty)["data"]
-                existing_payees[tx.counterparty] = payee
-                return payee
-        else:
-            return actual_tx["payee"]
-
-    def import_payments(self, account):
+    def export_payments(self, account):
         payments = Payment.select().where(
             (Payment.actual_id.is_null()) &
             (Payment.amount_eur.is_null(False)) &
@@ -101,9 +88,9 @@ class ActualService:
             (Payment.account == account.id))
 
         for payment in payments:
-            self.import_payment(account, payment)
+            self.export_payment(account, payment)
 
-    def import_payment(self, account, payment):
+    def export_payment(self, account, payment):
         if payment.processed is False or payment.actual_id is not None:
             raise Exception("Error: Payment not processed or already imported!")
 
@@ -150,3 +137,19 @@ class ActualService:
             "imported_id": payment.teller_id,
             "cleared": True
         }
+
+    def _get_or_create_payee(self, user, tx, actual_tx, existing_payees):
+        if actual_tx["payee"] == Config.actual_unknown_payee:
+            if tx.counterparty in existing_payees:
+                print("Assigning existing payee for transaction with unknown payee ({})".format(tx.description))
+                return existing_payees[tx.counterparty]
+            else:
+                print("Creating new payee for transaction with unknown payee ({})".format(tx.description))
+                payee = self.actual.create_payee(user, tx.counterparty)["data"]
+                existing_payees[tx.counterparty] = payee
+                return payee
+        else:
+            return actual_tx["payee"]
+
+    def delete_transaction(self, user, actual_id):
+        self.actual.delete_transaction(user, actual_id)

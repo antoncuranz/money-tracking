@@ -2,7 +2,7 @@ import requests
 from requests import JSONDecodeError
 
 
-class TellerInteractionRequiredException(Exception):
+class TellerMfaRequired(Exception):
     pass
 
 class ITellerClient:
@@ -47,7 +47,7 @@ class TellerClient(ITellerClient):
             try:
                 json = response.json()
                 if "error" in json and json["error"]["code"] == "enrollment.disconnected.user_action.mfa_required":
-                    raise TellerInteractionRequiredException()
+                    raise TellerMfaRequired()
             except JSONDecodeError:
                 pass
             response.raise_for_status()

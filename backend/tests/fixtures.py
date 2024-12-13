@@ -1,4 +1,4 @@
-from backend import ExchangeRate
+from backend.models import ExchangeRate
 
 ALICE_AUTH = {"X-Auth-Request-Preferred-Username": "alice"}
 BOB_AUTH = {"X-Auth-Request-Preferred-Username": "bob"}

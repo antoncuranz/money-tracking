@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 from peewee import DoesNotExist
 
-from backend import Exchange, ExchangePayment, Payment, Account, Transaction, User
+from backend.models import Exchange, ExchangePayment, Payment, Account, Transaction, User
 from backend.tests.conftest import with_test_db
 from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, EXCHANGE_2, ACCOUNT_1, EXCHANGE_1_JSON, \
     ALICE_AUTH, ALICE_USER

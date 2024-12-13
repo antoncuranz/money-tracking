@@ -2,9 +2,9 @@ from decimal import Decimal
 
 from flask import abort, Blueprint, request, g
 
-from backend.api.util import stringify, parse_boolean
+from backend.core.util import stringify, parse_boolean
 from backend.models import *
-from backend.service.balance_service import BalanceService
+from backend.core.service.balance_service import BalanceService
 
 exchanges = Blueprint("exchanges", __name__, url_prefix="/api/exchanges")
 
