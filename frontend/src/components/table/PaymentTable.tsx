@@ -36,7 +36,7 @@ export default function PaymentTable({
   }
 
   async function processPayment(payment: Payment) {
-    const url = "/api/accounts/" + payment.account_id + "/payments/" + payment.id
+    const url = "/api/payments/" + payment.id + "/process"
     const response = await fetch(url, {method: "POST"})
 
     if (!response.ok)
