@@ -10,11 +10,11 @@ class DateService:
     def __init__(self):
         pass
         
-    def get_dates(self, year, month):
+    def get_dates(self, user, year, month):
         selected_month = datetime.date(int(year), int(month), 1)
 
         result = {}
-        for account in Account.select().where(Account.user == g.user.id):
+        for account in Account.select().where(Account.user == user.id):
             if account.due_day is None:
                 continue
             result[account.id] = dict(color=(account.color if account.color else "black"))
