@@ -5,7 +5,7 @@ from flask import Flask
 from flask_injector import FlaskInjector, singleton
 from peewee import SqliteDatabase
 
-from backend import register_blueprints, TransactionService, ActualService
+from backend import register_blueprints, TransactionService, ActualService, CreditService
 from backend.core.client.exchangerates_client import IExchangeRateClient
 from backend.core.service.account_service import AccountService
 from backend.core.service.balance_service import BalanceService
@@ -113,8 +113,17 @@ def balance_service(app):
 
 
 @pytest.fixture()
-def exchange_service(app, exchangerates_mock):
-    service = ExchangeService(exchangerates_mock, exchangerates_mock)
+def credit_service(app, balance_service):
+    service = CreditService(balance_service)
+    dependencies[CreditService] = service
+    FlaskInjector(app=app, modules=[configure])
+
+    yield service
+
+
+@pytest.fixture()
+def exchange_service(app, balance_service, exchangerates_mock):
+    service = ExchangeService(balance_service, exchangerates_mock, exchangerates_mock)
     dependencies[ExchangeService] = service
     FlaskInjector(app=app, modules=[configure])
 

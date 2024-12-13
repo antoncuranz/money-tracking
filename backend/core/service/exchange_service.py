@@ -1,27 +1,92 @@
+from decimal import Decimal
+
+from backend.core.service.balance_service import BalanceService
 from backend.core.client.exchangerates_client import IExchangeRateClient
-from backend.models import Transaction, ExchangeRate
-from peewee import DoesNotExist
+from backend.models import Transaction, ExchangeRate, Exchange, ExchangePayment, Payment
+from peewee import DoesNotExist, fn
 from flask_injector import inject
 
 
 class ExchangeService:
     @inject
-    def __init__(self, mastercard: IExchangeRateClient, exchangeratesio: IExchangeRateClient):
+    def __init__(self, balance_service: BalanceService, mastercard: IExchangeRateClient, exchangeratesio: IExchangeRateClient):
+        self.balance_service = balance_service
         self.mastercard = mastercard
         self.exchangeratesio = exchangeratesio
+        
+    def get_exchanges(self, usable=None):
+        query = True
+        if usable is True:
+            query = query & (Exchange.amount_usd > fn.COALESCE(
+                ExchangePayment.select(fn.SUM(ExchangePayment.amount)).join(Payment)
+                .where((ExchangePayment.exchange == Exchange.id) & (Payment.processed == True)), 0
+            ))
+
+        return Exchange.select().where(query).order_by(-Exchange.date)
+    
+    def create_exchange(self, json):
+        exchange_rate = Decimal(json["exchange_rate"]) / 10000000
+        amount_eur = round(Decimal(json["amount_usd"]) / exchange_rate)
+        fees_eur = json["paid_eur"] - amount_eur
+
+        return Exchange.create(
+            date=json["date"], amount_usd=json["amount_usd"], exchange_rate=exchange_rate, amount_eur=amount_eur,
+            paid_eur=json["paid_eur"], fees_eur=fees_eur
+        )
+    
+    def delete_exchange(self, exchange_id):
+        exchange = Exchange.get(Exchange.id == exchange_id)
+
+        if not ExchangePayment.select().where(ExchangePayment.exchange == exchange_id):
+            exchange.delete_instance()
+        else:
+            raise Exception("Exchange is still in use")
+    
+    def update_exchange(self, exchange_id, amount, payment_id):
+        payment = Payment.get(
+            (Payment.id == payment_id) &
+            (Payment.processed == False)
+        )
+        exchange = Exchange.get(Exchange.id == exchange_id)
+
+        if amount == 0:
+            ExchangePayment.delete().where(
+                (ExchangePayment.exchange == exchange_id) &
+                (ExchangePayment.payment == payment_id)
+            ).execute()
+            return
+
+        ep = ExchangePayment.get_or_none(exchange=exchange, payment=payment)
+        current_amount = 0 if not ep else ep.amount
+
+        if self.balance_service.calc_exchange_remaining(exchange) + current_amount < amount:
+            raise Exception(f"Error: Exchange {exchange_id} has not enough balance!")
+
+        if self.balance_service.calc_payment_remaining(payment) + current_amount < amount:
+            raise Exception(f"Error: Exchange {exchange_id} has not enough balance!")
+
+        model, created = ExchangePayment.get_or_create(
+            exchange_id=exchange_id,
+            payment_id=payment_id,
+            defaults={"amount": amount}
+        )
+
+        if not created:
+            model.amount = amount
+            model.save()
 
     def fetch_exchange_rates(self, account, source: ExchangeRate.Source = ExchangeRate.Source.MASTERCARD):
         transactions = Transaction.select().where((Transaction.account == account.id) & (Transaction.amount_eur.is_null()))
-        [self.get_exchange_rate(date, source) for date in set([tx.date for tx in transactions])]
+        [self._get_exchange_rate(date, source) for date in set([tx.date for tx in transactions])]
 
     def guess_amount_eur(self, transaction: Transaction):
         try:
-            exchange_rate = self.get_exchange_rate(transaction.date)
+            exchange_rate = self._get_exchange_rate(transaction.date)
             return int(transaction.amount_usd / exchange_rate)
         except:
             return None
 
-    def get_exchange_rate(self, date, source: ExchangeRate.Source = ExchangeRate.Source.MASTERCARD):
+    def _get_exchange_rate(self, date, source: ExchangeRate.Source = ExchangeRate.Source.MASTERCARD):
         try:
             return ExchangeRate.get(date=date, source=source.value).exchange_rate
         except DoesNotExist:

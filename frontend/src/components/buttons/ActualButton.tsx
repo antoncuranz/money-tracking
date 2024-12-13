@@ -16,7 +16,7 @@ const ActualButton = () => {
   async function onClick() {
     setInProgress(true)
 
-    const response = await fetch("/api/actual/" + currentAccount!.id, {method: "POST"})
+    const response = await fetch("/api/export/actual/" + currentAccount!.id, {method: "POST"})
 
     if (!response.ok) {
       toast({

@@ -41,5 +41,5 @@ export async function fetchBalances() {
 }
 
 export async function fetchFees() {
-  return await fetchData("/api/fee_summary") as FeeSummary
+  return await fetchData("/api/balance/fees") as FeeSummary
 }

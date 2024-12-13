@@ -76,8 +76,6 @@ class TellerService:
             Transaction.update(self._make_transaction_args(teller_tx, account.id, include_unknown=False)) \
                 .where((Transaction.status != Transaction.Status.PAID.value) & (Transaction.teller_id == id)) \
                 .execute()
-            # TODO: update Actual transactions?
-            # Actual tx will be updated when payment is processed?
 
     def _make_transaction_args(self, tx, account_id, include_amount_and_status=True, include_unknown=True):
         args = { # always available args

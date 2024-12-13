@@ -1,14 +1,14 @@
 from flask import abort, Blueprint, request, g
 
+from backend.core.service.credit_service import CreditService
 from backend.core.util import stringify, parse_boolean
-from backend.models import *
-from backend.core.service.balance_service import BalanceService
+from peewee import DoesNotExist
 
 credits = Blueprint("credits", __name__, url_prefix="/api/credits")
 
 
 @credits.get("")
-def get_credits():
+def get_credits(credit_service: CreditService):
     try:
         account_str = request.args.get("account")
         account_id = None if not account_str else int(account_str)
@@ -16,65 +16,21 @@ def get_credits():
     except (ValueError, TypeError):
         abort(400)
 
-    query = (Account.user == g.user.id)
-    if usable is True:
-        query = query & (Credit.amount_usd > fn.COALESCE(
-            CreditTransaction.select(fn.SUM(CreditTransaction.amount)).join(Transaction)
-            .where((CreditTransaction.credit == Credit.id) & (Transaction.status == Transaction.Status.PAID.value)), 0
-        ))
-
-    if account_id is not None:
-        try:
-            Account.get(Account.id == account_id)
-        except DoesNotExist:
-            abort(404)
-        query = query & (Credit.account == account_id)
-
-    credits = Credit.select().join(Account).where(query).order_by(-Credit.date)
+    credits = credit_service.get_credits(g.user, account_id, usable)
     return [stringify(credit) for credit in credits]
 
 
 @credits.put("/<credit_id>")
-def update_credit(credit_id, balance_service: BalanceService):
+def update_credit(credit_id, credit_service: CreditService):
     try:
         amount = int(request.args.get("amount"))
         transaction_id = int(request.args.get("transaction"))
-
-        tx = Transaction.get(
-            (Transaction.id == transaction_id) &
-            (Transaction.status != Transaction.Status.PAID.value)
-        )
-        credit = Credit.get((Credit.id == credit_id) & (Credit.account == tx.account_id))
-        Account.get((Account.user == g.user.id) & (Account.id == credit.account))
-    except DoesNotExist:
-        abort(404)
     except (ValueError, TypeError):
         abort(400)
 
-    if amount == 0:
-        CreditTransaction.delete().where(
-            (CreditTransaction.credit == credit_id) &
-            (CreditTransaction.transaction == transaction_id)
-        ).execute()
-        return "", 204
-
-    ct = CreditTransaction.get_or_none(credit=credit, transaction=tx)
-    current_amount = 0 if not ct else ct.amount
-
-    if balance_service.calc_credit_remaining(credit) + current_amount < amount:
-        raise Exception(f"Error: Credit {credit_id} has not enough balance!")
-
-    if balance_service.calc_transaction_remaining(tx) + current_amount < amount:
-        raise Exception(f"Error: Transaction {transaction_id} has not enough balance!")
-
-    model, created = CreditTransaction.get_or_create(
-        credit_id=credit_id,
-        transaction_id=transaction_id,
-        defaults={"amount": amount}
-    )
-
-    if not created:
-        model.amount = amount
-        model.save()
+    try:
+        credit_service.update_credit(g.user, credit_id, transaction_id, amount)
+    except DoesNotExist:
+        abort(404)
 
     return "", 204

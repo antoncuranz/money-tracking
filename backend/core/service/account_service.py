@@ -1,5 +1,4 @@
 from backend.models import Account
-from backend.data_import.teller_service import TellerService
 from flask_injector import inject
 
 

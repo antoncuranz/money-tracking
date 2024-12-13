@@ -9,7 +9,7 @@ from backend.tests.fixtures import ACCOUNT_1, CREDIT_1, TX_1, TX_2, TX_3, CREDIT
 
 
 @with_test_db((User, Account, Credit, CreditTransaction, Transaction, Payment))
-def test_get_credits(app, client):
+def test_get_credits(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)
@@ -25,7 +25,7 @@ def test_get_credits(app, client):
 
 
 @with_test_db((User, Account, Credit, CreditTransaction, Transaction, Payment))
-def test_update_credit(app, client, balance_service):
+def test_update_credit(client, credit_service, balance_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -44,7 +44,7 @@ def test_update_credit(app, client, balance_service):
 
 
 @with_test_db((User, Account, Credit, CreditTransaction, Transaction, Payment))
-def test_update_credit_amount_larger_than_tx_500(app, client, balance_service):
+def test_update_credit_amount_larger_than_tx_500(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -61,7 +61,7 @@ def test_update_credit_amount_larger_than_tx_500(app, client, balance_service):
 
 
 @with_test_db((User, Account, Credit, CreditTransaction, Transaction, Payment))
-def test_update_credit_amount_larger_than_remaining_tx_500(app, client, balance_service):
+def test_update_credit_amount_larger_than_remaining_tx_500(client, credit_service, balance_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -81,7 +81,7 @@ def test_update_credit_amount_larger_than_remaining_tx_500(app, client, balance_
 
 
 @with_test_db((User, Account, Credit, CreditTransaction, Transaction, Payment))
-def test_update_credit_amount_larger_than_credit_500(app, client, balance_service):
+def test_update_credit_amount_larger_than_credit_500(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -98,7 +98,7 @@ def test_update_credit_amount_larger_than_credit_500(app, client, balance_servic
 
 
 @with_test_db((User, Account, Credit, CreditTransaction, Transaction, Payment))
-def test_update_credit_on_paid_transaction_404(app, client, balance_service):
+def test_update_credit_on_paid_transaction_404(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -116,7 +116,7 @@ def test_update_credit_on_paid_transaction_404(app, client, balance_service):
 
 
 @with_test_db((User, Account, Credit, CreditTransaction, Transaction, Payment))
-def test_update_credit_delete_credit_transaction(app, client, balance_service):
+def test_update_credit_delete_credit_transaction(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -135,7 +135,7 @@ def test_update_credit_delete_credit_transaction(app, client, balance_service):
         CreditTransaction.get()
 
 @with_test_db((User, Account, Credit, CreditTransaction, Transaction, Payment))
-def test_update_credit_reduce_amount(app, client, balance_service):
+def test_update_credit_reduce_amount(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -153,7 +153,7 @@ def test_update_credit_reduce_amount(app, client, balance_service):
 
 
 @with_test_db((User, Account, Credit, CreditTransaction, Transaction, Payment))
-def test_get_usable_credits(app, client, balance_service):
+def test_get_usable_credits(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)

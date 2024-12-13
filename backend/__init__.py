@@ -1,6 +1,11 @@
 from flask import Flask
 from flask_injector import FlaskInjector, singleton
 
+from backend.core.api.dates import dates
+from backend.core.service.account_service import AccountService
+from backend.core.service.credit_service import CreditService
+from backend.core.service.date_service import DateService
+from backend.data_import.import_service import ImportService
 from backend.models import *
 from backend.core.client.exchangerates_client import MastercardClient, ExchangeratesApiIoClient
 from backend.data_import.teller_client import TellerClient, ITellerClient
@@ -15,7 +20,7 @@ from backend.core.api.api import api
 from backend.core.api.balances import balances
 from backend.core.api.credits import credits
 from backend.core.api.accounts import accounts
-from backend.data_import.api import imports
+from backend.data_import.api import data_import
 from backend.core.api.payments import payments
 from backend.core.api.transactions import transactions
 from backend.core.api.exchanges import exchanges
@@ -33,7 +38,7 @@ def configure(binder):
     binder.bind(ExchangeratesApiIoClient, to=exchangeratesio, scope=singleton)
 
     balance_service = BalanceService()
-    exchange_service = ExchangeService(mastercard, exchangeratesio)
+    exchange_service = ExchangeService(balance_service, mastercard, exchangeratesio)
     teller_service = TellerService(teller)
     actual_service = ActualService(actual, exchange_service)
 
@@ -41,6 +46,10 @@ def configure(binder):
     binder.bind(ActualService, to=actual_service, scope=singleton)
     binder.bind(ExchangeService, to=exchange_service, scope=singleton)
     binder.bind(BalanceService, to=balance_service, scope=singleton)
+    binder.bind(AccountService, to=AccountService(), scope=singleton)
+    binder.bind(DateService, to=DateService(), scope=singleton)
+    binder.bind(ImportService, to=ImportService(teller_service, exchange_service, actual_service), scope=singleton)
+    binder.bind(CreditService, to=CreditService(balance_service), scope=singleton)
     binder.bind(TransactionService, to=TransactionService(teller_service, actual_service), scope=singleton)
     binder.bind(PaymentService, to=PaymentService(balance_service, exchange_service, actual_service), scope=singleton)
 
@@ -52,8 +61,9 @@ def register_blueprints(app):
     app.register_blueprint(payments)
     app.register_blueprint(credits)
     app.register_blueprint(exchanges)
-    app.register_blueprint(imports)
+    app.register_blueprint(data_import)
     app.register_blueprint(balances)
+    app.register_blueprint(dates)
 
 
 def create_app():
