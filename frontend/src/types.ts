@@ -79,7 +79,7 @@ export type Payment = {
   category: string;
   amount_usd: number;
   amount_eur: number;
-  processed: boolean;
+  status: number;
   exchangepayment_set: ExchangePayment[];
 };
 

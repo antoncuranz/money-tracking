@@ -84,14 +84,14 @@ class ActualService:
         payments = Payment.select().where(
             (Payment.actual_id.is_null()) &
             (Payment.amount_eur.is_null(False)) &
-            (Payment.processed == True) &
+            (Payment.status == Payment.Status.PROCESSED.value) &
             (Payment.account == account.id))
 
         for payment in payments:
             self.export_payment(account, payment)
 
     def export_payment(self, account, payment):
-        if payment.processed is False or payment.actual_id is not None:
+        if payment.status_enum != Payment.Status.PROCESSED or payment.actual_id is not None:
             raise Exception("Error: Payment not processed or already imported!")
 
         id = str(uuid.uuid4())
@@ -100,7 +100,7 @@ class ActualService:
         payment.save()
 
     def _create_actual_transaction(self, tx, id):
-        category = os.getenv("ACTUAL_CAT_" + tx.category.upper(), None)
+        category = os.getenv("ACTUAL_CAT_" + (tx.category or "unknown").upper(), None)
         amount_eur = tx.amount_eur or self.exchange_service.guess_amount_eur(tx) or 0
         return {
             "id": id,

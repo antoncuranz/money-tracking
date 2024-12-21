@@ -27,7 +27,7 @@ def test_payment_processing_good_ccy_risk(client, balance_service, payment_servi
     payment = Payment.get()
 
     assert response.status_code == 204
-    assert payment.processed is True
+    assert payment.status_enum == Payment.Status.PROCESSED
     assert sum_eur == payment.amount_eur
     assert sum_usd == payment.amount_usd
     assert balance_service.calc_exchange_remaining(exchange) == 0
@@ -73,7 +73,7 @@ def test_payment_processing_bad_ccy_risk(client, balance_service, payment_servic
     payment = Payment.get()
 
     assert response.status_code == 204
-    assert payment.processed is True
+    assert payment.status_enum == Payment.Status.PROCESSED
     assert sum_eur == payment.amount_eur
     assert sum_usd == payment.amount_usd
     assert balance_service.calc_exchange_remaining(exchange) == 0
@@ -121,7 +121,7 @@ def test_payment_processing_applied_credit(client, balance_service, payment_serv
     payment = Payment.get()
 
     assert response.status_code == 204
-    assert payment.processed is True
+    assert payment.status_enum == Payment.Status.PROCESSED
     assert sum_eur == payment.amount_eur
     assert sum_usd - 4100 == payment.amount_usd
     assert balance_service.calc_exchange_remaining(exchange) == 0
@@ -201,7 +201,7 @@ def test_payment_processing_with_multiple_exchanges(client, balance_service, pay
     payment = Payment.get()
 
     assert response.status_code == 204
-    assert payment.processed is True
+    assert payment.status_enum == Payment.Status.PROCESSED
     assert sum_eur == payment.amount_eur
     assert sum_usd == payment.amount_usd
     assert balance_service.calc_exchange_remaining(ex1) == 0
@@ -232,7 +232,7 @@ def test_payment_processing_with_multiple_exchanges_real_case(client, balance_se
 
     payment = Payment.create(
         account_id=1, import_id="import_test_pm_1", date="2024-10-15", counterparty="Capital One", description="Payment",
-        category="generic", amount_usd=4344
+        category="generic", amount_usd=4344, status=2
     )
 
     Exchange.create(id=1, date="2024-09-17", amount_usd=49789, paid_eur=-1, exchange_rate=1.11210)
@@ -254,7 +254,7 @@ def test_payment_processing_with_multiple_exchanges_real_case(client, balance_se
     payment = Payment.get()
 
     assert response.status_code == 204
-    assert payment.processed is True
+    assert payment.status_enum == Payment.Status.PROCESSED
     assert sum_eur == payment.amount_eur
     assert sum_usd == payment.amount_usd
 
@@ -280,7 +280,7 @@ def test_payment_processing_with_multiple_exchanges_real_case_2(client, balance_
 
     payment = Payment.create(
         account_id=1, import_id="import_test_pm_1", date="2024-09-15", counterparty="Capital One", description="Payment",
-        category="generic", amount_usd=2605
+        category="generic", amount_usd=2605, status=2
     )
 
     Exchange.create(id=1, date="2024-08-06", amount_usd=27995, paid_eur=-1, exchange_rate=1.09219)
@@ -303,6 +303,6 @@ def test_payment_processing_with_multiple_exchanges_real_case_2(client, balance_
     payment = Payment.get()
 
     assert response.status_code == 204
-    assert payment.processed is True
+    assert payment.status_enum == Payment.Status.PROCESSED
     assert sum_eur == payment.amount_eur
     assert sum_usd == payment.amount_usd

@@ -152,7 +152,7 @@ def test_update_exchange_on_processed_payment_404(client, exchange_service):
     Account.create(**ACCOUNT_1)
     exchange = Exchange.create(**EXCHANGE_1)
     payment = Payment.create(**PAYMENT_1)
-    payment.processed = True
+    payment.status_enum = Payment.Status.PROCESSED
     payment.save()
     ExchangePayment.create(exchange=exchange, payment=payment, amount=1)
 
@@ -207,7 +207,7 @@ def test_get_usable_exchanges(client, exchange_service):
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
     exchange = Exchange.create(**EXCHANGE_1)
-    payment = Payment.create(**PAYMENT_1, processed=True)
+    payment = Payment.create(**PAYMENT_1, status_enum=Payment.Status.PROCESSED)
     ExchangePayment.create(exchange=exchange, payment=payment, amount=exchange.amount_usd)
 
     assert payment.amount_usd == exchange.amount_usd

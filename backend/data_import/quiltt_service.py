@@ -3,6 +3,10 @@ import json
 import traceback
 from decimal import Decimal
 
+import requests
+from peewee import DoesNotExist
+
+from backend.config import Config
 from backend.data_import.quiltt_client import IQuilttClient
 from backend.models import Transaction, Credit, Payment
 from flask_injector import inject
@@ -26,7 +30,11 @@ class QuilttService:
 
         for tx in quiltt_response:
             try:
-                self._process_transaction(self._get_type(tx), account, tx)
+                type = self._get_type(tx)
+                if type is Payment:
+                    self._process_payment(account, tx)
+                else:
+                    self._process_transaction_or_credit(type, account, tx)
             except:
                 print("Error processing quiltt_tx: " + json.dumps(tx))
                 traceback.print_exc()
@@ -42,7 +50,28 @@ class QuilttService:
         else:
             return Transaction
 
-    def _process_transaction(self, type, account, tx):
+    def _process_payment(self, account, tx):
+        args = self._make_transaction_args(tx, account.id)
+        try:
+            pending_payment = Payment.get(
+                (Payment.account == account.id) & (Payment.status == Payment.Status.PENDING.value) & (Payment.amount_usd == args["amount_usd"])
+            )
+            print("Matching payment " + str(pending_payment.id))
+            Payment.update(**args).where(Payment.id == pending_payment.id).execute()
+            return
+        except DoesNotExist:
+            pass
+
+        result, created = Payment.get_or_create(
+            import_id=tx["remoteData"]["mx"]["transaction"]["id"],
+            defaults=args
+        )
+
+        if created:
+            self._send_notification("A Payment could not be matched")
+            print("Error: Could not find pending Payment for {}.".format(json.dumps(tx)))
+
+    def _process_transaction_or_credit(self, type, account, tx):
         type.get_or_create(
             import_id=tx["remoteData"]["mx"]["transaction"]["id"],
             defaults=self._make_transaction_args(tx, account.id)
@@ -55,7 +84,6 @@ class QuilttService:
             "date": tx["date"],
             "counterparty": tx["description"],
             "description": tx["remoteData"]["mx"]["transaction"]["response"]["originalDescription"],
-            "category": "unknown",
             "amount_usd": abs(int(Decimal(tx["amount"] * 100).quantize(1))),
             "status": Transaction.Status.POSTED.value
         }
@@ -69,3 +97,11 @@ class QuilttService:
             print(self.token)
 
         return self.token
+
+    def _send_notification(self, msg, priority=0):
+        requests.post("https://api.pushover.net/1/messages.json", data = {
+            "token": Config.pushover_token,
+            "user": Config.pushover_user,
+            "message": msg,
+            "priority": priority
+        })

@@ -19,4 +19,7 @@ class Config:
     mqtt_user = os.getenv("MQTT_USER")
     mqtt_passwd = os.getenv("MQTT_PASSWD")
 
+    pushover_token = os.getenv("PUSHOVER_TOKEN")
+    pushover_user = os.getenv("PUSHOVER_USER")
+
     exchangeratesio_access_key = os.getenv("EXCHANGERATESIO_ACCESS_KEY")

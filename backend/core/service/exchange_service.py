@@ -19,7 +19,7 @@ class ExchangeService:
         if usable is True:
             query = query & (Exchange.amount_usd > fn.COALESCE(
                 ExchangePayment.select(fn.SUM(ExchangePayment.amount)).join(Payment)
-                .where((ExchangePayment.exchange == Exchange.id) & (Payment.processed == True)), 0
+                .where((ExchangePayment.exchange == Exchange.id) & (Payment.status == Payment.Status.PROCESSED.value)), 0
             ))
 
         return Exchange.select().where(query).order_by(-Exchange.date)
@@ -45,7 +45,7 @@ class ExchangeService:
     def update_exchange(self, exchange_id, amount, payment_id):
         payment = Payment.get(
             (Payment.id == payment_id) &
-            (Payment.processed == False)
+            (Payment.status == Payment.Status.POSTED.value)
         )
         exchange = Exchange.get(Exchange.id == exchange_id)
 

@@ -18,7 +18,7 @@ class PaymentService:
         query = (Account.user == user.id)
 
         if processed is not None:
-            query = query & (Payment.processed == processed)
+            query = query & (Payment.status == Payment.Status.PROCESSED.value if processed else Payment.status != Payment.Status.PROCESSED.value)
 
         if account_id is not None:
             query = query & (Payment.account == account_id)
@@ -58,7 +58,7 @@ class PaymentService:
             tx.fees_and_risk_eur = None
             tx.save()
 
-        payment.processed = False
+        payment.status_enum = Payment.Status.POSTED
         payment.amount_eur = None
         payment.actual_id = None
         payment.save()
@@ -91,7 +91,10 @@ class PaymentService:
 
     @db.atomic()
     def _process_payment(self, payment, transactions):
-        if payment.processed or len(payment.transactions) > 0:
+        if payment.status_enum == Payment.Status.PENDING:
+            raise Exception("Error: Payment is still pending!")
+
+        if payment.status_enum == Payment.Status.PROCESSED or len(payment.transactions) > 0:
             raise Exception("Error: Payment was already processed!")
 
         tx_remaining_sum = sum([self.balance_service.calc_transaction_remaining(tx) for tx in transactions])
@@ -132,7 +135,7 @@ class PaymentService:
             avg_eur_usd_exchanged += Decimal(ep.amount / payment.amount_usd) * ep.exchange.exchange_rate
 
         payment.amount_eur = round(payment.amount_usd / avg_eur_usd_exchanged)
-        payment.processed = True
+        payment.status_enum = Payment.Status.PROCESSED
         payment.save()
 
         eur_sum = sum([tx.amount_eur + tx.fees_and_risk_eur for tx in transactions])

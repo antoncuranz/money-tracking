@@ -25,7 +25,8 @@ class BalanceService:
         query = ExchangePayment.select().where(ExchangePayment.exchange == exchange)
 
         for exchange_payment in query:
-            if not include_not_processed or exchange_payment.payment.processed:
+            # TODO: check if "not" is correct
+            if not include_not_processed or exchange_payment.payment.status_enum == Payment.Status.PROCESSED:
                 balance -= exchange_payment.amount
 
         if balance < 0:
@@ -133,7 +134,7 @@ class BalanceService:
         return balance
 
     def get_virtual_account_balance(self):
-        payments = Payment.select().where(Payment.processed == False)
+        payments = Payment.select().where(Payment.status == Payment.Status.POSTED.value)
         remaining_payments = 0
         for payment in payments:
             remaining_payments += self.calc_payment_remaining(payment)

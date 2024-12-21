@@ -101,15 +101,15 @@ CREDIT_2 = dict(
 
 PAYMENT_1 = dict(
     account_id=1, import_id="import_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
-    category="generic", amount_usd=sum([tx["amount_usd"] for tx in TRANSACTIONS])
+    category="generic", amount_usd=sum([tx["amount_usd"] for tx in TRANSACTIONS]), status=2
 )
 PAYMENT_2 = dict(
     account_id=1, import_id="import_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
-    category="generic", amount_usd=100
+    category="generic", amount_usd=100, status=2
 )
 PAYMENT_3 = dict(
     account_id=1, import_id="import_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
-    category="generic", amount_usd=50000
+    category="generic", amount_usd=50000, status=2
 )
 
 EXCHANGE_1_JSON = dict(

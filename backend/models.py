@@ -51,16 +51,31 @@ class Account(BaseModel):
 class Payment(BaseModel):
     id = AutoField()
     account = ForeignKeyField(Account, backref="payments")
-    import_id = CharField(unique=True)
+    import_id = CharField(unique=True, null=True)
     actual_id = CharField(null=True)
     date = DateField(default=datetime.date.today)
     counterparty = CharField()
     description = CharField()
-    category = CharField()
+    category = CharField(null=True)
     amount_usd = IntegerField()
     amount_eur = IntegerField(null=True)
-    processed = BooleanField(default=False)
-    pending = BooleanField(default=False) # to allow processing payment directly after statement posted
+    status = IntegerField()
+
+    @property
+    def status_enum(self):
+        return Payment.Status(self.status)
+
+    @status_enum.setter
+    def status_enum(self, status):
+        if isinstance(status, Payment.Status):
+            self.status = status.value
+        else:
+            raise ValueError("Invalid status type")
+
+    class Status(Enum):
+        PENDING = 1
+        POSTED = 2
+        PROCESSED = 3
 
 
 class Exchange(BaseModel):
@@ -72,6 +87,7 @@ class Exchange(BaseModel):
     amount_eur = IntegerField(null=True)
     paid_eur = IntegerField()
     fees_eur = IntegerField(null=True)
+    import_id = CharField(unique=True, null=True)
 
 
 class ExchangePayment(BaseModel):
@@ -91,7 +107,7 @@ class Transaction(BaseModel):
     date = DateField(default=datetime.date.today)
     counterparty = CharField()
     description = CharField()
-    category = CharField()
+    category = CharField(null=True)
     amount_usd = IntegerField()
     amount_eur = IntegerField(null=True)
     status = IntegerField()
@@ -123,7 +139,7 @@ class Credit(BaseModel):
     date = DateField(default=datetime.date.today)
     counterparty = CharField()
     description = CharField()
-    category = CharField()
+    category = CharField(null=True)
     amount_usd = IntegerField()
 
 
