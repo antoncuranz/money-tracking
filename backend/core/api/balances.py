@@ -29,7 +29,7 @@ def get_balances(balance_service: BalanceService):
 
 @balances.get("/accounts")
 def get_account_balances(balance_service: BalanceService):
-    return balance_service.get_account_baylances(g.user)
+    return balance_service.get_account_balances(g.user)
 
 @balances.get("/fees")
 def get_fee_summary(balance_service: BalanceService):
