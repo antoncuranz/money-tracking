@@ -25,6 +25,12 @@ class ExchangeService:
         return Exchange.select().where(query).order_by(-Exchange.date)
     
     def create_exchange(self, json):
+        if json["paid_eur"] == 0:
+            return Exchange.create(
+                date=json["date"], amount_usd=json["amount_usd"], exchange_rate=Decimal(0), amount_eur=0,
+                paid_eur=0, fees_eur=0, neutral=True
+            )
+
         exchange_rate = Decimal(json["exchange_rate"]) / 10000000
         amount_eur = round(Decimal(json["amount_usd"]) / exchange_rate)
         fees_eur = json["paid_eur"] - amount_eur

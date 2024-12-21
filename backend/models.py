@@ -89,6 +89,7 @@ class Exchange(BaseModel):
     paid_eur = IntegerField()
     fees_eur = IntegerField(null=True)
     import_id = CharField(unique=True, null=True)
+    neutral = BooleanField(default=False)
 
 
 class ExchangePayment(BaseModel):
@@ -115,6 +116,7 @@ class Transaction(BaseModel):
     payment = ForeignKeyField(Payment, backref="transactions", null=True)
     fees_and_risk_eur = IntegerField(null=True)
     ignore = BooleanField(null=True)
+    neutral = BooleanField(default=False)
 
     @property
     def status_enum(self):
