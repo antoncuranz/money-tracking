@@ -22,6 +22,7 @@ from backend.core.api.balances import balances
 from backend.core.api.credits import credits
 from backend.core.api.accounts import accounts
 from backend.data_import.api import data_import
+from backend.data_export.api import data_export
 from backend.core.api.payments import payments
 from backend.core.api.transactions import transactions
 from backend.core.api.exchanges import exchanges
@@ -66,9 +67,10 @@ def register_blueprints(app):
     app.register_blueprint(payments)
     app.register_blueprint(credits)
     app.register_blueprint(exchanges)
-    app.register_blueprint(data_import)
     app.register_blueprint(balances)
     app.register_blueprint(dates)
+    app.register_blueprint(data_import)
+    app.register_blueprint(data_export)
 
 
 def create_app():
