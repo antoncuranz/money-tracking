@@ -38,9 +38,9 @@ class PaymentService:
         if not transactions:
             transactions = self._guess_transactions_to_process(payment)
         
-        processed_transactions = self._process_payment(payment, transactions)
+        self._process_payment(payment, transactions)
         
-        self.actual_service.update_transactions(account, processed_transactions)
+        self.actual_service.update_transactions(account, transactions)
         self.actual_service.export_payment(account, payment)
     
     def unprocess_payment(self, user, payment_id):
