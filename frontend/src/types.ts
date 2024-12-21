@@ -1,9 +1,7 @@
 export type Account = {
   id: number;
   actual_id: string;
-  teller_id?: string;
-  teller_access_token?: string;
-  teller_enrollment_id?: string;
+  import_id?: string;
   name: string;
   institution: string;
   due_day?: number;
@@ -13,10 +11,19 @@ export type Account = {
   target_spend?: number;
 };
 
+export type BankAccount = {
+  id: number;
+  import_id?: string;
+  name: string;
+  institution: string;
+  icon?: string;
+  balance: number;
+};
+
 export type Credit = {
   id: number;
   account_id: number;
-  teller_id: string;
+  import_id: string;
   date: string;
   counterparty: string;
   description: string;
@@ -34,7 +41,7 @@ export type CreditTransaction = {
 export type Transaction = {
   id: number;
   account_id: number;
-  teller_id: string;
+  import_id: string;
   actual_id: number | null;
   date: string;
   counterparty: string;
@@ -71,7 +78,7 @@ export type ExchangePayment = {
 export type Payment = {
   id: number;
   account_id: number;
-  teller_id: string;
+  import_id: string;
   actual_id: number | null;
   date: string;
   counterparty: string;
@@ -90,8 +97,9 @@ export type Balances = {
   credits: number;
   exchanged: number;
   virtual_account: number;
-  accounts: { [id: string] : AccountBalance };
 };
+
+export type AccountBalances = { [id: string] : AccountBalance };
 
 export type AccountBalance = {
   posted: number;

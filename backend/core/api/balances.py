@@ -19,7 +19,6 @@ def get_balances(balance_service: BalanceService):
     total = posted + pending - credits - exchanged
 
     return json.dumps({
-        "accounts": balance_service.get_account_balances(),
         "total": total,
         "posted": posted,
         "pending": pending,
@@ -27,6 +26,10 @@ def get_balances(balance_service: BalanceService):
         "exchanged": exchanged,
         "virtual_account": balance_service.get_virtual_account_balance()
     })
+
+@balances.get("/accounts")
+def get_account_balances(balance_service: BalanceService):
+    return balance_service.get_account_baylances(g.user)
 
 @balances.get("/fees")
 def get_fee_summary(balance_service: BalanceService):

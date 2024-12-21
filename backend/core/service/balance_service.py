@@ -81,16 +81,16 @@ class BalanceService:
 
         return balance
 
-    def get_account_balances(self):
+    def get_account_balances(self, user):
         result = {}
-        for account in Account.select():
+        for account in Account.select().where(Account.user == user.id):
             posted_tx = Transaction.select(fn.SUM(Transaction.amount_usd)).where(
                 (Transaction.account == account.id) & (Transaction.status != Transaction.Status.PENDING.value)
             ).scalar() or 0
             posted_credits = Credit.select(fn.SUM(Credit.amount_usd)).where(
                 (Credit.account == account.id)).scalar() or 0
             posted_payments = Payment.select(fn.SUM(Payment.amount_usd)).where(
-                (Payment.account == account.id)).scalar() or 0
+                (Payment.account == account.id) & (Payment.status != Payment.Status.PENDING.value)).scalar() or 0
 
             pending = Transaction.select(fn.SUM(Transaction.amount_usd)).where(
                 (Transaction.account == account.id) & (Transaction.status == Transaction.Status.PENDING.value) &
@@ -105,6 +105,9 @@ class BalanceService:
             }
 
         return result
+
+    def get_bank_account_balances(self, user):
+        return { }
 
     def get_balance_posted(self):
         transactions = Transaction.select().where(Transaction.status == Transaction.Status.POSTED.value)

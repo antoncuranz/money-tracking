@@ -26,6 +26,7 @@ class User(BaseModel):
 
 class BankAccount(BaseModel):
     id = AutoField()
+    user = ForeignKeyField(User, backref="bank_accounts")
     name = CharField()
     institution = CharField()
     icon = CharField(null=True)

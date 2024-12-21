@@ -1,21 +1,21 @@
 import {formatAmount} from "@/components/util.ts";
 import {Progress} from "@/components/ui/progress.tsx";
-import {Account, Balances} from "@/types.ts";
+import {Account, AccountBalances} from "@/types.ts";
 import PrivacyFilter from "@/components/PrivacyFilter.tsx";
 
 interface Props {
   account: Account,
-  balances: Balances,
+  accountBalances: AccountBalances,
 }
 
-const CardBalance = ({account, balances}: Props) => {
+const CardBalance = ({account, accountBalances}: Props) => {
   
   function getTotalSpent(account: Account) {
-    return balances.accounts[account.id].total_spent
+    return accountBalances[account.id].total_spent
   }
 
   function getTotalCredits(account: Account) {
-    return balances.accounts[account.id].total_credits
+    return accountBalances[account.id].total_credits
   }
 
   return (
@@ -25,8 +25,8 @@ const CardBalance = ({account, balances}: Props) => {
         <p className="font-medium">{account.name}</p>
         <p className="text-sm text-muted-foreground">{account.institution}</p>
         <PrivacyFilter className="mt-2">
-          <span className="font-medium">{formatAmount(balances.accounts[account.id].posted)}</span>
-          <span className="text-sm text-muted-foreground"> + {formatAmount(balances.accounts[account.id].pending)} pending</span>
+          <span className="font-medium">{formatAmount(accountBalances[account.id].posted)}</span>
+          <span className="text-sm text-muted-foreground"> + {formatAmount(accountBalances[account.id].pending)} pending</span>
         </PrivacyFilter>
         {account.target_spend &&
             <PrivacyFilter>

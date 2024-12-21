@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_injector import FlaskInjector, singleton
 
-from backend.core.api.dates import dates
 from backend.core.service.account_service import AccountService
 from backend.core.service.credit_service import CreditService
 from backend.core.service.date_service import DateService
@@ -26,6 +25,8 @@ from backend.data_import.api import data_import
 from backend.core.api.payments import payments
 from backend.core.api.transactions import transactions
 from backend.core.api.exchanges import exchanges
+from backend.core.api.dates import dates
+from backend.core.api.bank_accounts import bank_accounts
 
 
 def configure(binder):
@@ -60,6 +61,7 @@ def configure(binder):
 def register_blueprints(app):
     app.register_blueprint(api)
     app.register_blueprint(accounts)
+    app.register_blueprint(bank_accounts)
     app.register_blueprint(transactions)
     app.register_blueprint(payments)
     app.register_blueprint(credits)
@@ -70,8 +72,8 @@ def register_blueprints(app):
 
 
 def create_app():
-    import debugpy
-    debugpy.listen(("0.0.0.0", 5678))
+    # import debugpy
+    # debugpy.listen(("0.0.0.0", 5678))
 
     app = Flask(__name__)
     register_blueprints(app)

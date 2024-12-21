@@ -1,4 +1,14 @@
-import {Account, Balances, Credit, Exchange, FeeSummary, Payment, Transaction} from "@/types.ts";
+import {
+  Account,
+  AccountBalances,
+  Balances,
+  BankAccount,
+  Credit,
+  Exchange,
+  FeeSummary,
+  Payment,
+  Transaction
+} from "@/types.ts";
 import {headers} from "next/headers";
 
 async function fetchData(url: string) {
@@ -15,6 +25,10 @@ async function fetchData(url: string) {
 
 export async function fetchAccounts() {
   return await fetchData("/api/accounts") as Account[]
+}
+
+export async function fetchBankAccounts() {
+  return await fetchData("/api/bank_accounts") as BankAccount[]
 }
 
 export async function fetchTransactions(paid: boolean = true) {
@@ -38,6 +52,10 @@ export async function fetchPayments() {
 
 export async function fetchBalances() {
   return await fetchData("/api/balance") as Balances
+}
+
+export async function fetchAccountBalances() {
+  return await fetchData("/api/balance/accounts") as AccountBalances
 }
 
 export async function fetchFees() {
