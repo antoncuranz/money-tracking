@@ -20,8 +20,7 @@ if postgres_user is None:
     db = SqliteDatabase("sqlite.db", pragmas=(("foreign_keys", "on"),))
     migrator = SqliteMigrator(db)
 else:
-    # db = PostgresqlDatabase("money-tracking", user=postgres_user, password=postgres_passwd, host="localhost")
-    db = PostgresqlDatabase("postgres", user=postgres_user, password=postgres_passwd, host="localhost", port=5433)
+    db = PostgresqlDatabase("money-tracking", user=postgres_user, password=postgres_passwd, host="localhost")
     migrator = PostgresqlMigrator(db)
 
 ######

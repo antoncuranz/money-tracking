@@ -1,7 +1,7 @@
 import React, {Suspense} from "react";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
 import AccountSelector from "src/components/AccountSelector";
-import TellerButton from "@/components/buttons/TellerButton.tsx";
+import ImportButton from "@/components/buttons/ImportButton.tsx";
 import ActualButton from "@/components/buttons/ActualButton.tsx";
 import TxSaveButton from "@/components/buttons/TxSaveButton.tsx";
 import WidgetContainer from "@/components/widgets/WidgetContainer.tsx";
@@ -19,7 +19,7 @@ export default async function Page() {
       <div className="flex justify-between h-10">
         <AccountSelector/>
         <div className="flex items-center gap-2">
-          <TellerButton/>
+          <ImportButton/>
           <ActualButton/>
           <TxSaveButton/>
         </div>
