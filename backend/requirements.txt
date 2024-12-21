@@ -6,3 +6,7 @@ ibind
 gunicorn
 pytest
 debugpy
+gql
+aiohttp
+pebble
+paho-mqtt

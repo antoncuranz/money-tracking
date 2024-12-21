@@ -1,14 +1,12 @@
 from backend.models import Account, Transaction
 from backend.data_export.actual_service import ActualService
-from backend.data_import.teller_service import TellerService
 from flask_injector import inject
 
 
 class TransactionService:
 
     @inject
-    def __init__(self, teller_service: TellerService, actual_service: ActualService):
-        self.teller_service = teller_service
+    def __init__(self, actual_service: ActualService):
         self.actual_service = actual_service
 
     def get_transactions(self, user, account_id=None, paid=None):

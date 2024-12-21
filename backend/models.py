@@ -24,14 +24,21 @@ class User(BaseModel):
     actual_encryption_password = CharField(null=True)
 
 
+class BankAccount(BaseModel):
+    id = AutoField()
+    name = CharField()
+    institution = CharField()
+    icon = CharField(null=True)
+    balance = IntegerField(default=0)
+    import_id = CharField(null=True)
+
+
 class Account(BaseModel):
     id = AutoField()
     user = ForeignKeyField(User, backref="accounts")
-    actual_id = CharField()
-    teller_id = CharField(null=True)
-    teller_access_token = CharField(null=True)
-    teller_enrollment_id = CharField(null=True)
-    # teller_last_import = DateTimeField(null=True)
+    bank_account = ForeignKeyField(BankAccount, backref="user", null=True)
+    actual_id = CharField(null=True)
+    import_id = CharField(null=True)
     name = CharField()
     institution = CharField()
     due_day = IntegerField(null=True)
@@ -44,7 +51,7 @@ class Account(BaseModel):
 class Payment(BaseModel):
     id = AutoField()
     account = ForeignKeyField(Account, backref="payments")
-    teller_id = CharField(unique=True)
+    import_id = CharField(unique=True)
     actual_id = CharField(null=True)
     date = DateField(default=datetime.date.today)
     counterparty = CharField()
@@ -53,7 +60,7 @@ class Payment(BaseModel):
     amount_usd = IntegerField()
     amount_eur = IntegerField(null=True)
     processed = BooleanField(default=False)
-    # pending = BooleanField(default=False) # to allow processing payment directly after statement posted
+    pending = BooleanField(default=False) # to allow processing payment directly after statement posted
 
 
 class Exchange(BaseModel):
@@ -79,7 +86,7 @@ class ExchangePayment(BaseModel):
 class Transaction(BaseModel):
     id = AutoField()
     account = ForeignKeyField(Account, backref="transactions")
-    teller_id = CharField(unique=True)
+    import_id = CharField(unique=True)
     actual_id = CharField(null=True)
     date = DateField(default=datetime.date.today)
     counterparty = CharField()
@@ -112,7 +119,7 @@ class Transaction(BaseModel):
 class Credit(BaseModel):
     id = AutoField()
     account = ForeignKeyField(Account, backref="credits")
-    teller_id = CharField(unique=True)
+    import_id = CharField(unique=True)
     date = DateField(default=datetime.date.today)
     counterparty = CharField()
     description = CharField()

@@ -9,24 +9,24 @@ class MockTellerClient(ITellerClient):
         self.mfa_required = False
         self.mfa_error = {"error": {"code": "enrollment.disconnected.user_action.mfa_required"}}
         self.balances = {
-            ACCOUNT_1["teller_id"]: {"available": "123.45", "ledger": "123.45"}
+            ACCOUNT_1["import_id"]: {"available": "123.45", "ledger": "123.45"}
         }
         self.transactions = {
-            ACCOUNT_1["teller_id"]: TELLER_TRANSACTIONS
+            ACCOUNT_1["import_id"]: TELLER_TRANSACTIONS
         }
 
-    def set_transactions(self, teller_id, transactions):
-        self.transactions[teller_id] = transactions
+    def set_transactions(self, import_id, transactions):
+        self.transactions[import_id] = transactions
 
     def get_account_balances(self, account):
         if self.mfa_required:
             return self.mfa_error
 
-        if account.teller_id in self.balances:
+        if account.import_id in self.balances:
             return {
-                "account_id": account.teller_id,
-                "available": self.balances[account.teller_id]["available"],
-                "ledger": self.balances[account.teller_id]["ledger"]
+                "account_id": account.import_id,
+                "available": self.balances[account.import_id]["available"],
+                "ledger": self.balances[account.import_id]["ledger"]
             }
         else:
             raise HTTPError()
@@ -35,8 +35,8 @@ class MockTellerClient(ITellerClient):
         if self.mfa_required:
             return self.mfa_error
 
-        if account.teller_id in self.transactions:
-            return self.transactions[account.teller_id]
+        if account.import_id in self.transactions:
+            return self.transactions[account.import_id]
         else:
             raise HTTPError()
 

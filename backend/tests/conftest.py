@@ -5,7 +5,7 @@ from flask import Flask
 from flask_injector import FlaskInjector, singleton
 from peewee import SqliteDatabase
 
-from backend import register_blueprints, TransactionService, ActualService, CreditService
+from backend import register_blueprints, TransactionService, ActualService, CreditService, IQuilttClient
 from backend.core.client.exchangerates_client import IExchangeRateClient
 from backend.core.service.account_service import AccountService
 from backend.core.service.balance_service import BalanceService
@@ -16,6 +16,7 @@ from backend.data_import.teller_client import ITellerClient
 from backend.data_import.teller_service import TellerService
 from backend.tests.mockclients.actual import MockActualClient
 from backend.tests.mockclients.exchangerates import MockExchangeRateClient
+from backend.tests.mockclients.quiltt import MockQuilttClient
 from backend.tests.mockclients.teller import MockTellerClient
 
 
@@ -68,6 +69,15 @@ def exchangerates_mock(app):
 
 
 @pytest.fixture()
+def quiltt_mock(app):
+    client = MockQuilttClient()
+    dependencies[IQuilttClient] = client
+    FlaskInjector(app=app, modules=[configure])
+
+    yield client
+
+
+@pytest.fixture()
 def teller_mock(app):
     client = MockTellerClient()
     dependencies[ITellerClient] = client
@@ -95,8 +105,8 @@ def account_service(app):
 
 
 @pytest.fixture()
-def transaction_service(app, teller_service, actual_service):
-    service = TransactionService(teller_service, actual_service)
+def transaction_service(app, actual_service):
+    service = TransactionService(actual_service)
     dependencies[TransactionService] = service
     FlaskInjector(app=app, modules=[configure])
 

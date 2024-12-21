@@ -1,3 +1,5 @@
+import os
+
 from flask import abort, Blueprint, g, request
 
 from backend.models import *
@@ -6,7 +8,7 @@ api = Blueprint("api", __name__)
 
 @api.before_app_request
 def extract_username():
-    username = request.headers.get("X-Auth-Request-Preferred-Username")
+    username = os.getenv("OVERWRITE_USER_HEADER") or request.headers.get("X-Auth-Request-Preferred-Username")
     if not username:
         abort(401, description="Unauthorized: Username is required.")
 

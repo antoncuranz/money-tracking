@@ -110,7 +110,7 @@ class ActualService:
             "imported_payee": tx.counterparty,
             "category": category,
             "notes": tx.description,
-            "imported_id": tx.teller_id,
+            "imported_id": tx.import_id,
             "cleared": False,
             "subtransactions": [
                 {
@@ -134,7 +134,7 @@ class ActualService:
             "payee_name": payment.counterparty,
             "imported_payee": payment.counterparty,
             "notes": payment.description,
-            "imported_id": payment.teller_id,
+            "imported_id": payment.import_id,
             "cleared": True
         }
 

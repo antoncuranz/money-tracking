@@ -1,3 +1,4 @@
+from backend import BankAccount
 from backend.models import Account, Transaction, ExchangeRate, Credit, Payment, CreditTransaction, ExchangePayment, Exchange, \
     User
 from backend.tests.conftest import with_test_db
@@ -22,8 +23,8 @@ from peewee import DoesNotExist
 #     assert response.status_code == 418
 
 
-@with_test_db((User, Account, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
-def test_import_transactions(app, client, teller_mock, exchangerates_mock, actual_mock):
+@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
+def test_import_transactions(app, client, quiltt_mock, exchangerates_mock, actual_mock):
     # Arrange
     User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)
@@ -38,7 +39,7 @@ def test_import_transactions(app, client, teller_mock, exchangerates_mock, actua
     assert response.status_code == 204
     assert len(transactions) == 2
     assert transactions[0].status_enum == Transaction.Status.POSTED
-    assert transactions[1].status_enum == Transaction.Status.PENDING
+    # assert transactions[1].status_enum == Transaction.Status.PENDING
 
     assert len(credits) == 1
     assert credits[0].amount_usd > 0
@@ -46,11 +47,13 @@ def test_import_transactions(app, client, teller_mock, exchangerates_mock, actua
     assert len(payments) == 1
     assert payments[0].amount_usd > 0
 
+    return  # TODO: MX does not support pending transactions
+
     # Arrange 2
     # Delete vanished pending transactions and linked CreditTransactions
     CreditTransaction.create(credit=credits[0], transaction=transactions[1], amount=1)
     CreditTransaction.get()
-    teller_mock.set_transactions(account.teller_id, [])
+    quiltt_mock.set_transactions(account.import_id, [])
 
     # Act 2
     response = client.post(f"/api/import/{account}", headers=ALICE_AUTH)

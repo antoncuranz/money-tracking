@@ -8,8 +8,6 @@ class Config:
     postgres_database = os.getenv("POSTGRES_DATABASE")
     postgres_port = os.getenv("POSTGRES_PORT", "5432")
 
-    teller_cert = ("./teller/certificate.pem", "./teller/private_key.pem")
-
     actual_base_url = os.getenv("ACTUAL_BASE_URL", "http://localhost:5007")
     actual_api_key = os.getenv("ACTUAL_API_KEY")
 
@@ -17,7 +15,8 @@ class Config:
     actual_fee_category = os.getenv("ACTUAL_CAT_FX_FEES", "ff41dcbd-5962-4b32-b3fe-ce9d63cf9c25")
     # dynamic categories: ACTUAL_CAT_<TELLER_CATEGORY>
 
-    ibkr_host = os.getenv("IBKR_HOST", "localhost")
-    ibkr_port = os.getenv("IBKR_PORT", "5000")
+    mqtt_host = os.getenv("MQTT_HOST")
+    mqtt_user = os.getenv("MQTT_USER")
+    mqtt_passwd = os.getenv("MQTT_PASSWD")
 
     exchangeratesio_access_key = os.getenv("EXCHANGERATESIO_ACCESS_KEY")

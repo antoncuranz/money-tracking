@@ -6,6 +6,8 @@ from backend.core.service.account_service import AccountService
 from backend.core.service.credit_service import CreditService
 from backend.core.service.date_service import DateService
 from backend.data_import.import_service import ImportService
+from backend.data_import.quiltt_client import QuilttClient, IQuilttClient
+from backend.data_import.quiltt_service import QuilttService
 from backend.models import *
 from backend.core.client.exchangerates_client import MastercardClient, ExchangeratesApiIoClient
 from backend.data_import.teller_client import TellerClient, ITellerClient
@@ -27,30 +29,30 @@ from backend.core.api.exchanges import exchanges
 
 
 def configure(binder):
-    teller = TellerClient(Config.teller_cert)
+    quiltt = QuilttClient()
     actual = ActualClient(Config.actual_api_key, Config.actual_base_url)
     mastercard = MastercardClient()
     exchangeratesio = ExchangeratesApiIoClient(Config.exchangeratesio_access_key)
 
-    binder.bind(ITellerClient, to=teller, scope=singleton)
+    binder.bind(IQuilttClient, to=quiltt, scope=singleton)
     binder.bind(IActualClient, to=actual, scope=singleton)
     binder.bind(MastercardClient, to=mastercard, scope=singleton)
     binder.bind(ExchangeratesApiIoClient, to=exchangeratesio, scope=singleton)
 
     balance_service = BalanceService()
     exchange_service = ExchangeService(balance_service, mastercard, exchangeratesio)
-    teller_service = TellerService(teller)
+    quiltt_service = QuilttService(quiltt)
     actual_service = ActualService(actual, exchange_service)
 
-    binder.bind(TellerService, to=teller_service, scope=singleton)
+    binder.bind(QuilttService, to=quiltt_service, scope=singleton)
     binder.bind(ActualService, to=actual_service, scope=singleton)
     binder.bind(ExchangeService, to=exchange_service, scope=singleton)
     binder.bind(BalanceService, to=balance_service, scope=singleton)
     binder.bind(AccountService, to=AccountService(), scope=singleton)
     binder.bind(DateService, to=DateService(), scope=singleton)
-    binder.bind(ImportService, to=ImportService(teller_service, exchange_service, actual_service), scope=singleton)
+    binder.bind(ImportService, to=ImportService(quiltt_service, exchange_service, actual_service), scope=singleton)
     binder.bind(CreditService, to=CreditService(balance_service), scope=singleton)
-    binder.bind(TransactionService, to=TransactionService(teller_service, actual_service), scope=singleton)
+    binder.bind(TransactionService, to=TransactionService(actual_service), scope=singleton)
     binder.bind(PaymentService, to=PaymentService(balance_service, exchange_service, actual_service), scope=singleton)
 
 
@@ -76,7 +78,7 @@ def create_app():
 
     db.connect()
     db.create_tables([
-        Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, User, Account, ExchangeRate
+        Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, User, Account, BankAccount, ExchangeRate
     ])
 
     return app
