@@ -1,7 +1,9 @@
+from typing import List
+
 from flask_injector import inject
 from decimal import Decimal
 
-from backend.models import Transaction, db, Exchange, ExchangePayment, Payment, Account
+from backend.models import Transaction, db, Exchange, ExchangePayment, Payment, Account, User
 from backend.core.service.balance_service import BalanceService
 from backend.core.service.exchange_service import ExchangeService
 from backend.data_export.actual_service import ActualService
@@ -25,7 +27,7 @@ class PaymentService:
 
         return Payment.select().join(Account).where(query).order_by(-Payment.date)
         
-    def process_payment(self, user, payment_id, transactions=None):
+    def process_payment(self, user: User, payment_id: int, transactions=None):
         """
         Raises
         ------
@@ -43,7 +45,7 @@ class PaymentService:
         self.actual_service.update_transactions(account, transactions)
         self.actual_service.export_payment(account, payment)
     
-    def unprocess_payment(self, user, payment_id):
+    def unprocess_payment(self, user: User, payment_id: int):
         payment = Payment.get(Payment.id == payment_id)
         account = Account.get((Account.user == user.id) & (Account.id == payment.account))
 
@@ -67,7 +69,7 @@ class PaymentService:
         if payment.actual_id is not None:
             self.actual_service.delete_transaction(account.user, payment.actual_id)
 
-    def _guess_transactions_to_process(self, payment):
+    def _guess_transactions_to_process(self, payment: Payment):
         transactions = Transaction.select().where(
             (Transaction.status == Transaction.Status.POSTED.value) &
             (Transaction.account == payment.account)
@@ -90,8 +92,9 @@ class PaymentService:
         return process_tx
 
     @db.atomic()
-    def _process_payment(self, payment, transactions):
-        # TODO: check that all transactions have an amount_eur
+    def _process_payment(self, payment: Payment, transactions: List[Transaction]):
+        if any(tx.amount_eur is None for tx in transactions):
+            raise Exception("Error: All transactions must have amount_eur set!")
         
         if payment.status_enum == Payment.Status.PENDING:
             raise Exception("Error: Payment is still pending!")
@@ -130,16 +133,16 @@ class PaymentService:
         largest_tx.fees_and_risk_eur += eur_err
         largest_tx.save()
 
-    def _calc_fees_and_risk(self, value_usd, value_eur, eur_usd_exchanged):
+    def _calc_fees_and_risk(self, value_usd: int, value_eur: int, eur_usd_exchanged: Decimal) -> int:
         if value_eur == 0:
             return 0
-        
+
         value_eur_exchanged = value_usd / eur_usd_exchanged
         effective_fees_total = value_eur_exchanged - value_eur
 
         return round(effective_fees_total)
 
-    def _calc_avg_eur_usd_exchanged(self, payment, exchange_payments, transactions):
+    def _calc_avg_eur_usd_exchanged(self, payment: Payment, exchange_payments: List[ExchangePayment], transactions: List[Transaction]):
         # Ignore "neutral" exchanges (i.e. exchange.paid_eur == 0). Ignored exchanges won't affect the avg rate.
         
         neutral_sum = 0
@@ -150,7 +153,7 @@ class PaymentService:
         avg_eur_usd_exchanged = 0
         for ep in exchange_payments:
             if ep.exchange.paid_eur != 0:
-                avg_eur_usd_exchanged += Decimal(ep.amount / (payment.amount_usd - neutral_sum)) * ep.exchange.exchange_rate
+                avg_eur_usd_exchanged += (Decimal(ep.amount) / Decimal(payment.amount_usd - neutral_sum)) * ep.exchange.exchange_rate
 
         if neutral_sum != sum(self.balance_service.calc_transaction_remaining(tx) for tx in transactions if tx.amount_eur == 0):
             raise Exception("Error: neutral sum differs between Transactions and Exchanges!")
