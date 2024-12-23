@@ -51,7 +51,7 @@ class ExchangeService:
     def update_exchange(self, exchange_id, amount, payment_id):
         payment = Payment.get(
             (Payment.id == payment_id) &
-            (Payment.status == Payment.Status.POSTED.value)
+            (Payment.status != Payment.Status.PROCESSED.value)
         )
         exchange = Exchange.get(Exchange.id == exchange_id)
 
