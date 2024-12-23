@@ -28,13 +28,11 @@ from backend.core.api.transactions import transactions
 from backend.core.api.exchanges import exchanges
 from backend.core.api.dates import dates
 from backend.core.api.bank_accounts import bank_accounts
-from backend.tests.mockclients.actual import MockActualClient
 
 
 def configure(binder):
     quiltt = QuilttClient()
-    # actual = ActualClient(Config.actual_api_key, Config.actual_base_url)
-    actual = MockActualClient()
+    actual = ActualClient(Config.actual_api_key, Config.actual_base_url)
     mastercard = MastercardClient()
     exchangeratesio = ExchangeratesApiIoClient(Config.exchangeratesio_access_key)
 
