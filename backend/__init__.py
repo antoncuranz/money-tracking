@@ -7,7 +7,8 @@ from backend.core.service.date_service import DateService
 from backend.data_import.import_service import ImportService
 from backend.data_import.quiltt_client import QuilttClient, IQuilttClient
 from backend.data_import.quiltt_service import QuilttService
-from backend.models import *
+from backend.models import db, ALL_TABLES
+from backend.config import Config
 from backend.core.client.exchangerates_client import MastercardClient, ExchangeratesApiIoClient
 from backend.data_import.teller_client import TellerClient, ITellerClient
 from backend.data_export.actual_client import ActualClient, IActualClient
@@ -74,17 +75,12 @@ def register_blueprints(app):
 
 
 def create_app():
-    # import debugpy
-    # debugpy.listen(("0.0.0.0", 5678))
-
     app = Flask(__name__)
     register_blueprints(app)
     FlaskInjector(app=app, modules=[configure])
 
     db.connect()
-    db.create_tables([
-        Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, User, Account, BankAccount, ExchangeRate
-    ])
+    db.create_tables(ALL_TABLES)
 
     return app
 

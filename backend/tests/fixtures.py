@@ -7,7 +7,7 @@ ALICE_USER = dict(id=1, name="alice", super_user=True)
 BOB_USER = dict(id=2, name="bob")
 
 ACCOUNT_1 = dict(
-    user_id=1, actual_id="actual_test_acc_1", name="Test Account 1", institution="Institution 1",
+    id=1, user_id=1, actual_id="actual_test_acc_1", name="Test Account 1", institution="Institution 1",
     import_id="import_test_acc_1",
 )
 
@@ -100,15 +100,15 @@ CREDIT_2 = dict(
 )
 
 PAYMENT_1 = dict(
-    account_id=1, import_id="import_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
+    id=1, account_id=1, import_id="import_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
     category="generic", amount_usd=sum([tx["amount_usd"] for tx in TRANSACTIONS]), status=2
 )
 PAYMENT_2 = dict(
-    account_id=1, import_id="import_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
+    id=2, account_id=1, import_id="import_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
     category="generic", amount_usd=100, status=2
 )
 PAYMENT_3 = dict(
-    account_id=1, import_id="import_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
+    id=3, account_id=1, import_id="import_test_pm_1", date="2024-01-30", counterparty="Capital One", description="Payment",
     category="generic", amount_usd=50000, status=2
 )
 

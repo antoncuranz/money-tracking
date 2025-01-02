@@ -3,13 +3,10 @@ import json
 import pytest
 from peewee import DoesNotExist
 
-from backend import BankAccount
-from backend.models import Account, BankAccount, Transaction, Credit, CreditTransaction, Payment, User
-from backend.tests.conftest import with_test_db
+from backend.models import Account, Transaction, Credit, CreditTransaction, User
 from backend.tests.fixtures import ACCOUNT_1, CREDIT_1, TX_1, TX_2, TX_3, CREDIT_2, ALICE_AUTH, ALICE_USER
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Payment))
 def test_get_credits(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
@@ -25,7 +22,6 @@ def test_get_credits(client, credit_service):
     assert len(parsed) == 1
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit(client, credit_service, balance_service):
     # Arrange
     User.create(**ALICE_USER)
@@ -44,7 +40,6 @@ def test_update_credit(client, credit_service, balance_service):
     assert balance_service.calc_credit_remaining(credit) == 0
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit_amount_larger_than_tx_500(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
@@ -61,7 +56,6 @@ def test_update_credit_amount_larger_than_tx_500(client, credit_service):
     assert response.status_code == 500
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit_amount_larger_than_remaining_tx_500(client, credit_service, balance_service):
     # Arrange
     User.create(**ALICE_USER)
@@ -81,7 +75,6 @@ def test_update_credit_amount_larger_than_remaining_tx_500(client, credit_servic
     assert response.status_code == 500
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit_amount_larger_than_credit_500(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
@@ -98,7 +91,6 @@ def test_update_credit_amount_larger_than_credit_500(client, credit_service):
     assert response.status_code == 500
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit_on_paid_transaction_404(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
@@ -116,7 +108,6 @@ def test_update_credit_on_paid_transaction_404(client, credit_service):
     assert response.status_code == 404
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit_delete_credit_transaction(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
@@ -135,7 +126,6 @@ def test_update_credit_delete_credit_transaction(client, credit_service):
     with pytest.raises(DoesNotExist):
         CreditTransaction.get()
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Payment))
 def test_update_credit_reduce_amount(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)
@@ -153,7 +143,6 @@ def test_update_credit_reduce_amount(client, credit_service):
     assert response.status_code == 204
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Payment))
 def test_get_usable_credits(client, credit_service):
     # Arrange
     User.create(**ALICE_USER)

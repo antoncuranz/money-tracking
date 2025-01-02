@@ -1,17 +1,22 @@
-from functools import wraps
+from time import sleep
 
 import pytest
 from flask import Flask
 from flask_injector import FlaskInjector, singleton
-from peewee import SqliteDatabase
+from testcontainers.postgres import PostgresContainer
 
-from backend import register_blueprints, TransactionService, ActualService, CreditService, IQuilttClient
+from backend import register_blueprints
+from backend.models import db, ALL_TABLES, User
 from backend.core.client.exchangerates_client import IExchangeRateClient
 from backend.core.service.account_service import AccountService
 from backend.core.service.balance_service import BalanceService
 from backend.core.service.exchange_service import ExchangeService
 from backend.core.service.payment_service import PaymentService
+from backend.core.service.transaction_service import TransactionService
+from backend.core.service.credit_service import CreditService
+from backend.data_export.actual_service import ActualService
 from backend.data_export.actual_client import IActualClient
+from backend.data_import.quiltt_client import IQuilttClient
 from backend.data_import.teller_client import ITellerClient
 from backend.data_import.teller_service import TellerService
 from backend.tests.mockclients.actual import MockActualClient
@@ -33,23 +38,31 @@ def client(app):
     return app.test_client()
 
 
-def with_test_db(dbs: tuple):
-    def decorator(func):
-        @wraps(func)
-        def test_db_closure(*args, **kwargs):
-            test_db = SqliteDatabase(":memory:", pragmas=(("foreign_keys", "on"),))
-            with test_db.bind_ctx(dbs):
-                test_db.create_tables(dbs)
-                try:
-                    func(*args, **kwargs)
-                finally:
-                    test_db.drop_tables(dbs)
-                    test_db.close()
+@pytest.fixture(scope="session", autouse=True)
+def setup(request):
+    postgres = PostgresContainer("postgres:15-alpine").with_bind_ports(5432, 5432)
+    postgres.start()
 
-        return test_db_closure
+    def remove_container():
+        postgres.stop()
 
-    return decorator
+    request.addfinalizer(remove_container)
+    print("Connecting to test database")
+    for i in range(100):
+        sleep(0.1)
+        try:
+            db.create_tables(ALL_TABLES)
+            print("Connected to test database (took {} seconds)".format((i+1)/10))
+            return
+        except Exception:
+            pass
+    
+    raise Exception("Unable to connect to test database")
 
+@pytest.fixture(scope="function", autouse=True)
+def setup_data():
+    for table in ALL_TABLES:
+        table.delete().execute()
 
 dependencies = {}
 

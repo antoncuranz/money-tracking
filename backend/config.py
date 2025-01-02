@@ -2,10 +2,10 @@ import os
 
 
 class Config:
-    postgres_host = os.getenv("POSTGRES_HOST")
-    postgres_password = os.getenv("POSTGRES_PASSWORD")
-    postgres_user = os.getenv("POSTGRES_USER")
-    postgres_database = os.getenv("POSTGRES_DATABASE")
+    postgres_host = os.getenv("POSTGRES_HOST", "localhost")
+    postgres_password = os.getenv("POSTGRES_PASSWORD", "test")
+    postgres_user = os.getenv("POSTGRES_USER", "test")
+    postgres_database = os.getenv("POSTGRES_DATABASE", "test")
     postgres_port = os.getenv("POSTGRES_PORT", "5432")
 
     actual_base_url = os.getenv("ACTUAL_BASE_URL", "http://localhost:5007")

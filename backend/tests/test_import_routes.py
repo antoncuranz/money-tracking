@@ -1,7 +1,4 @@
-from backend import BankAccount
-from backend.models import Account, Transaction, ExchangeRate, Credit, Payment, CreditTransaction, ExchangePayment, Exchange, \
-    User
-from backend.tests.conftest import with_test_db
+from backend.models import Account, Transaction, Credit, Payment, CreditTransaction, User
 from backend.tests.fixtures import ACCOUNT_1, ALICE_AUTH, ALICE_USER
 import pytest
 from peewee import DoesNotExist
@@ -23,7 +20,6 @@ from peewee import DoesNotExist
 #     assert response.status_code == 418
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_import_transactions(app, client, quiltt_mock, exchangerates_mock, actual_mock):
     # Arrange
     User.create(**ALICE_USER)

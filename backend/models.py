@@ -4,11 +4,8 @@ from enum import Enum
 
 from backend.config import Config
 
-if Config.postgres_database is None:
-    db = SqliteDatabase("sqlite.db", pragmas=(("foreign_keys", "on"),))
-else:
-    db = PostgresqlDatabase(Config.postgres_database,
-                            user=Config.postgres_user, password=Config.postgres_password, host=Config.postgres_host, port=Config.postgres_port)
+db = PostgresqlDatabase(Config.postgres_database,
+                        user=Config.postgres_user, password=Config.postgres_password, host=Config.postgres_host, port=Config.postgres_port)
 
 
 class BaseModel(Model):
@@ -84,7 +81,7 @@ class Exchange(BaseModel):
     actual_id = CharField(unique=True, null=True)
     date = DateField(default=datetime.date.today)
     amount_usd = IntegerField()
-    exchange_rate = DecimalField()
+    exchange_rate = DecimalField(decimal_places=8)
     amount_eur = IntegerField(null=True)
     paid_eur = IntegerField()
     fees_eur = IntegerField(null=True)
@@ -159,7 +156,7 @@ class ExchangeRate(BaseModel):
 
     date = DateField(default=datetime.date.today)
     source = IntegerField()
-    exchange_rate = DecimalField()
+    exchange_rate = DecimalField(decimal_places=8)
 
     @property
     def source_enum(self):
@@ -176,3 +173,5 @@ class ExchangeRate(BaseModel):
         IBKR = 1
         MASTERCARD = 2
         EXCHANGERATESIO = 3
+
+ALL_TABLES = [CreditTransaction, Credit, Transaction, ExchangePayment, Exchange, Payment, Account, BankAccount, User, ExchangeRate]

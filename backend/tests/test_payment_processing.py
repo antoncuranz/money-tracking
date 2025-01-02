@@ -1,13 +1,11 @@
 from backend.models import *
-from backend.tests.conftest import with_test_db
 from backend.tests.fixtures import *
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_payment_processing_good_ccy_risk(client, balance_service, payment_service):
     # Arrange
     User.create(**ALICE_USER)
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
 
     payment, exchange = setup_tables([
         {"date": "2024-01-01", "amount_eur":  1000, "amount_usd":  1015, "rate": 1.01},
@@ -49,11 +47,10 @@ def test_payment_processing_good_ccy_risk(client, balance_service, payment_servi
     assert tx5.fees_and_risk_eur == -327
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_payment_processing_bad_ccy_risk(client, balance_service, payment_service):
     # Arrange
     User.create(**ALICE_USER)
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
 
     payment, exchange = setup_tables([
         {"date": "2024-01-01", "amount_eur":  1000, "amount_usd":  1055, "rate": 1.05},
@@ -95,11 +92,10 @@ def test_payment_processing_bad_ccy_risk(client, balance_service, payment_servic
     assert tx5.fees_and_risk_eur == 120
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_payment_processing_applied_credit(client, balance_service, payment_service):
     # Arrange
     User.create(**ALICE_USER)
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
 
     payment, exchange = setup_tables([
         {"date": "2024-01-01", "amount_eur":  1000, "amount_usd":  1055, "rate": 1.05},
@@ -146,14 +142,14 @@ def test_payment_processing_applied_credit(client, balance_service, payment_serv
 def setup_tables(transactions, credits=[], exchange_rate=1.0):
     for i, tx in enumerate(transactions):
         Transaction.create(
-            account_id=1, import_id=f"import_test_tx_{i}", date=tx["date"], counterparty="counterparty", status=2,
+            id=i+1, account_id=1, import_id=f"import_test_tx_{i}", date=tx["date"], counterparty="counterparty", status=2,
             description="description", category="category", amount_usd=tx["amount_usd"], amount_eur=tx["amount_eur"]
         )
         ExchangeRate.create(date=tx["date"], source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=tx["rate"])
 
     for i, credit in enumerate(credits):
         model = Credit.create(
-            account_id=1, import_id=f"import_test_credit_{i}", date=credit["date"], counterparty="counterparty",
+            id=i+1, account_id=1, import_id=f"import_test_credit_{i}", date=credit["date"], counterparty="counterparty",
             description="description", category="category", amount_usd=credit["amount_usd"]
         )
         CreditTransaction.create(credit=model, transaction_id=credit["applied_to"], amount=credit["amount_usd"])
@@ -176,11 +172,10 @@ def setup_tables(transactions, credits=[], exchange_rate=1.0):
     return payment, exchange
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_payment_processing_with_multiple_exchanges(client, balance_service, payment_service):
     # Arrange
     User.create(**ALICE_USER)
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
     for tx in TRANSACTIONS:
         Transaction.create(**tx)
     payment = Payment.create(**PAYMENT_1)
@@ -207,11 +202,10 @@ def test_payment_processing_with_multiple_exchanges(client, balance_service, pay
     assert balance_service.calc_exchange_remaining(ex1) == 0
     assert balance_service.calc_exchange_remaining(ex2) == ex2.amount_usd - (payment.amount_usd - ex1.amount_usd)
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_payment_processing_with_multiple_exchanges_real_case(client, balance_service, payment_service):
     # Arrange
     User.create(**ALICE_USER)
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
 
     Transaction.create(
         account_id=1, import_id="import_test_tx_1", date="2024-09-16", counterparty="counterparty1",
@@ -231,7 +225,7 @@ def test_payment_processing_with_multiple_exchanges_real_case(client, balance_se
     )
 
     payment = Payment.create(
-        account_id=1, import_id="import_test_pm_1", date="2024-10-15", counterparty="Capital One", description="Payment",
+        id=1, account_id=1, import_id="import_test_pm_1", date="2024-10-15", counterparty="Capital One", description="Payment",
         category="generic", amount_usd=4344, status=2
     )
 
@@ -259,11 +253,10 @@ def test_payment_processing_with_multiple_exchanges_real_case(client, balance_se
     assert sum_usd == payment.amount_usd
 
 
-@with_test_db((User, Account, BankAccount, Credit, CreditTransaction, Transaction, Exchange, ExchangePayment, Payment, ExchangeRate))
 def test_payment_processing_with_multiple_exchanges_real_case_2(client, balance_service, payment_service):
     # Arrange
     User.create(**ALICE_USER)
-    account = Account.create(**ACCOUNT_1)
+    Account.create(**ACCOUNT_1)
 
     Transaction.create(
         account_id=1, import_id="import_test_tx_1", date="2024-08-10", counterparty="counterparty1",
@@ -279,7 +272,7 @@ def test_payment_processing_with_multiple_exchanges_real_case_2(client, balance_
     )
 
     payment = Payment.create(
-        account_id=1, import_id="import_test_pm_1", date="2024-09-15", counterparty="Capital One", description="Payment",
+        id=1, account_id=1, import_id="import_test_pm_1", date="2024-09-15", counterparty="Capital One", description="Payment",
         category="generic", amount_usd=2605, status=2
     )
 

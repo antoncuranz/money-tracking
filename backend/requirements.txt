@@ -5,6 +5,8 @@ peewee
 ibind
 gunicorn
 pytest
+pytest-mock
+testcontainers[postgres]
 debugpy
 gql
 aiohttp
