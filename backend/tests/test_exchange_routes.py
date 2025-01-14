@@ -206,5 +206,5 @@ def test_get_usable_exchanges(client):
 
     # Assert
     assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["id"] == exchange2.id
+    assert len(response.json()) == 1
+    assert response.json()[0]["id"] == exchange2.id

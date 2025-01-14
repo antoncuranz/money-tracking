@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from backend.core.service.balance_service import BalanceServiceDep
 from backend.models import Account, Credit, CreditTransaction, Transaction
 from peewee import fn
@@ -43,10 +43,10 @@ class CreditService:
         current_amount = 0 if not ct else ct.amount
 
         if self.balance_service.calc_credit_remaining(credit) + current_amount < amount:
-            raise Exception(f"Error: Credit {credit_id} has not enough balance!")
+            raise HTTPException(status_code=500, detail=f"Error: Credit {credit_id} has not enough balance!")
 
         if self.balance_service.calc_transaction_remaining(tx) + current_amount < amount:
-            raise Exception(f"Error: Transaction {transaction_id} has not enough balance!")
+            raise HTTPException(status_code=500, detail=f"Error: Transaction {transaction_id} has not enough balance!")
 
         model, created = CreditTransaction.get_or_create(
             credit_id=credit_id,

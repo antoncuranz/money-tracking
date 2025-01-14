@@ -5,10 +5,11 @@ from fastapi.testclient import TestClient
 import pytest
 from testcontainers.postgres import PostgresContainer
 
-from backend.core.client.exchangerates_client import IExchangeRateClient
-from backend.data_export.actual_client import IActualClient
-from backend.data_import.quiltt_client import IQuilttClient
-from backend.data_import.teller_client import ITellerClient
+from backend.core.client.exchangerates_client import MastercardClient, ExchangeratesApiIoClient
+from backend.core.service.balance_service import BalanceService
+from backend.data_export.actual_client import ActualClient
+from backend.data_import.quiltt_client import QuilttClient
+from backend.data_import.teller_client import TellerClient
 from backend.models import db, ALL_TABLES
 from backend.tests.mockclients.actual import MockActualClient
 from backend.tests.mockclients.exchangerates import MockExchangeRateClient
@@ -20,10 +21,11 @@ from backend.tests.mockclients.teller import MockTellerClient
 def client():
     from backend.main import app
     app.dependency_overrides = {
-        IActualClient: MockActualClient,
-        IExchangeRateClient: MockExchangeRateClient,
-        ITellerClient: MockTellerClient,
-        IQuilttClient: MockQuilttClient
+        ActualClient: MockActualClient,
+        MastercardClient: MockExchangeRateClient,
+        ExchangeratesApiIoClient: MockExchangeRateClient,
+        TellerClient: MockTellerClient,
+        QuilttClient: MockQuilttClient
     }
     return TestClient(app)
 
@@ -53,3 +55,7 @@ def setup(request):
 def setup_data():
     for table in ALL_TABLES:
         table.delete().execute()
+
+@pytest.fixture()
+def balance_service():
+    return BalanceService()

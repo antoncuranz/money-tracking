@@ -1,7 +1,7 @@
 import decimal
 from decimal import Decimal
 from typing import Annotated
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from pydantic import BaseModel
 from datetime import date
 
@@ -61,7 +61,7 @@ class ExchangeService:
         if not ExchangePayment.select().where(ExchangePayment.exchange == exchange_id):
             exchange.delete_instance()
         else:
-            raise Exception("Exchange is still in use")
+            raise HTTPException(status_code=500, detail="Exchange is still in use")
     
     def update_exchange(self, exchange_id, amount, payment_id):
         payment = Payment.get(
@@ -81,10 +81,10 @@ class ExchangeService:
         current_amount = 0 if not ep else ep.amount
 
         if self.balance_service.calc_exchange_remaining(exchange) + current_amount < amount:
-            raise Exception(f"Error: Exchange {exchange_id} has not enough balance!")
+            raise HTTPException(status_code=500, detail=f"Error: Exchange {exchange_id} has not enough balance!")
 
         if self.balance_service.calc_payment_remaining(payment) + current_amount < amount:
-            raise Exception(f"Error: Exchange {exchange_id} has not enough balance!")
+            raise HTTPException(status_code=500, detail=f"Error: Exchange {exchange_id} has not enough balance!")
 
         model, created = ExchangePayment.get_or_create(
             exchange_id=exchange_id,

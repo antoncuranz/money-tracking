@@ -1,4 +1,9 @@
-def test_get_amount(teller_service):
+from backend.data_import.teller_service import TellerService
+from backend.tests.mockclients.teller import MockTellerClient
+
+
+def test_get_amount():
+    teller_service = TellerService(MockTellerClient())
     assert teller_service.get_amount("123.45") == 12345
     assert teller_service.get_amount("-123.45") == -12345
 

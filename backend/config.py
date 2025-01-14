@@ -21,6 +21,6 @@ class Config(BaseSettings):
     pushover_token: str | None = None
     pushover_user: str | None = None
 
-    exchangeratesio_access_key: int | None = None
+    exchangeratesio_access_key: str | None = None
 
 config = Config()
