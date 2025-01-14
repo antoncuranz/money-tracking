@@ -1,17 +1,18 @@
 import os
+from typing import Annotated
+from fastapi import Depends
 
 from backend.core.util import stringify
-from backend.data_export.actual_client import IActualClient
-from backend.config import Config
+from backend.data_export.actual_client import IActualClient, ActualClient
+from backend.config import config
 from backend.models import Transaction, Payment
-from flask_injector import inject
 import uuid
 
 from backend.core.service.exchange_service import ExchangeService
 
 class ActualService:
-    @inject
-    def __init__(self, actual: IActualClient, exchange_service: ExchangeService):
+    def __init__(self, actual: Annotated[IActualClient, Depends(ActualClient)],
+                 exchange_service: Annotated[ExchangeService, Depends()]):
         self.actual = actual
         self.exchange_service = exchange_service
 
@@ -54,8 +55,8 @@ class ActualService:
         actual_tx = self.actual.get_transaction(account, tx)
         payee = self._get_or_create_payee(account.user, tx, actual_tx, existing_payees)
 
-        fee_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == Config.actual_fee_category)
-        main_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] != Config.actual_fee_category)
+        fee_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == config.actual_fee_category)
+        main_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] != config.actual_fee_category)
 
         amount_eur = tx.amount_eur or self.exchange_service.guess_amount_eur(tx) or 0
         fees_and_risk_eur = tx.fees_and_risk_eur if tx.fees_and_risk_eur is not None else 0
@@ -120,7 +121,7 @@ class ActualService:
                 },
                 {
                     "amount": 0,
-                    "category": Config.actual_fee_category,
+                    "category": config.actual_fee_category,
                     "notes": "FX Fees and CCY Risk"
                 }
             ]
@@ -139,7 +140,7 @@ class ActualService:
         }
 
     def _get_or_create_payee(self, user, tx, actual_tx, existing_payees):
-        if actual_tx["payee"] == Config.actual_unknown_payee:
+        if actual_tx["payee"] == config.actual_unknown_payee:
             if tx.counterparty in existing_payees:
                 print("Assigning existing payee for transaction with unknown payee ({})".format(tx.description))
                 return existing_payees[tx.counterparty]
@@ -153,3 +154,5 @@ class ActualService:
 
     def delete_transaction(self, user, actual_id):
         self.actual.delete_transaction(user, actual_id)
+
+ActualServiceDep = Annotated[ActualService, Depends()]

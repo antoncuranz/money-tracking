@@ -2,7 +2,7 @@ from backend.models import *
 from backend.tests.fixtures import *
 
 
-def test_payment_processing_good_ccy_risk(client, balance_service, payment_service):
+def test_payment_processing_good_ccy_risk(client, balance_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -47,7 +47,7 @@ def test_payment_processing_good_ccy_risk(client, balance_service, payment_servi
     assert tx5.fees_and_risk_eur == -327
 
 
-def test_payment_processing_bad_ccy_risk(client, balance_service, payment_service):
+def test_payment_processing_bad_ccy_risk(client, balance_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -92,7 +92,7 @@ def test_payment_processing_bad_ccy_risk(client, balance_service, payment_servic
     assert tx5.fees_and_risk_eur == 120
 
 
-def test_payment_processing_applied_credit(client, balance_service, payment_service):
+def test_payment_processing_applied_credit(client, balance_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -172,7 +172,7 @@ def setup_tables(transactions, credits=[], exchange_rate=1.0):
     return payment, exchange
 
 
-def test_payment_processing_with_multiple_exchanges(client, balance_service, payment_service):
+def test_payment_processing_with_multiple_exchanges(client, balance_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -202,7 +202,7 @@ def test_payment_processing_with_multiple_exchanges(client, balance_service, pay
     assert balance_service.calc_exchange_remaining(ex1) == 0
     assert balance_service.calc_exchange_remaining(ex2) == ex2.amount_usd - (payment.amount_usd - ex1.amount_usd)
 
-def test_payment_processing_with_multiple_exchanges_real_case(client, balance_service, payment_service):
+def test_payment_processing_with_multiple_exchanges_real_case(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -253,7 +253,7 @@ def test_payment_processing_with_multiple_exchanges_real_case(client, balance_se
     assert sum_usd == payment.amount_usd
 
 
-def test_payment_processing_with_multiple_exchanges_real_case_2(client, balance_service, payment_service):
+def test_payment_processing_with_multiple_exchanges_real_case_2(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)

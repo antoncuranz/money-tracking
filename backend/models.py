@@ -2,10 +2,10 @@ from peewee import *
 import datetime
 from enum import Enum
 
-from backend.config import Config
+from backend.config import config
 
-db = PostgresqlDatabase(Config.postgres_database,
-                        user=Config.postgres_user, password=Config.postgres_password, host=Config.postgres_host, port=Config.postgres_port)
+db = PostgresqlDatabase(config.postgres_database,
+                        user=config.postgres_user, password=config.postgres_password, host=config.postgres_host, port=config.postgres_port)
 
 
 class BaseModel(Model):

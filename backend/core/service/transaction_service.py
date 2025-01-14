@@ -1,12 +1,12 @@
+from typing import Annotated
+from fastapi import Depends
+
 from backend.models import Account, Transaction
-from backend.data_export.actual_service import ActualService
-from flask_injector import inject
+from backend.data_export.actual_service import ActualServiceDep
 
 
 class TransactionService:
-
-    @inject
-    def __init__(self, actual_service: ActualService):
+    def __init__(self, actual_service: ActualServiceDep):
         self.actual_service = actual_service
 
     def get_transactions(self, user, account_id=None, paid=None):
@@ -37,3 +37,5 @@ class TransactionService:
 
         if transaction.actual_id is not None:
             self.actual_service.update_transaction(account, transaction)
+
+TransactionServiceDep = Annotated[TransactionService, Depends()]

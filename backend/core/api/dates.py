@@ -1,10 +1,15 @@
-from flask import Blueprint, g
+from typing import Annotated
+from fastapi import APIRouter, Depends
 
-from backend.core.service.date_service import DateService
+from backend.auth import get_current_user
+from backend.core.service.date_service import DateServiceDep
+from backend.models import User
 
-dates = Blueprint("dates", __name__, url_prefix="/api/dates")
+router = APIRouter(prefix="/api/dates", tags=["Dates"])
 
 
-@dates.get("/<year>/<month>")
-def get_due_dates(year, month, date_service: DateService):
-    return date_service.get_dates(g.user, year, month)
+@router.get("/{year}/{month}")
+def get_due_dates(user: Annotated[User, Depends(get_current_user)],
+                  date_service: DateServiceDep,
+                  year: int, month: int):
+    return date_service.get_dates(user, year, month)

@@ -1,5 +1,6 @@
 import requests
-from flask_injector import inject
+
+from backend.config import config
 
 
 class IActualClient:
@@ -23,10 +24,9 @@ class IActualClient:
 
 
 class ActualClient(IActualClient):
-    @inject
-    def __init__(self, api_key, base_url):
-        self.api_key = api_key
-        self.base_url = base_url
+    def __init__(self):
+        self.api_key = config.actual_api_key
+        self.base_url = config.actual_base_url
 
     def create_transaction(self, account, transaction):
         user = account.user

@@ -1,5 +1,5 @@
-from backend import IActualClient
-from backend.models import Config
+from backend.data_export.actual_client import IActualClient
+from backend.models import config
 
 
 class MockActualClient(IActualClient):
@@ -25,7 +25,7 @@ class MockActualClient(IActualClient):
                 },
                 {
                     "amount": -200,
-                    "category": Config.actual_fee_category,
+                    "category": config.actual_fee_category,
                     "notes": "FX Fees and CCY Risk"
                 }
             ]

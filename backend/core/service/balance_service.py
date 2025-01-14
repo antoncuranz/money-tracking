@@ -1,16 +1,13 @@
 from decimal import Decimal
+from typing import Annotated
+from fastapi import Depends
 
-from flask_injector import inject
 from peewee import fn
 
 from backend.models import ExchangePayment, Exchange, Credit, CreditTransaction, Transaction, Payment, Account
 
 
 class BalanceService:
-    @inject
-    def __init__(self):
-        pass
-
     def calc_balance_exchanged(self):
         balance = 0
 
@@ -162,3 +159,5 @@ class BalanceService:
     def get_fees_and_risk_eur(self):
         return Transaction.select(fn.SUM(Transaction.fees_and_risk_eur)) \
             .where(Transaction.status == Transaction.Status.PAID.value).scalar()
+
+BalanceServiceDep = Annotated[BalanceService, Depends()]

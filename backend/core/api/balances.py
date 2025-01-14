@@ -1,17 +1,14 @@
 import json
+from fastapi import APIRouter, Depends
 
-from flask import abort, Blueprint, g
+from backend.auth import require_super_user
+from backend.core.service.balance_service import BalanceServiceDep
 
-from backend.core.service.balance_service import BalanceService
-
-balances = Blueprint("balances", __name__, url_prefix="/api/balance")
+router = APIRouter(prefix="/api/balance", tags=["Balances"], dependencies=[Depends(require_super_user)])
 
 
-@balances.get("")
-def get_balances(balance_service: BalanceService):
-    if not g.user.super_user:
-        abort(401)
-        
+@router.get("")
+def get_balances(balance_service: BalanceServiceDep):
     posted = balance_service.get_balance_posted()
     pending = balance_service.get_balance_pending()
     credits = balance_service.get_balance_credits()
@@ -27,15 +24,12 @@ def get_balances(balance_service: BalanceService):
         "virtual_account": balance_service.get_virtual_account_balance()
     })
 
-@balances.get("/accounts")
-def get_account_balances(balance_service: BalanceService):
+@router.get("/accounts")
+def get_account_balances(balance_service: BalanceServiceDep):
     return balance_service.get_account_balances(g.user)
 
-@balances.get("/fees")
-def get_fee_summary(balance_service: BalanceService):
-    if not g.user.super_user:
-        abort(401)
-        
+@router.get("/fees")
+def get_fee_summary(balance_service: BalanceServiceDep):
     return {
         "fees_and_risk_eur": balance_service.get_fees_and_risk_eur()
     }

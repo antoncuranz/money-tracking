@@ -1,25 +1,26 @@
-import os
+from pydantic_settings import BaseSettings
 
+class Config(BaseSettings):
+    postgres_host: str = "localhost"
+    postgres_password: str = "test"
+    postgres_user: str = "test"
+    postgres_database: str = "test"
+    postgres_port: str = "5432"
 
-class Config:
-    postgres_host = os.getenv("POSTGRES_HOST", "localhost")
-    postgres_password = os.getenv("POSTGRES_PASSWORD", "test")
-    postgres_user = os.getenv("POSTGRES_USER", "test")
-    postgres_database = os.getenv("POSTGRES_DATABASE", "test")
-    postgres_port = os.getenv("POSTGRES_PORT", "5432")
+    actual_base_url: str = "http://localhost:5007"
+    actual_api_key: str | None = None
 
-    actual_base_url = os.getenv("ACTUAL_BASE_URL", "http://localhost:5007")
-    actual_api_key = os.getenv("ACTUAL_API_KEY")
-
-    actual_unknown_payee = os.getenv("ACTUAL_UNKNOWN_PAYEE")
-    actual_fee_category = os.getenv("ACTUAL_CAT_FX_FEES", "ff41dcbd-5962-4b32-b3fe-ce9d63cf9c25")
+    actual_unknown_payee: str | None = None
+    actual_fee_category: str = "ff41dcbd-5962-4b32-b3fe-ce9d63cf9c25"
     # dynamic categories: ACTUAL_CAT_<TELLER_CATEGORY>
 
-    mqtt_host = os.getenv("MQTT_HOST")
-    mqtt_user = os.getenv("MQTT_USER")
-    mqtt_passwd = os.getenv("MQTT_PASSWD")
+    mqtt_host: str | None = None
+    mqtt_user: str | None = None
+    mqtt_passwd: str | None = None
 
-    pushover_token = os.getenv("PUSHOVER_TOKEN")
-    pushover_user = os.getenv("PUSHOVER_USER")
+    pushover_token: str | None = None
+    pushover_user: str | None = None
 
-    exchangeratesio_access_key = os.getenv("EXCHANGERATESIO_ACCESS_KEY")
+    exchangeratesio_access_key: int | None = None
+
+config = Config()

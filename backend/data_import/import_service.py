@@ -1,18 +1,20 @@
 import requests
+from typing import Annotated
+from fastapi import Depends
 
-from backend import DateService
-from backend.data_export.actual_service import ActualService
-from backend.core.service.exchange_service import ExchangeService
-from backend.data_import.quiltt_service import QuilttService
-from flask_injector import inject
+from backend.core.service.date_service import DateServiceDep
+from backend.data_export.actual_service import ActualServiceDep
+from backend.core.service.exchange_service import ExchangeServiceDep
+from backend.data_import.quiltt_service import QuilttServiceDep
 from backend.models import *
 import datetime
 
 
 class ImportService:
-
-    @inject
-    def __init__(self, quiltt_service: QuilttService, exchange_service: ExchangeService, actual_service: ActualService, date_service: DateService):
+    def __init__(self, quiltt_service: QuilttServiceDep,
+                 exchange_service: ExchangeServiceDep,
+                 actual_service: ActualServiceDep,
+                 date_service: DateServiceDep):
         self.quiltt_service = quiltt_service
         self.exchange_service = exchange_service
         self.actual_service = actual_service
@@ -100,8 +102,10 @@ class ImportService:
 
     def _send_notification(self, msg, priority=0):
         requests.post("https://api.pushover.net/1/messages.json", data = {
-            "token": Config.pushover_token,
-            "user": Config.pushover_user,
+            "token": config.pushover_token,
+            "user": config.pushover_user,
             "message": msg,
             "priority": priority
         })
+
+ImportServiceDep = Annotated[ImportService, Depends()]

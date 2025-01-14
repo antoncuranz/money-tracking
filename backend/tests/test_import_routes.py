@@ -20,7 +20,7 @@ from peewee import DoesNotExist
 #     assert response.status_code == 418
 
 
-def test_import_transactions(app, client, quiltt_mock, exchangerates_mock, actual_mock):
+def test_import_transactions(client):
     # Arrange
     User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)

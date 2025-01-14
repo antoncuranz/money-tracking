@@ -2,15 +2,15 @@ import json
 import re
 import traceback
 
-from backend.data_import.teller_client import ITellerClient, TellerMfaRequired
+from typing import Annotated
+from fastapi import Depends
+
+from backend.data_import.teller_client import ITellerClient, TellerMfaRequired, TellerClient
 from backend.models import Transaction, Credit, Payment
-from flask_injector import inject
 
 
 class TellerService:
-
-    @inject
-    def __init__(self, teller: ITellerClient):
+    def __init__(self, teller: Annotated[ITellerClient, Depends(TellerClient)]):
         self.teller = teller
 
     def import_transactions(self, account):

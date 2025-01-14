@@ -1,15 +1,11 @@
 import datetime
-
-from flask_injector import inject
+from typing import Annotated
+from fastapi import Depends
 
 from backend.models import Account
 
 
 class DateService:
-    @inject
-    def __init__(self):
-        pass
-        
     def get_dates(self, user, year, month):
         selected_month = datetime.date(int(year), int(month), 1)
 
@@ -55,3 +51,5 @@ class DateService:
     def get_statement_date_for_due_date(self, account, due_date):
         offset = account.autopay_offset if account.autopay_offset else 0
         return due_date - datetime.timedelta(days=25-offset)
+
+DateServiceDep = Annotated[DateService, Depends()]

@@ -8,14 +8,14 @@ from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, 
     ALICE_AUTH, ALICE_USER
 
 
-def test_get_exchanges(client, exchange_service):
+def test_get_exchanges(client):
     # Arrange
     User.create(**ALICE_USER)
     exchange = Exchange.create(**EXCHANGE_1)
 
     # Act
     response = client.get("/api/exchanges", headers=ALICE_AUTH)
-    parsed = json.loads(response.data)
+    parsed = response.json()
 
     # Assert
     assert response.status_code == 200
@@ -23,7 +23,7 @@ def test_get_exchanges(client, exchange_service):
     assert parsed[0]["id"] == exchange.id
 
 
-def test_post_exchange(client, exchange_service):
+def test_post_exchange(client):
     # Arrange
     User.create(**ALICE_USER)
 
@@ -38,7 +38,7 @@ def test_post_exchange(client, exchange_service):
     assert exchange.exchange_rate == Decimal(EXCHANGE_1["exchange_rate"]).quantize(Decimal(10) ** -6)
 
 
-def test_delete_exchange(client, exchange_service):
+def test_delete_exchange(client):
     # Arrange
     User.create(**ALICE_USER)
     exchange = Exchange.create(**EXCHANGE_1)
@@ -52,7 +52,7 @@ def test_delete_exchange(client, exchange_service):
         Exchange.get()
 
 
-def test_delete_assigned_exchange_500(client, exchange_service):
+def test_delete_assigned_exchange_500(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -67,7 +67,7 @@ def test_delete_assigned_exchange_500(client, exchange_service):
     assert response.status_code == 500
 
 
-def test_update_exchange(client, exchange_service, balance_service):
+def test_update_exchange(client, balance_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -85,7 +85,7 @@ def test_update_exchange(client, exchange_service, balance_service):
     assert balance_service.calc_payment_remaining(payment) == 0
 
 
-def test_update_exchange_amount_larger_than_payment_500(client, exchange_service):
+def test_update_exchange_amount_larger_than_payment_500(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -101,7 +101,7 @@ def test_update_exchange_amount_larger_than_payment_500(client, exchange_service
     assert response.status_code == 500
 
 
-def test_update_exchange_amount_larger_than_remaining_payment_500(client, exchange_service, balance_service):
+def test_update_exchange_amount_larger_than_remaining_payment_500(client, balance_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -120,7 +120,7 @@ def test_update_exchange_amount_larger_than_remaining_payment_500(client, exchan
     assert response.status_code == 500
 
 
-def test_update_exchange_amount_larger_than_exchange_500(client, exchange_service):
+def test_update_exchange_amount_larger_than_exchange_500(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -136,7 +136,7 @@ def test_update_exchange_amount_larger_than_exchange_500(client, exchange_servic
     assert response.status_code == 500
 
 
-def test_update_exchange_on_processed_payment_404(client, exchange_service):
+def test_update_exchange_on_processed_payment_404(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -153,7 +153,7 @@ def test_update_exchange_on_processed_payment_404(client, exchange_service):
     assert response.status_code == 404
 
 
-def test_update_exchange_delete_exchange_payment(client, exchange_service):
+def test_update_exchange_delete_exchange_payment(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -172,7 +172,7 @@ def test_update_exchange_delete_exchange_payment(client, exchange_service):
         ExchangePayment.get()
 
 
-def test_update_exchange_reduce_amount(client, exchange_service):
+def test_update_exchange_reduce_amount(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -189,7 +189,7 @@ def test_update_exchange_reduce_amount(client, exchange_service):
     assert response.status_code == 204
 
 
-def test_get_usable_exchanges(client, exchange_service):
+def test_get_usable_exchanges(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)

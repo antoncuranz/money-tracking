@@ -1,21 +1,23 @@
-from flask import abort, Blueprint, g
+from typing import Annotated
 
-from backend.data_import.import_service import ImportService
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from backend.auth import get_current_user
+from backend.data_import.import_service import ImportServiceDep
 from backend.models import *
 
-data_import = Blueprint("import", __name__, url_prefix="/api/import")
+router = APIRouter(prefix="/api/import", tags=["Data Import"])
 
 
-@data_import.post("/<account_id>")
-def import_transactions(account_id, import_service: ImportService):
+@router.post("/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
+def import_transactions(user: Annotated[User, Depends(get_current_user)],
+                        import_service: ImportServiceDep,
+                        account_id: int):
     try:
-        import_service.import_transactions(g.user, account_id)
+        import_service.import_transactions(user, account_id)
     except DoesNotExist:
-        abort(404)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-    return "", 204
-
-@data_import.post("")
-def import_transactions_all_accounts(import_service: ImportService):
+@router.post("", status_code=status.HTTP_204_NO_CONTENT)
+def import_transactions_all_accounts(import_service: ImportServiceDep):
     import_service.import_transactions_all_accounts()
-    return "", 204

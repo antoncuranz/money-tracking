@@ -1,22 +1,23 @@
-from typing import List
+from typing import List, Annotated
+from fastapi import Depends
 
-from flask_injector import inject
 from decimal import Decimal
 
 from backend.models import Transaction, db, Exchange, ExchangePayment, Payment, Account, User
-from backend.core.service.balance_service import BalanceService
-from backend.core.service.exchange_service import ExchangeService
-from backend.data_export.actual_service import ActualService
+from backend.core.service.balance_service import BalanceServiceDep
+from backend.core.service.exchange_service import ExchangeServiceDep
+from backend.data_export.actual_service import ActualServiceDep
 
 
 class PaymentService:
-    @inject
-    def __init__(self, balance_service: BalanceService, exchange_service: ExchangeService, actual_service: ActualService):
+    def __init__(self, balance_service: BalanceServiceDep,
+                 exchange_service: ExchangeServiceDep,
+                 actual_service: ActualServiceDep):
         self.balance_service = balance_service
         self.exchange_service = exchange_service
         self.actual_service = actual_service
     
-    def get_payments(self, user, account_id, processed=None):
+    def get_payments(self, user: User, account_id: int, processed: bool | None = None):
         query = (Account.user == user.id)
 
         if processed is not None:
@@ -159,3 +160,5 @@ class PaymentService:
             raise Exception("Error: neutral sum differs between Transactions and Exchanges!")
 
         return avg_eur_usd_exchanged, neutral_sum
+
+PaymentServiceDep = Annotated[PaymentService, Depends()]

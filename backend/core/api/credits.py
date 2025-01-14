@@ -1,36 +1,30 @@
-from flask import abort, Blueprint, request, g
+from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.core.service.credit_service import CreditService
+from backend.auth import get_current_user
+from backend.core.service.credit_service import CreditServiceDep
 from backend.core.util import stringify, parse_boolean
 from peewee import DoesNotExist
 
-credits = Blueprint("credits", __name__, url_prefix="/api/credits")
+from backend.models import User
+
+router = APIRouter(prefix="/api/credits", tags=["Credits"])
 
 
-@credits.get("")
-def get_credits(credit_service: CreditService):
-    try:
-        account_str = request.args.get("account")
-        account_id = None if not account_str else int(account_str)
-        usable = parse_boolean(request.args.get("usable"))
-    except (ValueError, TypeError):
-        abort(400)
-
-    credits = credit_service.get_credits(g.user, account_id, usable)
+@router.get("")
+def get_credits(user: Annotated[User, Depends(get_current_user)],
+                credit_service: CreditServiceDep,
+                account: int | None = None, usable: bool | None = None):
+    
+    credits = credit_service.get_credits(user, account, usable)
     return [stringify(credit) for credit in credits]
 
 
-@credits.put("/<credit_id>")
-def update_credit(credit_id, credit_service: CreditService):
+@router.put("/{credit_id}", status_code=status.HTTP_204_NO_CONTENT)
+def update_credit(user: Annotated[User, Depends(get_current_user)],
+                  credit_service: CreditServiceDep,
+                  credit_id: int, amount: int, transaction: int):
     try:
-        amount = int(request.args.get("amount"))
-        transaction_id = int(request.args.get("transaction"))
-    except (ValueError, TypeError):
-        abort(400)
-
-    try:
-        credit_service.update_credit(g.user, credit_id, transaction_id, amount)
+        credit_service.update_credit(user, credit_id, transaction, amount)
     except DoesNotExist:
-        abort(404)
-
-    return "", 204
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

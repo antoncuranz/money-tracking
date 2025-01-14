@@ -1,6 +1,6 @@
 import datetime
 
-from backend import IQuilttClient
+from backend.data_import.quiltt_client import IQuilttClient
 from backend.tests.fixtures import ACCOUNT_1, QUILTT_TRANSACTIONS
 
 

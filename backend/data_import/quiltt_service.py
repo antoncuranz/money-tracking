@@ -2,20 +2,19 @@ from datetime import datetime
 import json
 import traceback
 from decimal import Decimal
+from typing import Annotated
+from fastapi import Depends
 
 import requests
 from peewee import DoesNotExist
 
-from backend.config import Config
-from backend.data_import.quiltt_client import IQuilttClient
+from backend.config import config
+from backend.data_import.quiltt_client import IQuilttClient, QuilttClient
 from backend.models import Transaction, Credit, Payment
-from flask_injector import inject
 
 
 class QuilttService:
-
-    @inject
-    def __init__(self, adapter: IQuilttClient):
+    def __init__(self, adapter: Annotated[IQuilttClient, Depends(QuilttClient)]):
         self.adapter = adapter
         self.token = None
         self.token_expires = None
@@ -100,8 +99,10 @@ class QuilttService:
 
     def _send_notification(self, msg, priority=0):
         requests.post("https://api.pushover.net/1/messages.json", data = {
-            "token": Config.pushover_token,
-            "user": Config.pushover_user,
+            "token": config.pushover_token,
+            "user": config.pushover_user,
             "message": msg,
             "priority": priority
         })
+        
+QuilttServiceDep = Annotated[QuilttService, Depends()]

@@ -1,12 +1,16 @@
-from flask import Blueprint, g
+from typing import Annotated
+from fastapi import APIRouter, Depends
 
-from backend.core.service.account_service import AccountService
+from backend.auth import get_current_user
+from backend.core.service.account_service import AccountServiceDep
+from backend.models import User
 
-bank_accounts = Blueprint("bank_accounts", __name__, url_prefix="/api/bank_accounts")
+router = APIRouter(prefix="/api/bank_accounts", tags=["Bank Accounts"])
 
 
-@bank_accounts.get("")
-def get_bank_accounts(account_service: AccountService):
-    bank_accounts = account_service.get_bank_accounts_of_user(g.user)
+@router.get("")
+def get_bank_accounts(user: Annotated[User, Depends(get_current_user)],
+                      account_service: AccountServiceDep):
+    bank_accounts = account_service.get_bank_accounts_of_user(user)
     return list(bank_accounts.dicts())
 

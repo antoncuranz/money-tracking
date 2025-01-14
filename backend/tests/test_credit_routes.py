@@ -7,7 +7,7 @@ from backend.models import Account, Transaction, Credit, CreditTransaction, User
 from backend.tests.fixtures import ACCOUNT_1, CREDIT_1, TX_1, TX_2, TX_3, CREDIT_2, ALICE_AUTH, ALICE_USER
 
 
-def test_get_credits(client, credit_service):
+def test_get_credits(client):
     # Arrange
     User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)
@@ -15,14 +15,14 @@ def test_get_credits(client, credit_service):
 
     # Act
     response = client.get(f"/api/credits?account={account}", headers=ALICE_AUTH)
-    parsed = json.loads(response.data)
+    parsed = response.json()
 
     # Assert
     assert response.status_code == 200
     assert len(parsed) == 1
 
 
-def test_update_credit(client, credit_service, balance_service):
+def test_update_credit(client, balance_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -40,7 +40,7 @@ def test_update_credit(client, credit_service, balance_service):
     assert balance_service.calc_credit_remaining(credit) == 0
 
 
-def test_update_credit_amount_larger_than_tx_500(client, credit_service):
+def test_update_credit_amount_larger_than_tx_500(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -56,7 +56,7 @@ def test_update_credit_amount_larger_than_tx_500(client, credit_service):
     assert response.status_code == 500
 
 
-def test_update_credit_amount_larger_than_remaining_tx_500(client, credit_service, balance_service):
+def test_update_credit_amount_larger_than_remaining_tx_500(client, balance_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -75,7 +75,7 @@ def test_update_credit_amount_larger_than_remaining_tx_500(client, credit_servic
     assert response.status_code == 500
 
 
-def test_update_credit_amount_larger_than_credit_500(client, credit_service):
+def test_update_credit_amount_larger_than_credit_500(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -91,7 +91,7 @@ def test_update_credit_amount_larger_than_credit_500(client, credit_service):
     assert response.status_code == 500
 
 
-def test_update_credit_on_paid_transaction_404(client, credit_service):
+def test_update_credit_on_paid_transaction_404(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -108,7 +108,7 @@ def test_update_credit_on_paid_transaction_404(client, credit_service):
     assert response.status_code == 404
 
 
-def test_update_credit_delete_credit_transaction(client, credit_service):
+def test_update_credit_delete_credit_transaction(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -126,7 +126,7 @@ def test_update_credit_delete_credit_transaction(client, credit_service):
     with pytest.raises(DoesNotExist):
         CreditTransaction.get()
 
-def test_update_credit_reduce_amount(client, credit_service):
+def test_update_credit_reduce_amount(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -143,7 +143,7 @@ def test_update_credit_reduce_amount(client, credit_service):
     assert response.status_code == 204
 
 
-def test_get_usable_credits(client, credit_service):
+def test_get_usable_credits(client):
     # Arrange
     User.create(**ALICE_USER)
     account = Account.create(**ACCOUNT_1)
@@ -160,8 +160,9 @@ def test_get_usable_credits(client, credit_service):
 
     # Act
     response = client.get(f"/api/credits?account={account}&usable=true", headers=ALICE_AUTH)
+    parsed = response.json()
 
     # Assert
     assert response.status_code == 200
-    assert len(response.json) == 1
-    assert response.json[0]["id"] == credit2.id
+    assert len(parsed) == 1
+    assert parsed[0]["id"] == credit2.id

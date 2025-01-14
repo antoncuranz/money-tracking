@@ -4,7 +4,7 @@ from backend.models import Account, User
 from backend.tests.fixtures import ACCOUNT_1, ALICE_AUTH, ALICE_USER
 
 
-def test_get_all_transactions(client, transaction_service):
+def test_get_all_transactions(client):
     # TODO
     # Arrange
     User.create(**ALICE_USER)
@@ -12,7 +12,7 @@ def test_get_all_transactions(client, transaction_service):
 
     # Act
     response = client.get("/api/accounts", headers=ALICE_AUTH)
-    parsed = json.loads(response.data)
+    parsed = response.json()
 
     # Assert
     assert len(parsed) == 1

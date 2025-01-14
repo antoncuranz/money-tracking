@@ -1,7 +1,7 @@
 import requests
-from flask_injector import inject
 
 from backend.models import ExchangeRate
+from backend.config import config
 
 
 class IExchangeRateClient:
@@ -10,9 +10,8 @@ class IExchangeRateClient:
 
 
 class ExchangeratesApiIoClient(IExchangeRateClient):
-    @inject
-    def __init__(self, access_key):
-        self.access_key = access_key
+    def __init__(self):
+        self.access_key = config.exchangeratesio_access_key
 
     def get_conversion_rate(self, date):
         url = f"http://api.exchangeratesapi.io/v1/{date}?access_key={self.access_key}&base=EUR&symbols=USD"

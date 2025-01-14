@@ -1,4 +1,4 @@
-from backend.config import Config
+from backend.config import config
 import requests
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
@@ -8,10 +8,10 @@ from paho.mqtt import subscribe
 
 MQTT_TOPIC = "postfix/quiltt"
 MQTT_CONFIG = {
-    "hostname": Config.mqtt_host,
+    "hostname": config.mqtt_host,
     "port": 443,
     "transport": "websockets",
-    "auth": {"username": Config.mqtt_user, "password": Config.mqtt_passwd},
+    "auth": {"username": config.mqtt_user, "password": config.mqtt_passwd},
     "tls": {"ca_certs": "root.pem"}
 }
 
@@ -27,7 +27,6 @@ class IQuilttClient:
 
 
 class QuilttClient(IQuilttClient):
-
     def __init__(self):
         self.auth_headers = {}
         transport = AIOHTTPTransport(url="https://api.quiltt.io/v1/graphql", headers=self.auth_headers)

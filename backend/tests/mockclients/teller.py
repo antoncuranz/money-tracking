@@ -1,6 +1,6 @@
 from requests.exceptions import HTTPError
 
-from backend import ITellerClient
+from backend.data_import.teller_client import ITellerClient
 from backend.tests.fixtures import ACCOUNT_1, TELLER_TRANSACTIONS
 
 

@@ -1,62 +1,37 @@
-from flask import abort, Blueprint, request, g
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend import ExchangeService
-from backend.core.util import stringify, parse_boolean
+from backend.auth import require_super_user
+from backend.core.service.exchange_service import ExchangeServiceDep, CreateExchange
+from backend.core.util import stringify
 from peewee import DoesNotExist
 
-exchanges = Blueprint("exchanges", __name__, url_prefix="/api/exchanges")
+router = APIRouter(prefix="/api/exchanges", tags=["Exchanges"], dependencies=[Depends(require_super_user)])
 
 
-@exchanges.get("")
-def get_exchanges(exchange_service: ExchangeService):
-    if not g.user.super_user:
-        abort(401)
-        
-    try:
-        usable = parse_boolean(request.args.get("usable"))
-    except (ValueError, TypeError):
-        abort(400)
-    
+@router.get("")
+def get_exchanges(exchange_service: ExchangeServiceDep, usable: bool | None = None):
     exchanges = exchange_service.get_exchanges(usable)
     return [stringify(exchange, extra_attrs=[]) for exchange in exchanges]
 
 
-@exchanges.post("")
-def post_exchange(exchange_service: ExchangeService):
-    if not g.user.super_user:
-        abort(401)
-        
-    model = exchange_service.create_exchange(request.json)
-    return str(model.id), 200
+
+@router.post("")
+def post_exchange(exchange_service: ExchangeServiceDep, exchange: CreateExchange):
+    model = exchange_service.create_exchange(exchange)
+    return str(model.id)
 
 
-@exchanges.delete("/<exchange_id>")
-def delete_exchange(exchange_id, exchange_service: ExchangeService):
-    if not g.user.super_user:
-        abort(401)
-        
+@router.delete("/{exchange_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_exchange(exchange_service: ExchangeServiceDep, exchange_id: int):
     try:
         exchange_service.delete_exchange(exchange_id)
     except DoesNotExist:
-        abort(404)
-        
-    return "", 204
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
 
-@exchanges.put("/<exchange_id>")
-def update_exchange(exchange_id, exchange_service: ExchangeService):
-    if not g.user.super_user:
-        abort(401)
-        
+@router.put("/{exchange_id}", status_code=status.HTTP_204_NO_CONTENT)
+def update_exchange(exchange_service: ExchangeServiceDep, exchange_id: int, amount: int, payment: int):
     try:
-        amount = int(request.args.get("amount"))
-        payment_id = int(request.args.get("payment"))
-    except (ValueError, TypeError):
-        abort(400)
-
-    try:
-        exchange_service.update_exchange(exchange_id, amount, payment_id)
+        exchange_service.update_exchange(exchange_id, amount, payment)
     except DoesNotExist:
-        abort(404)
-
-    return "", 204
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

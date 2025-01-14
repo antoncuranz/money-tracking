@@ -1,13 +1,12 @@
-from backend.core.service.balance_service import BalanceService
+from typing import Annotated
+from fastapi import Depends
+from backend.core.service.balance_service import BalanceServiceDep
 from backend.models import Account, Credit, CreditTransaction, Transaction
 from peewee import fn
-from flask_injector import inject
 
 
 class CreditService:
-
-    @inject
-    def __init__(self, balance_service: BalanceService):
+    def __init__(self, balance_service: BalanceServiceDep):
         self.balance_service = balance_service
 
     def get_credits(self, user, account_id, usable=None):
@@ -58,3 +57,5 @@ class CreditService:
         if not created:
             model.amount = amount
             model.save()
+
+CreditServiceDep = Annotated[CreditService, Depends()]

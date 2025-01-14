@@ -1,42 +1,41 @@
-from flask import abort, Blueprint, request, g
+from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.core.service.payment_service import PaymentService
-from backend.core.util import stringify, parse_boolean
+from backend.core.service.payment_service import PaymentServiceDep
+from backend.core.util import stringify
+from backend.models import User
+from backend.auth import get_current_user
 from peewee import DoesNotExist
 
-payments = Blueprint("payments", __name__, url_prefix="/api/payments")
+router = APIRouter(prefix="/api/payments", tags=["Payments"])
 
 
-@payments.get("")
-def get_payments(payment_service: PaymentService):
-    try:
-        account_str = request.args.get("account")
-        account_id = None if not account_str else int(account_str)
-        processed = parse_boolean(request.args.get("processed"))
-    except (ValueError, TypeError):
-        abort(400)
-
-    payments = payment_service.get_payments(g.user, account_id, processed)
+@router.get("")
+def get_payments(user: Annotated[User, Depends(get_current_user)],
+                 payment_service: PaymentServiceDep,
+                 account: int | None = None, processed: bool | None = None):
+    
+    payments = payment_service.get_payments(user, account, processed)
     return [stringify(payment) for payment in payments]
 
 
-@payments.post("/<payment_id>/process")
-def process_payment(payment_id, payment_service: PaymentService):
+@router.post("/{payment_id}/process", status_code=status.HTTP_204_NO_CONTENT)
+def process_payment(user: Annotated[User, Depends(get_current_user)],
+                    payment_service: PaymentServiceDep,
+                    payment_id: int, transactions: str | None = None):
     try:
-        transactions = request.args.get("transactions")
         transactions = None if not transactions else [int(n) for n in transactions.split(",")]
     except (ValueError, TypeError):
-        abort(400)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
     try:
-        payment_service.process_payment(g.user, payment_id, transactions)
+        payment_service.process_payment(user, payment_id, transactions)
     except DoesNotExist:
-        abort(404)
-
-    return "", 204
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
 
-@payments.post("/<payment_id>/unprocess")
-def unprocess_payment(payment_id, payment_service: PaymentService):
-    payment_service.unprocess_payment(g.user, payment_id)
-    return "", 204
+@router.post("/{payment_id}/unprocess", status_code=status.HTTP_204_NO_CONTENT)
+def unprocess_payment(user: Annotated[User, Depends(get_current_user)],
+                      payment_service: PaymentServiceDep,
+                      payment_id: int):
+    payment_service.unprocess_payment(user, payment_id)

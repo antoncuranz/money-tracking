@@ -1,15 +1,30 @@
+import decimal
 from decimal import Decimal
+from typing import Annotated
+from fastapi import Depends
+from pydantic import BaseModel
+from datetime import date
 
-from backend.core.service.balance_service import BalanceService
-from backend.core.client.exchangerates_client import IExchangeRateClient
+from backend.core.service.balance_service import BalanceServiceDep
+from backend.core.client.exchangerates_client import IExchangeRateClient, ExchangeratesApiIoClient, MastercardClient
 from backend.models import Transaction, ExchangeRate, Exchange, ExchangePayment, Payment
 from peewee import DoesNotExist, fn
-from flask_injector import inject
+
+class CreateExchange(BaseModel):
+    actual_id: str | None = None
+    date: date
+    amount_usd: int
+    exchange_rate: int
+    amount_eur: int | None = None
+    paid_eur: int
+    fees_eur: int | None = None
+    import_id: str | None = None
 
 
 class ExchangeService:
-    @inject
-    def __init__(self, balance_service: BalanceService, mastercard: IExchangeRateClient, exchangeratesio: IExchangeRateClient):
+    def __init__(self, balance_service: BalanceServiceDep,
+                 mastercard: Annotated[IExchangeRateClient, Depends(MastercardClient)],
+                 exchangeratesio: Annotated[IExchangeRateClient, Depends(ExchangeratesApiIoClient)]):
         self.balance_service = balance_service
         self.mastercard = mastercard
         self.exchangeratesio = exchangeratesio
@@ -24,20 +39,20 @@ class ExchangeService:
 
         return Exchange.select().where(query).order_by(-Exchange.date)
     
-    def create_exchange(self, json):
-        if json["paid_eur"] == 0:  # neutral Exchange => won't affect avg. exchange rate of Payment
+    def create_exchange(self, exchange: CreateExchange):
+        if exchange.paid_eur == 0:  # neutral Exchange => won't affect avg. exchange rate of Payment
             return Exchange.create(
-                date=json["date"], amount_usd=json["amount_usd"], exchange_rate=Decimal(0), amount_eur=0,
+                date=exchange.date, amount_usd=exchange.amount_usd, exchange_rate=Decimal(0), amount_eur=0,
                 paid_eur=0, fees_eur=0
             )
 
-        exchange_rate = Decimal(json["exchange_rate"]) / 10000000
-        amount_eur = round(Decimal(json["amount_usd"]) / exchange_rate)
-        fees_eur = json["paid_eur"] - amount_eur
+        exchange_rate = Decimal(exchange.exchange_rate) / 10000000
+        amount_eur = round(Decimal(exchange.amount_usd) / exchange_rate)
+        fees_eur = exchange.paid_eur - amount_eur
 
         return Exchange.create(
-            date=json["date"], amount_usd=json["amount_usd"], exchange_rate=exchange_rate, amount_eur=amount_eur,
-            paid_eur=json["paid_eur"], fees_eur=fees_eur
+            date=exchange.date, amount_usd=exchange.amount_usd, exchange_rate=exchange_rate, amount_eur=amount_eur,
+            paid_eur=exchange.paid_eur, fees_eur=fees_eur
         )
     
     def delete_exchange(self, exchange_id):
@@ -102,3 +117,5 @@ class ExchangeService:
                 return self.exchangeratesio.get_conversion_rate(date)
             else:
                 raise Exception("Not implemented")
+
+ExchangeServiceDep = Annotated[ExchangeService, Depends()]
