@@ -14,6 +14,6 @@ class ExchangeRateFacade:
         self.exchangerate_service.fetch_exchange_rates(account)
 
     def guess_amount_eur(self, transaction: Transaction):
-        self.exchangerate_service.guess_amount_eur(transaction)
+        return self.exchangerate_service.guess_amount_eur(transaction)
 
 ExchangeRateDep = Annotated[ExchangeRateFacade, Depends()]
