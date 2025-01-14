@@ -1,4 +1,4 @@
-from backend.data_export.actual_client import IActualClient
+from backend.data_export.adapter.actual_client import IActualClient
 from backend.models import config
 
 

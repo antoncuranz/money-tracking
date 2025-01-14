@@ -1,4 +1,4 @@
-from backend.data_import.teller_service import TellerService
+from backend.data_import.business.teller_service import TellerService
 from backend.tests.mockclients.teller import MockTellerClient
 
 

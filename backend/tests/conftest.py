@@ -1,15 +1,14 @@
 from time import sleep
 
-from fastapi.testclient import TestClient
-
 import pytest
+from fastapi.testclient import TestClient
 from testcontainers.postgres import PostgresContainer
 
-from backend.core.client.exchangerates_client import MastercardClient, ExchangeratesApiIoClient
-from backend.core.service.balance_service import BalanceService
-from backend.data_export.actual_client import ActualClient
-from backend.data_import.quiltt_client import QuilttClient
-from backend.data_import.teller_client import TellerClient
+from backend.core.business.balance_service import BalanceService
+from backend.data_export.adapter.actual_client import ActualClient
+from backend.data_import.adapter.quiltt_client import QuilttClient
+from backend.data_import.adapter.teller_client import TellerClient
+from backend.exchangerate.adapter.exchangerates_client import MastercardClient, ExchangeratesApiIoClient
 from backend.models import db, ALL_TABLES
 from backend.tests.mockclients.actual import MockActualClient
 from backend.tests.mockclients.exchangerates import MockExchangeRateClient

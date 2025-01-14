@@ -1,5 +1,3 @@
-import json
-
 from backend.models import Account, User
 from backend.tests.fixtures import ACCOUNT_1, ALICE_AUTH, ALICE_USER
 

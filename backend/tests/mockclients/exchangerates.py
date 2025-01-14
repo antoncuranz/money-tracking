@@ -1,4 +1,4 @@
-from backend.core.client.exchangerates_client import IExchangeRateClient
+from backend.exchangerate.adapter.exchangerates_client import IExchangeRateClient
 
 
 class MockExchangeRateClient(IExchangeRateClient):

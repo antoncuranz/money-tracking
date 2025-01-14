@@ -1,4 +1,3 @@
-import json
 from decimal import Decimal
 import pytest
 from peewee import DoesNotExist

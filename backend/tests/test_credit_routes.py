@@ -1,5 +1,3 @@
-import json
-
 import pytest
 from peewee import DoesNotExist
 
