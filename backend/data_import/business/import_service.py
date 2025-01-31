@@ -47,12 +47,13 @@ class ImportService:
                 continue
 
             due_date = self.dates.get_next_due_date(account)
+            last_statement_date = self.dates.get_statement_date_for_due_date(account, self.dates.get_last_due_date(account))
             statement_date = self.dates.get_statement_date_for_due_date(account, due_date)
             pending_payment = self._get_pending_payment(account, due_date)
 
             if statement_date + datetime.timedelta(days=1) < today < due_date and pending_payment is None:
                 print("Creating pending payment")
-                pending_payment = self._create_pending_payment(account, statement_date, due_date)
+                pending_payment = self._create_pending_payment(account, statement_date, last_statement_date, due_date)
                 self._send_notification("Created pending Payment of {}. Please check amount_eur and exchange money.".format(pending_payment.amount_usd/100))
 
         for bank_account in BankAccount.select():
@@ -87,12 +88,12 @@ class ImportService:
         except DoesNotExist:
             return None
 
-    def _create_pending_payment(self, account, statement_date, due_date):
+    def _create_pending_payment(self, account, statement_date, last_statement_date, due_date):
         amount_usd = Transaction.select(fn.SUM(Transaction.amount_usd)).where(
             (Transaction.account == account.id) & (Transaction.status == Transaction.Status.POSTED.value) & (Transaction.date <= statement_date)
         ).scalar() or 0
         amount_usd -= Credit.select(fn.SUM(Credit.amount_usd)).where(
-            (Credit.account == account.id) & (Credit.date <= statement_date)
+            (Credit.account == account.id) & (Credit.date <= statement_date) & (Credit.date > last_statement_date)
         ).scalar() or 0
         return Payment.create(account_id=account.id, date=due_date, counterparty=account.institution, description="Upcoming Payment", amount_usd=amount_usd, status_enum=Payment.Status.PENDING)
 

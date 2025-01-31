@@ -37,6 +37,9 @@ class DateService:
     def _next_month(self, date):
         return (date.replace(day=1) + datetime.timedelta(days=40)).replace(day=1)
 
+    def _previous_month(self, date):
+        return (date.replace(day=1) - datetime.timedelta(days=10)).replace(day=1)
+
     def _get_correct_month(self, due_day, offset, month):
         if due_day > offset:
             return month
@@ -49,6 +52,16 @@ class DateService:
 
         if today > due_date_current_month:
             due_date_next_month = self.get_due_date(account, self._next_month(today))
+            return due_date_next_month
+
+        return due_date_current_month
+
+    def get_last_due_date(self, account: Account):
+        today = datetime.date.today()
+        due_date_current_month = self.get_due_date(account, today)
+
+        if today <= due_date_current_month:
+            due_date_next_month = self.get_due_date(account, self._previous_month(today))
             return due_date_next_month
 
         return due_date_current_month
