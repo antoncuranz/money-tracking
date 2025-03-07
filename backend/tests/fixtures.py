@@ -70,19 +70,19 @@ QUILTT_TRANSACTIONS = [
 ]
 
 TX_1 = dict(
-    account_id=1, import_id="import_test_tx_1", date="2024-01-01", counterparty="counterparty1",
+    id=1, account_id=1, import_id="import_test_tx_1", date="2024-01-01", counterparty="counterparty1",
     description="description1", category="category", amount_usd=1109, amount_eur=1000, status=2
 )
 TX_2 = dict(
-    account_id=1, import_id="import_test_tx_2", date="2024-01-02", counterparty="counterparty2",
+    id=2, account_id=1, import_id="import_test_tx_2", date="2024-01-02", counterparty="counterparty2",
     description="description2", category="category", amount_usd=552, amount_eur=500, status=2
 )
 TX_3 = dict(
-    account_id=1, import_id="import_test_tx_3", date="2024-01-03", counterparty="counterparty3",
+    id=3, account_id=1, import_id="import_test_tx_3", date="2024-01-03", counterparty="counterparty3",
     description="description3", category="category", amount_usd=2193, amount_eur=2000, status=2
 )
 TX_4 = dict(
-    account_id=2, import_id="import_test_tx_4", date="2024-01-04", counterparty="counterparty4",
+    id=4, account_id=2, import_id="import_test_tx_4", date="2024-01-04", counterparty="counterparty4",
     description="description4", category="category", amount_usd=2193, amount_eur=2000, status=2
 )
 

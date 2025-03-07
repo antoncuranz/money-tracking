@@ -17,9 +17,7 @@ class ExchangeratesApiIoClient(IExchangeRateClient):
         url = f"http://api.exchangeratesapi.io/v1/{date}?access_key={self.access_key}&base=EUR&symbols=USD"
 
         response = requests.get(url).json()
-        rate = response["rates"]["USD"]
-        ExchangeRate.create(date=date, source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=rate)
-        return rate
+        return response["rates"]["USD"]
 
 
 class MastercardClient(IExchangeRateClient):
@@ -36,9 +34,7 @@ class MastercardClient(IExchangeRateClient):
 
         try:
             response = requests.get(self._URL, params=params).json()
-            rate = response["data"]["conversionRate"]
-            ExchangeRate.create(date=date, source=ExchangeRate.Source.MASTERCARD.value, exchange_rate=rate)
-            return rate
+            return response["data"]["conversionRate"]
         except Exception as error:
             print("Error retrieving conversion rate: ", error)
             return None  # TODO: raise?

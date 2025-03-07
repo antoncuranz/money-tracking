@@ -44,7 +44,7 @@ const PaymentRow = ({payment, account, selectable, onClick, onProcessPaymentClic
   return (
     <TableRow onClick={onClick} className={getClasses()} style={{ borderLeftStyle: payment.status == 1 ? "dashed" : "solid" }} date={payment.date} remoteName={payment.counterparty} purpose={payment.description} account={account}>
       <span className="flex items-center">
-        <span className="text-sm w-16 text-right">{formatAmount(payment.amount_eur)} €</span>
+        <span className="text-sm w-18 text-right">{formatAmount(payment.amount_eur)} €</span>
         <Button variant="outline" size="icon" className="ml-2" disabled={isProcessButtonDisabled()}
                 onClick={onProcessPaymentClickLocal}>
           {payment.status == 3 ?

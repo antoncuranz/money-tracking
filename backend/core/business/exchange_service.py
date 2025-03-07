@@ -1,13 +1,13 @@
 from datetime import date
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, List
 
 from fastapi import Depends, HTTPException
-from peewee import fn
 from pydantic import BaseModel
 
-from backend.core.business.balance_service import BalanceServiceDep
-from backend.models import Exchange, ExchangePayment, Payment
+from backend.core.business.balance_service import BalanceService
+from backend.core.dataaccess.store import Store
+from backend.models import Exchange
 
 
 class CreateExchange(BaseModel):
@@ -22,22 +22,17 @@ class CreateExchange(BaseModel):
 
 
 class ExchangeService:
-    def __init__(self, balance_service: BalanceServiceDep):
+    def __init__(self, store: Annotated[Store, Depends()],
+                 balance_service: Annotated[BalanceService, Depends()]):
+        self.store = store
         self.balance_service = balance_service
 
-    def get_exchanges(self, usable=None):
-        query = True
-        if usable is True:
-            query = query & (Exchange.amount_usd > fn.COALESCE(
-                ExchangePayment.select(fn.SUM(ExchangePayment.amount)).join(Payment)
-                .where((ExchangePayment.exchange == Exchange.id) & (Payment.status == Payment.Status.PROCESSED.value)), 0
-            ))
+    def get_exchanges(self, usable: bool | None = None) -> List[Exchange]:
+        return self.store.get_exchanges(usable)
 
-        return Exchange.select().where(query).order_by(-Exchange.date)
-    
-    def create_exchange(self, exchange: CreateExchange):
+    def create_exchange(self, exchange: CreateExchange) -> Exchange:
         if exchange.paid_eur == 0:  # neutral Exchange => won't affect avg. exchange rate of Payment
-            return Exchange.create(
+            return self.store.create_exchange(
                 date=exchange.date, amount_usd=exchange.amount_usd, exchange_rate=Decimal(0), amount_eur=0,
                 paid_eur=0, fees_eur=0
             )
@@ -46,35 +41,32 @@ class ExchangeService:
         amount_eur = round(Decimal(exchange.amount_usd) / exchange_rate)
         fees_eur = exchange.paid_eur - amount_eur
 
-        return Exchange.create(
+        return self.store.create_exchange(
             date=exchange.date, amount_usd=exchange.amount_usd, exchange_rate=exchange_rate, amount_eur=amount_eur,
             paid_eur=exchange.paid_eur, fees_eur=fees_eur
         )
     
-    def delete_exchange(self, exchange_id):
-        exchange = Exchange.get(Exchange.id == exchange_id)
+    def delete_exchange(self, exchange_id: int):
+        exchange = self.store.get_exchange(exchange_id)
+        if not exchange:
+            raise HTTPException(status_code=404)
 
-        if not ExchangePayment.select().where(ExchangePayment.exchange == exchange_id):
-            exchange.delete_instance()
+        if not self.store.get_exchange_payments_by_exchange(exchange_id):
+            self.store.delete(exchange)
         else:
             raise HTTPException(status_code=500, detail="Exchange is still in use")
     
-    def update_exchange(self, exchange_id, amount, payment_id):
-        payment = Payment.get(
-            (Payment.id == payment_id) &
-            (Payment.status != Payment.Status.PROCESSED.value)
-        )
-        exchange = Exchange.get(Exchange.id == exchange_id)
+    def update_exchange(self, exchange_id: int, amount: int, payment_id: int):
+        payment = self.store.get_unprocessed_payment(payment_id)
+        exchange = self.store.get_exchange(exchange_id)
+        if not payment or not exchange:
+            raise HTTPException(status_code=404)
 
         if amount == 0:
-            ExchangePayment.delete().where(
-                (ExchangePayment.exchange == exchange_id) &
-                (ExchangePayment.payment == payment_id)
-            ).execute()
+            self.store.delete_exchange_payment(exchange_id, payment_id)
             return
 
-        ep = ExchangePayment.get_or_none(exchange=exchange, payment=payment)
-        current_amount = 0 if not ep else ep.amount
+        current_amount = self.store.get_exchange_payment_amount(exchange_id, payment_id)
 
         if self.balance_service.calc_exchange_remaining(exchange) + current_amount < amount:
             raise HTTPException(status_code=500, detail=f"Error: Exchange {exchange_id} has not enough balance!")
@@ -82,14 +74,8 @@ class ExchangeService:
         if self.balance_service.calc_payment_remaining(payment) + current_amount < amount:
             raise HTTPException(status_code=500, detail=f"Error: Exchange {exchange_id} has not enough balance!")
 
-        model, created = ExchangePayment.get_or_create(
-            exchange_id=exchange_id,
-            payment_id=payment_id,
-            defaults={"amount": amount}
-        )
+        model, created = self.store.get_or_create_exchange_payment(exchange_id, payment_id, amount)
 
         if not created:
             model.amount = amount
-            model.save()
-
-ExchangeServiceDep = Annotated[ExchangeService, Depends()]
+            self.store.save(model)

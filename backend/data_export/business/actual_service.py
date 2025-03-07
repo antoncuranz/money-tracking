@@ -2,56 +2,60 @@ import os
 import uuid
 from typing import Annotated, List
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 
 from backend.config import config
 from backend.core.util import stringify
 from backend.data_export.adapter.actual_client import IActualClient, ActualClient
-from backend.exchangerate.facade import ExchangeRateDep
-from backend.models import Transaction, Payment, Account, User
+from backend.data_export.dataaccess.dataexport_repository import DataExportRepository
+from backend.exchangerate.facade import ExchangeRateFacade
+from backend.models import Transaction, Payment, User
 
 
 class ActualService:
     def __init__(self, actual: Annotated[IActualClient, Depends(ActualClient)],
-                 exchangerate: ExchangeRateDep):
+                 exchangerate: Annotated[ExchangeRateFacade, Depends()],
+                 repository: Annotated[DataExportRepository, Depends()]):
         self.actual = actual
         self.exchangerate = exchangerate
+        self.repository = repository
 
-    def export_transactions(self, account: Account):
-        transactions = Transaction.select().where(
-            (Transaction.status != Transaction.Status.PENDING.value) &
-            (Transaction.actual_id.is_null()) &
-            (Transaction.account == account.id))
+    def export_transactions(self, user: User, account_id: int):
+        transactions = self.repository.get_unexported_transactions(account_id)
 
         for tx in transactions:
-            self.export_transaction(account, tx)
+            self.export_transaction(user, account_id, tx)
 
-    def export_transaction(self, account: Account, tx: Transaction):
-        print("Importing transaction in Actual: " + str(stringify(tx)))
+    def export_transaction(self, user: User, account_id: int, tx: Transaction):
+        account = self.repository.get_account(user, account_id)
+        if not account:
+            raise HTTPException(status_code=404)
+        
+        print("Exporting transaction to Actual: " + str(stringify(tx)))
         id = str(uuid.uuid4())
         self.actual.create_transaction(account, self._create_actual_transaction(tx, id))
         tx.actual_id = id
         tx.save()
 
-    def update_transactions(self, account: Account, transactions: List[Transaction] | None = None):
+    def update_transactions(self, user: User, account_id: int, transactions: List[Transaction] | None = None):
         if transactions is None:
-            transactions = Transaction.select().where(
-                (Transaction.status == Transaction.Status.POSTED.value) &
-                (Transaction.actual_id.is_null(False)) &
-                (Transaction.amount_eur.is_null(False)) &
-                (Transaction.account == account.id))
+            transactions = self.repository.get_updatable_transactions(account_id)
             
-        existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees(account.user)['data']}
+        existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees(user)['data']}
 
         for tx in transactions:
-            self.update_transaction(account, tx, existing_payees)
+            self.update_transaction(user, account_id, tx, existing_payees)
 
-    def update_transaction(self, account: Account, tx: Transaction, existing_payees=None):
+    def update_transaction(self, user: User, account_id: int, tx: Transaction, existing_payees=None):
+        account = self.repository.get_account(user, account_id)
+        if not account:
+            raise HTTPException(status_code=404)
+        
         if existing_payees is None:
-            existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees(account.user)['data']}
+            existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees(user)['data']}
 
         if tx.actual_id is None:
-            self.export_transaction(account, tx)
+            self.export_transaction(user, account_id, tx)
 
         actual_tx = self.actual.get_transaction(account, tx)
         payee = self._get_or_create_payee(account.user, tx, actual_tx, existing_payees)
@@ -82,22 +86,21 @@ class ActualService:
             "imported_payee": tx.counterparty,
         })
         
-    def export_payments(self, account: Account):
-        payments = Payment.select().where(
-            (Payment.actual_id.is_null()) &
-            (Payment.amount_eur.is_null(False)) &
-            (Payment.status == Payment.Status.PROCESSED.value) &
-            (Payment.account == account.id))
+    def export_payments(self, user: User, account_id: int):
+        payments = self.repository.get_unexported_payments(user)
 
         for payment in payments:
-            self.export_payment(account, payment)
+            self.export_payment(user, account_id, payment)
 
-    def export_payment(self, account: Account, payment: Payment):
+    def export_payment(self, user: User, account_id: int, payment: Payment):
+        account = self.repository.get_account(user, account_id)
+        if not account:
+            raise HTTPException(status_code=404)
+        
         if payment.status_enum != Payment.Status.PROCESSED or payment.actual_id is not None:
-            raise Exception("Error: Payment not processed or already imported!")
+            raise Exception("Error: Payment not processed or already exported!")
 
-        id = str(uuid.uuid4())
-        self.actual.create_transaction(account, self._create_actual_payment(payment, id))
+        self.actual.create_transaction(account, self._create_actual_payment(payment, str(uuid.uuid4())))
         payment.actual_id = id
         payment.save()
 
@@ -131,7 +134,7 @@ class ActualService:
             ]
         }
 
-    def _create_actual_payment(self, payment: Payment, id: int):
+    def _create_actual_payment(self, payment: Payment, id: str):
         return {
             "id": id,
             "date": str(payment.date),
@@ -155,5 +158,3 @@ class ActualService:
                 return payee
         else:
             return actual_tx["payee"]
-
-ActualServiceDep = Annotated[ActualService, Depends()]

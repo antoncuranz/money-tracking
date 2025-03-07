@@ -2,24 +2,26 @@ from decimal import Decimal
 from typing import Annotated
 
 from fastapi import Depends
-from peewee import fn
 
-from backend.models import ExchangePayment, Exchange, Credit, CreditTransaction, Transaction, Payment, Account
+from backend.core.dataaccess.store import Store
+from backend.models import Exchange, Credit, Transaction, Payment
 
 
 class BalanceService:
+    def __init__(self, store: Annotated[Store, Depends()]):
+        self.store = store
+        
     def calc_balance_exchanged(self) -> int:
         balance = 0
 
-        for exchange in Exchange.select():
+        for exchange in self.store.get_exchanges():
             balance += self.calc_exchange_remaining(exchange, include_not_processed=True)
 
         return balance
 
     def calc_exchange_remaining(self, exchange: Exchange, include_not_processed=False) -> int:
         balance = exchange.amount_usd
-
-        query = ExchangePayment.select().where(ExchangePayment.exchange == exchange)
+        query = self.store.get_exchange_payments_by_exchange(exchange.id)
 
         for exchange_payment in query:
             # TODO: check if "not" is correct
@@ -31,18 +33,10 @@ class BalanceService:
 
         return balance
 
-    def calc_balance_credits(self) -> int:
-        balance = 0
-
-        for credit in Credit.select():
-            balance += self.calc_credit_remaining(credit)
-
-        return balance
-
     def calc_credit_remaining(self, credit: Credit) -> int:
         balance = credit.amount_usd
 
-        query = CreditTransaction.select().where(CreditTransaction.credit == credit.id)
+        query = self.store.get_credit_transactions_by_credit(credit.id)
 
         for credit_transaction in query:
             balance -= credit_transaction.amount
@@ -55,7 +49,7 @@ class BalanceService:
     def calc_transaction_remaining(self, tx: Transaction) -> int:
         balance = tx.amount_usd
 
-        query = CreditTransaction.select().where(CreditTransaction.transaction == tx.id)
+        query = self.store.get_credit_transactions_by_transaction(tx.id)
 
         for credit_transaction in query:
             balance -= credit_transaction.amount
@@ -68,7 +62,7 @@ class BalanceService:
     def calc_payment_remaining(self, payment: Payment) -> int:
         balance = payment.amount_usd
 
-        query = ExchangePayment.select().where(ExchangePayment.payment == payment.id)
+        query = self.store.get_exchange_payments_by_payment(payment.id)
 
         for exchange_payment in query:
             balance -= exchange_payment.amount
@@ -80,19 +74,11 @@ class BalanceService:
 
     def get_account_balances(self, user):
         result = {}
-        for account in Account.select().where(Account.user == user.id):
-            posted_tx = Transaction.select(fn.SUM(Transaction.amount_usd)).where(
-                (Transaction.account == account.id) & (Transaction.status != Transaction.Status.PENDING.value)
-            ).scalar() or 0
-            posted_credits = Credit.select(fn.SUM(Credit.amount_usd)).where(
-                (Credit.account == account.id)).scalar() or 0
-            posted_payments = Payment.select(fn.SUM(Payment.amount_usd)).where(
-                (Payment.account == account.id) & (Payment.status != Payment.Status.PENDING.value)).scalar() or 0
-
-            pending = Transaction.select(fn.SUM(Transaction.amount_usd)).where(
-                (Transaction.account == account.id) & (Transaction.status == Transaction.Status.PENDING.value) &
-                (Transaction.ignore.is_null() | ~Transaction.ignore)
-            ).scalar() or 0
+        for account in self.store.get_accounts_of_user(user):
+            posted_tx = self.store.get_posted_transaction_amount(account.id)
+            posted_credits = self.store.get_posted_credit_amount(account.id)
+            posted_payments = self.store.get_posted_payment_amount(account.id)
+            pending = self.store.get_pending_transaction_amount(account.id)
 
             result[account.id] = {
                 "posted": posted_tx - posted_credits - posted_payments,
@@ -104,12 +90,12 @@ class BalanceService:
         return result
 
     def get_balance_posted(self) -> int:
-        transactions = Transaction.select().where(Transaction.status == Transaction.Status.POSTED.value)
+        transactions = self.store.get_all_posted_transactions()
 
         balance = 0
         for tx in transactions:
             amount = tx.amount_usd
-            for ct in CreditTransaction.select().where(CreditTransaction.transaction == tx.id):
+            for ct in self.store.get_credit_transactions_by_transaction(tx.id):
                 amount -= ct.amount
 
             balance += amount
@@ -117,11 +103,10 @@ class BalanceService:
         return balance
 
     def get_balance_pending(self) -> int:
-        return Transaction.select(fn.SUM(Transaction.amount_usd)) \
-            .where((Transaction.status == Transaction.Status.PENDING.value) & (Transaction.ignore.is_null() | ~Transaction.ignore)).scalar() or 0
+        return self.store.get_balance_pending()
 
     def get_balance_credits(self) -> int:
-        credits = Credit.select()
+        credits = self.store.get_all_credits()
 
         balance = 0
         for credit in credits:
@@ -130,15 +115,15 @@ class BalanceService:
         return balance
 
     def get_virtual_account_balance(self) -> str:
-        payments = Payment.select().where(Payment.status == Payment.Status.POSTED.value)
+        payments = self.store.get_all_posted_payments()
         remaining_payments = 0
         for payment in payments:
             remaining_payments += self.calc_payment_remaining(payment)
 
         virtual_balance = 0
 
-        exchanges = Exchange.select().order_by(Exchange.date)
-        for exchange in exchanges:
+        exchanges = self.store.get_exchanges()
+        for exchange in reversed(exchanges):
             remaining = self.calc_exchange_remaining(exchange)
 
             minimum = min(remaining_payments, remaining)
@@ -153,7 +138,4 @@ class BalanceService:
             return "negative"
 
     def get_fees_and_risk_eur(self) -> int:
-        return Transaction.select(fn.SUM(Transaction.fees_and_risk_eur)) \
-            .where(Transaction.status == Transaction.Status.PAID.value).scalar()
-
-BalanceServiceDep = Annotated[BalanceService, Depends()]
+        return self.store.get_fees_and_risk_eur()

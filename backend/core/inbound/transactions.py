@@ -1,12 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from peewee import DoesNotExist
+from fastapi import APIRouter, Depends
 
 from backend.auth import get_current_user
-from backend.core.business.transaction_service import TransactionServiceDep
+from backend.core.business.transaction_service import TransactionService
 from backend.core.util import stringify
-from backend.exchangerate.facade import ExchangeRateFacade, ExchangeRateDep
+from backend.exchangerate.facade import ExchangeRateFacade
 from backend.models import Transaction, User
 
 router = APIRouter(prefix="/api/transactions", tags=["Transactions"])
@@ -18,8 +17,8 @@ def map_transaction(transaction: Transaction, exchangerate: ExchangeRateFacade):
 
 @router.get("")
 def get_transactions(user: Annotated[User, Depends(get_current_user)],
-                     transaction_service: TransactionServiceDep,
-                     exchangerate: ExchangeRateDep,
+                     transaction_service: Annotated[TransactionService, Depends()],
+                     exchangerate: Annotated[ExchangeRateFacade, Depends()],
                      account: int | None = None, paid: bool | None = None):
 
     transactions = transaction_service.get_transactions(user, account, paid)
@@ -28,9 +27,6 @@ def get_transactions(user: Annotated[User, Depends(get_current_user)],
 
 @router.put("/{tx_id}")
 def update_transaction(user: Annotated[User, Depends(get_current_user)],
-                       transaction_service: TransactionServiceDep,
+                       transaction_service: Annotated[TransactionService, Depends()],
                        tx_id: int, amount_eur: int | None = None):
-    try:
-        transaction_service.update_transaction(user, tx_id, amount_eur)
-    except DoesNotExist:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    transaction_service.update_transaction(user, tx_id, amount_eur)

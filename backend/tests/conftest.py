@@ -5,15 +5,19 @@ from fastapi.testclient import TestClient
 from testcontainers.postgres import PostgresContainer
 
 from backend.core.business.balance_service import BalanceService
+from backend.core.dataaccess.account_repository import AccountRepository
+from backend.core.dataaccess.credit_repository import CreditRepository
+from backend.core.dataaccess.exchange_repository import ExchangeRepository
+from backend.core.dataaccess.payment_repository import PaymentRepository
+from backend.core.dataaccess.store import Store
+from backend.core.dataaccess.transaction_repository import TransactionRepository
 from backend.data_export.adapter.actual_client import ActualClient
 from backend.data_import.adapter.quiltt_client import QuilttClient
-from backend.data_import.adapter.teller_client import TellerClient
 from backend.exchangerate.adapter.exchangerates_client import MastercardClient, ExchangeratesApiIoClient
 from backend.models import db, ALL_TABLES
 from backend.tests.mockclients.actual import MockActualClient
 from backend.tests.mockclients.exchangerates import MockExchangeRateClient
 from backend.tests.mockclients.quiltt import MockQuilttClient
-from backend.tests.mockclients.teller import MockTellerClient
 
 
 @pytest.fixture()
@@ -23,7 +27,6 @@ def client():
         ActualClient: MockActualClient,
         MastercardClient: MockExchangeRateClient,
         ExchangeratesApiIoClient: MockExchangeRateClient,
-        TellerClient: MockTellerClient,
         QuilttClient: MockQuilttClient
     }
     return TestClient(app)
@@ -57,4 +60,4 @@ def setup_data():
 
 @pytest.fixture()
 def balance_service():
-    return BalanceService()
+    return BalanceService(Store(AccountRepository(), TransactionRepository(), CreditRepository(), PaymentRepository(), ExchangeRepository()))

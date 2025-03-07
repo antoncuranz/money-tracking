@@ -11,5 +11,3 @@ class AccountRepository:
 
     def get_bank_accounts_of_user(self, user: User) -> List[BankAccount]:
         return BankAccount.select().where(BankAccount.user_id == user.id).order_by(BankAccount.id)
-
-AccountRepositoryDep = Annotated[AccountRepository, Depends()]

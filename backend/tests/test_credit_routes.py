@@ -38,7 +38,7 @@ def test_update_credit(client, balance_service):
     assert balance_service.calc_credit_remaining(credit) == 0
 
 
-def test_update_credit_amount_larger_than_tx_500(client):
+def test_update_credit_amount_larger_than_tx_400(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -51,10 +51,10 @@ def test_update_credit_amount_larger_than_tx_500(client):
     response = client.put(f"/api/credits/{credit}?transaction={tx}&amount={credit.amount_usd}", headers=ALICE_AUTH)
 
     # Assert
-    assert response.status_code == 500
+    assert response.status_code == 400
 
 
-def test_update_credit_amount_larger_than_remaining_tx_500(client, balance_service):
+def test_update_credit_amount_larger_than_remaining_tx_400(client, balance_service):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -70,10 +70,10 @@ def test_update_credit_amount_larger_than_remaining_tx_500(client, balance_servi
     response = client.put(f"/api/credits/{credit}?transaction={tx}&amount={credit.amount_usd}", headers=ALICE_AUTH)
 
     # Assert
-    assert response.status_code == 500
+    assert response.status_code == 400
 
 
-def test_update_credit_amount_larger_than_credit_500(client):
+def test_update_credit_amount_larger_than_credit_400(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -86,10 +86,10 @@ def test_update_credit_amount_larger_than_credit_500(client):
     response = client.put(f"/api/credits/{credit}?transaction={tx}&amount={tx.amount_usd}", headers=ALICE_AUTH)
 
     # Assert
-    assert response.status_code == 500
+    assert response.status_code == 400
 
 
-def test_update_credit_on_paid_transaction_404(client):
+def test_update_credit_on_paid_transaction_400(client):
     # Arrange
     User.create(**ALICE_USER)
     Account.create(**ACCOUNT_1)
@@ -103,7 +103,7 @@ def test_update_credit_on_paid_transaction_404(client):
     response = client.put(f"/api/credits/{credit}?transaction={tx}&amount={credit.amount_usd}", headers=ALICE_AUTH)
 
     # Assert
-    assert response.status_code == 404
+    assert response.status_code == 400
 
 
 def test_update_credit_delete_credit_transaction(client):

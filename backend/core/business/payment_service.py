@@ -1,80 +1,61 @@
 from decimal import Decimal
 from typing import List, Annotated
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 
-from backend.core.business.balance_service import BalanceServiceDep
-from backend.core.business.exchange_service import ExchangeServiceDep
-from backend.data_export.facade import DataExportDep
-from backend.models import Transaction, db, Exchange, ExchangePayment, Payment, Account, User
+from backend.core.business.balance_service import BalanceService
+from backend.core.business.exchange_service import ExchangeService
+from backend.core.dataaccess.store import Store
+from backend.data_export.facade import DataExportFacade
+from backend.models import Transaction, db, ExchangePayment, Payment, User
 
 
 class PaymentService:
-    def __init__(self, balance_service: BalanceServiceDep,
-                 exchange_service: ExchangeServiceDep,
-                 data_export: DataExportDep):
+    def __init__(self, store: Annotated[Store, Depends()],
+                 balance_service: Annotated[BalanceService, Depends()],
+                 exchange_service: Annotated[ExchangeService, Depends()],
+                 data_export: Annotated[DataExportFacade, Depends()]):
+        self.store = store
         self.balance_service = balance_service
         self.exchange_service = exchange_service
         self.data_export = data_export
     
     def get_payments(self, user: User, account_id: int, processed: bool | None = None):
-        query = (Account.user == user.id)
+        return self.store.get_payments(user, account_id, processed)
 
-        if processed is not None:
-            query = query & (Payment.status == Payment.Status.PROCESSED.value if processed else Payment.status != Payment.Status.PROCESSED.value)
-
-        if account_id is not None:
-            query = query & (Payment.account == account_id)
-
-        return Payment.select().join(Account).where(query).order_by(-Payment.date)
-        
     def process_payment(self, user: User, payment_id: int, transactions=None):
-        """
-        Raises
-        ------
-        DoesNotExist
-            If a payment with the given `payment_id` does not exist or does not belong to the given `user`.
-        """
-        payment = Payment.get(Payment.id == payment_id)
-        account = Account.get((Account.user == user.id) & (Account.id == payment.account))
+        payment = self.store.get_payment(user, payment_id)
+        if not payment:
+            raise HTTPException(status_code=404)
 
         if not transactions:
             transactions = self._guess_transactions_to_process(payment)
         
         self._process_payment(payment, transactions)
         
-        self.data_export.update_transactions(account, transactions)
-        self.data_export.export_payment(account, payment)
+        self.data_export.update_transactions(user, payment.account.id, transactions)
+        self.data_export.export_payment(user, payment.account.id, payment)
     
     def unprocess_payment(self, user: User, payment_id: int):
-        payment = Payment.get(Payment.id == payment_id)
-        account = Account.get((Account.user == user.id) & (Account.id == payment.account))
+        payment = self.store.get_payment(user, payment_id)
+        payment.status_enum = Payment.Status.POSTED
+        payment.amount_eur = None
+        payment.actual_id = None
+        self.store.save(payment)
 
-        transactions = Transaction.select().where(
-            (Transaction.account == account.id) &
-            (Transaction.payment == payment_id) &
-            (Transaction.status == Transaction.Status.PAID.value)
-        )
+        transactions = self.store.get_paid_transactions_by_payment(user, payment_id)
         for tx in transactions:
             tx.status_enum = Transaction.Status.POSTED
             tx.payment = None
             tx.fees_and_risk_eur = None
-            tx.save()
+            self.store.save(tx)
 
-        payment.status_enum = Payment.Status.POSTED
-        payment.amount_eur = None
-        payment.actual_id = None
-        payment.save()
-
-        self.data_export.update_transactions(account, transactions)
+        self.data_export.update_transactions(user, payment.account.id, transactions)
         if payment.actual_id is not None:
-            self.data_export.delete_transaction(account.user, payment.actual_id)
+            self.data_export.delete_transaction(user, payment.actual_id)
 
     def _guess_transactions_to_process(self, payment: Payment):
-        transactions = Transaction.select().where(
-            (Transaction.status == Transaction.Status.POSTED.value) &
-            (Transaction.account == payment.account)
-        ).order_by(Transaction.date)  # TODO: order by date, then id
+        transactions = self.store.get_posted_transactions_by_account(payment.account.id)
 
         process_tx = []
         amount = payment.amount_usd
@@ -107,9 +88,7 @@ class PaymentService:
         if payment.amount_usd != tx_remaining_sum:
             raise Exception("Error: Payment amount does not match sum of transactions!")
 
-        exchange_payments = ExchangePayment.select(Exchange, ExchangePayment).join(Exchange) \
-            .where(ExchangePayment.payment == payment.id)
-
+        exchange_payments = self.store.get_exchange_payments_by_payment(payment.id)
         avg_eur_usd_exchanged, neutral_sum = self._calc_avg_eur_usd_exchanged(payment, exchange_payments, transactions)
 
         for tx in transactions:
@@ -118,13 +97,13 @@ class PaymentService:
 
             tx.payment = payment.id
             tx.status_enum = Transaction.Status.PAID
-            tx.save()
+            self.store.save(tx)
 
         amount_usd = payment.amount_usd - neutral_sum
         payment.amount_eur = round(amount_usd / avg_eur_usd_exchanged) if amount_usd > 0 else 0
         payment.status_enum = Payment.Status.PROCESSED
-        payment.save()
-        
+        self.store.save(payment)
+
         eur_sum = sum([tx.amount_eur + tx.fees_and_risk_eur for tx in transactions])
         eur_err = payment.amount_eur - eur_sum
         print("Calculated eur_err of " + str(eur_err)) # TODO: send notification or display in frontend
@@ -132,7 +111,9 @@ class PaymentService:
         # apply error to largest transaction
         largest_tx = max(transactions, key=lambda tx: tx.amount_eur or 0)
         largest_tx.fees_and_risk_eur += eur_err
-        largest_tx.save()
+        self.store.save(largest_tx)
+        
+        # TODO: save all entities at once? (using a single session)
 
     def _calc_fees_and_risk(self, value_usd: int, value_eur: int, eur_usd_exchanged: Decimal) -> int:
         if value_eur == 0:
@@ -160,5 +141,3 @@ class PaymentService:
             raise Exception("Error: neutral sum differs between Transactions and Exchanges!")
 
         return avg_eur_usd_exchanged, neutral_sum
-
-PaymentServiceDep = Annotated[PaymentService, Depends()]

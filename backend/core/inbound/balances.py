@@ -1,17 +1,16 @@
-import json
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
 from backend.auth import require_super_user, get_current_user
-from backend.core.business.balance_service import BalanceServiceDep
+from backend.core.business.balance_service import BalanceService
 from backend.models import User
 
 router = APIRouter(prefix="/api/balance", tags=["Balances"], dependencies=[Depends(require_super_user)])
 
 
 @router.get("")
-def get_balances(balance_service: BalanceServiceDep):
+def get_balances(balance_service: Annotated[BalanceService, Depends()]):
     posted = balance_service.get_balance_posted()
     pending = balance_service.get_balance_pending()
     credits = balance_service.get_balance_credits()
@@ -29,11 +28,11 @@ def get_balances(balance_service: BalanceServiceDep):
 
 @router.get("/accounts")
 def get_account_balances(user: Annotated[User, Depends(get_current_user)],
-                         balance_service: BalanceServiceDep):
+                         balance_service: Annotated[BalanceService, Depends()]):
     return balance_service.get_account_balances(user)
 
 @router.get("/fees")
-def get_fee_summary(balance_service: BalanceServiceDep):
+def get_fee_summary(balance_service: Annotated[BalanceService, Depends()]):
     return {
         "fees_and_risk_eur": balance_service.get_fees_and_risk_eur()
     }

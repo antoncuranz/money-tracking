@@ -56,7 +56,7 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
     }
 
     if (adjustAmt) {
-      const response = await fetch("/api/transactions/" + transaction.id + "?amount_eur=" + adjustedAmt, {method: "PUT"})
+      const response = await fetch("/api/transactions/" + transaction.id + (adjustedAmt ? "?amount_eur=" + adjustedAmt : ""), {method: "PUT"})
       if (!response.ok)
         toast({
           title: "Error adjusting Transaction amount",
