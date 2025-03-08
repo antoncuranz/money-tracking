@@ -4,8 +4,8 @@ from sqlmodel import Session, select
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import NoResultFound
 
-from backend.models import Exchange, ExchangePayment, Payment, Account, User, BankAccount
-from backend.tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, EXCHANGE_2, ACCOUNT_1, EXCHANGE_1_JSON, \
+from models import Exchange, ExchangePayment, Payment, Account, User, BankAccount
+from tests.fixtures import EXCHANGE_1, PAYMENT_1, PAYMENT_2, PAYMENT_3, EXCHANGE_2, ACCOUNT_1, EXCHANGE_1_JSON, \
     ALICE_AUTH, ALICE_USER, BANK_ACCOUNT_1
 
 

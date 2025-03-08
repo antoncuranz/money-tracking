@@ -1,6 +1,6 @@
 import requests
 
-from backend.config import config
+from config import config
 
 
 class IActualClient:

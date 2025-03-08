@@ -1,10 +1,10 @@
 import datetime
 
-from backend.data_import.dataaccess.dataimport_repository import DataImportRepository
-from backend.models import Account, Transaction, User, Payment, Credit, BankAccount
+from data_import.dataaccess.dataimport_repository import DataImportRepository
+from models import Account, Transaction, User, Payment, Credit, BankAccount
 from sqlmodel import Session, select
 from sqlalchemy.exc import NoResultFound
-from backend.tests.fixtures import *
+from tests.fixtures import *
 import pytest
 
 under_test = DataImportRepository()

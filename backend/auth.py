@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import HTTPException, Depends, Request, status
 from sqlmodel import Session, select
 
-from backend.models import User, get_session
+from models import User, get_session
 
 
 # TODO: make async

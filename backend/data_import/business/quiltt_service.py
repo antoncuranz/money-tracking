@@ -8,10 +8,10 @@ import requests
 from fastapi import Depends
 from sqlmodel import Session
 
-from backend.config import config
-from backend.data_import.adapter.quiltt_client import IQuilttClient, QuilttClient
-from backend.data_import.dataaccess.dataimport_repository import DataImportRepository
-from backend.models import Transaction, Account
+from config import config
+from data_import.adapter.quiltt_client import IQuilttClient, QuilttClient
+from data_import.dataaccess.dataimport_repository import DataImportRepository
+from models import Transaction, Account
 
 
 class QuilttService:

@@ -3,11 +3,11 @@ from typing import Annotated, List
 from fastapi import APIRouter, Depends, status
 from sqlmodel import SQLModel, Session
 
-from backend.auth import get_current_user
-from backend.core.business.credit_service import CreditService
-from backend.core.inbound.transactions import CreditTransactionTO
+from auth import get_current_user
+from core.business.credit_service import CreditService
+from core.inbound.transactions import CreditTransactionTO
 
-from backend.models import User, get_session
+from models import User, get_session
 
 router = APIRouter(prefix="/api/credits", tags=["Credits"])
 

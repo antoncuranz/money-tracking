@@ -1,7 +1,7 @@
 from typing import List
 from sqlmodel import Session, select
 
-from backend.models import Account, User
+from models import Account, User
 
 
 class DatesRepository:

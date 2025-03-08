@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Session
 
-from backend.exchangerate.business.exchangerate_service import ExchangeRateService
-from backend.models import Account, Transaction
+from exchangerate.business.exchangerate_service import ExchangeRateService
+from models import Account, Transaction
 
 
 class ExchangeRateFacade:

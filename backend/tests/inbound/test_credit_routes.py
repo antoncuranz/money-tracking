@@ -3,8 +3,8 @@ from sqlmodel import Session, select
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import NoResultFound
 
-from backend.models import Account, Transaction, Credit, CreditTransaction, User, BankAccount
-from backend.tests.fixtures import ACCOUNT_1, CREDIT_1, TX_1, TX_2, TX_3, CREDIT_2, ALICE_AUTH, ALICE_USER, \
+from models import Account, Transaction, Credit, CreditTransaction, User, BankAccount
+from tests.fixtures import ACCOUNT_1, CREDIT_1, TX_1, TX_2, TX_3, CREDIT_2, ALICE_AUTH, ALICE_USER, \
     BANK_ACCOUNT_1
 
 

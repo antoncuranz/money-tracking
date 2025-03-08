@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlmodel import Session
 
-from backend.auth import get_current_user
-from backend.data_import.business.import_service import ImportService
-from backend.models import User, get_session
+from auth import get_current_user
+from data_import.business.import_service import ImportService
+from models import User, get_session
 
 router = APIRouter(prefix="/api/import", tags=["Data Import"])
 

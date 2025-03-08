@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from sqlmodel import Session, select, func
 
-from backend.models import Payment, ExchangePayment, Exchange
+from models import Payment, ExchangePayment, Exchange
 
 
 class ExchangeRepository:

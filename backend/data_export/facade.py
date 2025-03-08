@@ -3,8 +3,8 @@ from typing import List, Annotated
 from fastapi import Depends
 from sqlmodel import Session
 
-from backend.data_export.business.actual_service import ActualService
-from backend.models import Transaction, Payment, User
+from data_export.business.actual_service import ActualService
+from models import Transaction, Payment, User
 
 
 class DataExportFacade:

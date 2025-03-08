@@ -2,9 +2,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
-from backend.auth import get_current_user
-from backend.core.business.account_service import AccountService
-from backend.models import User, get_session
+from auth import get_current_user
+from core.business.account_service import AccountService
+from models import User, get_session
 
 router = APIRouter(prefix="/api/bank_accounts", tags=["Bank Accounts"])
 

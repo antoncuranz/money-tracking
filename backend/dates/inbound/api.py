@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
-from backend.auth import get_current_user
-from backend.dates.business.date_service import DateService
-from backend.models import User, get_session
+from auth import get_current_user
+from dates.business.date_service import DateService
+from models import User, get_session
 
 router = APIRouter(prefix="/api/dates", tags=["Dates"])
 

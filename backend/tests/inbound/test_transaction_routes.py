@@ -1,5 +1,5 @@
-from backend.models import Account, User, Transaction, BankAccount
-from backend.tests.fixtures import ACCOUNT_1, ALICE_AUTH, ALICE_USER, TX_1, BANK_ACCOUNT_1
+from models import Account, User, Transaction, BankAccount
+from tests.fixtures import ACCOUNT_1, ALICE_AUTH, ALICE_USER, TX_1, BANK_ACCOUNT_1
 
 from sqlmodel import Session, select
 from fastapi.testclient import TestClient

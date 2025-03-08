@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
-from backend.auth import require_super_user, get_current_user
-from backend.core.business.balance_service import BalanceService
-from backend.models import User, get_session
+from auth import require_super_user, get_current_user
+from core.business.balance_service import BalanceService
+from models import User, get_session
 
 router = APIRouter(prefix="/api/balance", tags=["Balances"], dependencies=[Depends(require_super_user)])
 

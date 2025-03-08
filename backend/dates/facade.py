@@ -3,8 +3,8 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from backend.dates.business.date_service import DateService
-from backend.models import Account
+from dates.business.date_service import DateService
+from models import Account
 
 
 class DatesFacade:

@@ -1,7 +1,7 @@
 import datetime
 
-from backend.data_import.adapter.quiltt_client import IQuilttClient
-from backend.tests.fixtures import ACCOUNT_1, QUILTT_TRANSACTIONS
+from data_import.adapter.quiltt_client import IQuilttClient
+from tests.fixtures import ACCOUNT_1, QUILTT_TRANSACTIONS
 
 
 class MockQuilttClient(IQuilttClient):

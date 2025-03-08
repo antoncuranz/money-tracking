@@ -2,7 +2,7 @@ from typing import List
 
 from sqlmodel import Session, select
 
-from backend.models import Account, BankAccount, User
+from models import Account, BankAccount, User
 
 
 class AccountRepository:

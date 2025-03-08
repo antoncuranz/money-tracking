@@ -5,7 +5,7 @@ from typing import List
 
 from sqlmodel import create_engine, Session, SQLModel, Relationship, Field
 
-from backend.config import config
+from config import config
 
 database_url = "postgresql+psycopg2://{}:{}@{}:{}/{}".format(
     config.postgres_user, config.postgres_password, config.postgres_host, config.postgres_port, config.postgres_database

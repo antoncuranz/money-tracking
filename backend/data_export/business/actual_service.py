@@ -5,11 +5,11 @@ from typing import Annotated, List
 from fastapi import Depends, HTTPException
 from sqlmodel import Session
 
-from backend.config import config
-from backend.data_export.adapter.actual_client import IActualClient, ActualClient
-from backend.data_export.dataaccess.dataexport_repository import DataExportRepository
-from backend.exchangerate.facade import ExchangeRateFacade
-from backend.models import Transaction, Payment, User
+from config import config
+from data_export.adapter.actual_client import IActualClient, ActualClient
+from data_export.dataaccess.dataexport_repository import DataExportRepository
+from exchangerate.facade import ExchangeRateFacade
+from models import Transaction, Payment, User
 
 
 class ActualService:

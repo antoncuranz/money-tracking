@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from backend.models import ExchangeRate
+from models import ExchangeRate
 
 ALICE_AUTH = {"X-Auth-Request-Preferred-Username": "alice"}
 BOB_AUTH = {"X-Auth-Request-Preferred-Username": "bob"}

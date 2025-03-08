@@ -1,7 +1,7 @@
 from requests.exceptions import HTTPError
 
-from backend.data_import.adapter.teller_client import ITellerClient
-from backend.tests.fixtures import ACCOUNT_1, TELLER_TRANSACTIONS
+from data_import.adapter.teller_client import ITellerClient
+from tests.fixtures import ACCOUNT_1, TELLER_TRANSACTIONS
 
 
 class MockTellerClient(ITellerClient):

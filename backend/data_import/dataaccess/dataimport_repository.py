@@ -3,8 +3,8 @@ from typing import Optional, List
 
 from sqlmodel import Session, select, func
 
-from backend.models import Account, Transaction, Credit, Payment
-from backend.models import User, BankAccount
+from models import Account, Transaction, Credit, Payment
+from models import User, BankAccount
 
 
 class DataImportRepository:

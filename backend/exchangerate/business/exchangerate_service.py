@@ -5,10 +5,10 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Session
 
-from backend.exchangerate.adapter.exchangerates_client import IExchangeRateClient, ExchangeratesApiIoClient, \
+from exchangerate.adapter.exchangerates_client import IExchangeRateClient, ExchangeratesApiIoClient, \
     MastercardClient
-from backend.exchangerate.dataaccess.exchangerate_repository import ExchangeRateRepository
-from backend.models import Transaction, ExchangeRate, Account
+from exchangerate.dataaccess.exchangerate_repository import ExchangeRateRepository
+from models import Transaction, ExchangeRate, Account
 
 
 class ExchangeRateService:

@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import SQLModel, Session
 import datetime
 
-from backend.core.business.payment_service import PaymentService
-from backend.models import User, get_session
-from backend.auth import get_current_user
+from core.business.payment_service import PaymentService
+from models import User, get_session
+from auth import get_current_user
 
 router = APIRouter(prefix="/api/payments", tags=["Payments"])
 

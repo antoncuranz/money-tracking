@@ -5,13 +5,13 @@ import requests
 from fastapi import Depends, HTTPException
 from sqlmodel import Session
 
-from backend.config import config
-from backend.data_export.facade import DataExportFacade
-from backend.data_import.business.quiltt_service import QuilttService
-from backend.data_import.dataaccess.dataimport_repository import DataImportRepository
-from backend.dates.facade import DatesFacade
-from backend.exchangerate.facade import ExchangeRateFacade
-from backend.models import Account, User, BankAccount
+from config import config
+from data_export.facade import DataExportFacade
+from data_import.business.quiltt_service import QuilttService
+from data_import.dataaccess.dataimport_repository import DataImportRepository
+from dates.facade import DatesFacade
+from exchangerate.facade import ExchangeRateFacade
+from models import Account, User, BankAccount
 
 
 class ImportService:

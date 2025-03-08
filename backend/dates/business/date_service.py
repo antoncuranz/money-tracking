@@ -4,8 +4,8 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Session
 
-from backend.dates.dataaccess.dates_repository import DatesRepository
-from backend.models import Account, User, engine
+from dates.dataaccess.dates_repository import DatesRepository
+from models import Account, User, engine
 
 
 class DateService:

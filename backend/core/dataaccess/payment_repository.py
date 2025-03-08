@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from sqlmodel import Session, select, func
 
-from backend.models import User, Account, Payment
+from models import User, Account, Payment
 
 
 class PaymentRepository:

@@ -4,11 +4,11 @@ from typing import List, Annotated
 from fastapi import Depends, HTTPException
 from sqlmodel import Session
 
-from backend.core.business.balance_service import BalanceService
-from backend.core.business.exchange_service import ExchangeService
-from backend.core.dataaccess.store import Store
-from backend.data_export.facade import DataExportFacade
-from backend.models import Transaction, ExchangePayment, Payment, User, engine
+from core.business.balance_service import BalanceService
+from core.business.exchange_service import ExchangeService
+from core.dataaccess.store import Store
+from data_export.facade import DataExportFacade
+from models import Transaction, ExchangePayment, Payment, User, engine
 
 
 class PaymentService:

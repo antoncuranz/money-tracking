@@ -5,12 +5,12 @@ from typing import List, Optional, Annotated
 from fastapi import Depends
 from sqlmodel import Session
 
-from backend.core.dataaccess.account_repository import AccountRepository
-from backend.core.dataaccess.credit_repository import CreditRepository
-from backend.core.dataaccess.exchange_repository import ExchangeRepository
-from backend.core.dataaccess.payment_repository import PaymentRepository
-from backend.core.dataaccess.transaction_repository import TransactionRepository
-from backend.models import Transaction, User, Account, Payment, ExchangePayment, Exchange, CreditTransaction, \
+from core.dataaccess.account_repository import AccountRepository
+from core.dataaccess.credit_repository import CreditRepository
+from core.dataaccess.exchange_repository import ExchangeRepository
+from core.dataaccess.payment_repository import PaymentRepository
+from core.dataaccess.transaction_repository import TransactionRepository
+from models import Transaction, User, Account, Payment, ExchangePayment, Exchange, CreditTransaction, \
     Credit, BankAccount
 
 

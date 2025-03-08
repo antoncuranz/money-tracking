@@ -5,20 +5,20 @@ from fastapi.testclient import TestClient
 from sqlmodel import SQLModel, Session, create_engine
 from testcontainers.postgres import PostgresContainer
 
-from backend.core.business.balance_service import BalanceService
-from backend.core.dataaccess.account_repository import AccountRepository
-from backend.core.dataaccess.credit_repository import CreditRepository
-from backend.core.dataaccess.exchange_repository import ExchangeRepository
-from backend.core.dataaccess.payment_repository import PaymentRepository
-from backend.core.dataaccess.store import Store
-from backend.core.dataaccess.transaction_repository import TransactionRepository
-from backend.data_export.adapter.actual_client import ActualClient
-from backend.data_import.adapter.quiltt_client import QuilttClient
-from backend.exchangerate.adapter.exchangerates_client import MastercardClient, ExchangeratesApiIoClient
-from backend.models import get_session
-from backend.tests.mockclients.actual import MockActualClient
-from backend.tests.mockclients.exchangerates import MockExchangeRateClient
-from backend.tests.mockclients.quiltt import MockQuilttClient
+from core.business.balance_service import BalanceService
+from core.dataaccess.account_repository import AccountRepository
+from core.dataaccess.credit_repository import CreditRepository
+from core.dataaccess.exchange_repository import ExchangeRepository
+from core.dataaccess.payment_repository import PaymentRepository
+from core.dataaccess.store import Store
+from core.dataaccess.transaction_repository import TransactionRepository
+from data_export.adapter.actual_client import ActualClient
+from data_import.adapter.quiltt_client import QuilttClient
+from exchangerate.adapter.exchangerates_client import MastercardClient, ExchangeratesApiIoClient
+from models import get_session
+from tests.mockclients.actual import MockActualClient
+from tests.mockclients.exchangerates import MockExchangeRateClient
+from tests.mockclients.quiltt import MockQuilttClient
 
 
 @pytest.fixture(scope="session")
@@ -51,7 +51,7 @@ def session_fixture(engine):
 
 @pytest.fixture(name="client")
 def client_fixture(session: Session):
-    from backend.main import app
+    from main import app
 
     def get_session_override():
         return session

@@ -1,4 +1,4 @@
-from backend.config import config
+from config import config
 import requests
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport

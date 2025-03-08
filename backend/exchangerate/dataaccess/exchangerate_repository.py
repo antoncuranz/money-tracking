@@ -4,7 +4,7 @@ from typing import Optional, List
 
 from sqlmodel import Session, select
 
-from backend.models import ExchangeRate, Transaction
+from models import ExchangeRate, Transaction
 
 
 class ExchangeRateRepository:

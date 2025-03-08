@@ -1,5 +1,5 @@
-from backend.models import *
-from backend.tests.fixtures import *
+from models import *
+from tests.fixtures import *
 
 from sqlmodel import Session, select, func
 from fastapi.testclient import TestClient

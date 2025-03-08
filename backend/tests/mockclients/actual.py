@@ -1,5 +1,5 @@
-from backend.data_export.adapter.actual_client import IActualClient
-from backend.models import config
+from data_export.adapter.actual_client import IActualClient
+from models import config
 
 
 class MockActualClient(IActualClient):

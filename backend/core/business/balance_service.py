@@ -4,8 +4,8 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Session
 
-from backend.core.dataaccess.store import Store
-from backend.models import Exchange, Credit, Transaction, Payment, engine, User
+from core.dataaccess.store import Store
+from models import Exchange, Credit, Transaction, Payment, engine, User
 
 
 class BalanceService:

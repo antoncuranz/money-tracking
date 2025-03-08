@@ -1,7 +1,7 @@
 import requests
 
-from backend.models import ExchangeRate
-from backend.config import config
+from models import ExchangeRate
+from config import config
 
 
 class IExchangeRateClient:

@@ -1,7 +1,7 @@
-from backend.data_export.dataaccess.dataexport_repository import DataExportRepository
-from backend.models import Account, Transaction, User, Payment, BankAccount
+from data_export.dataaccess.dataexport_repository import DataExportRepository
+from models import Account, Transaction, User, Payment, BankAccount
 from sqlmodel import Session, select
-from backend.tests.fixtures import *
+from tests.fixtures import *
 import pytest
 
 under_test = DataExportRepository()

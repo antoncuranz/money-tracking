@@ -4,9 +4,9 @@ from typing import Annotated, List
 from fastapi import APIRouter, Depends
 from sqlmodel import SQLModel, Session
 
-from backend.auth import get_current_user
-from backend.core.business.transaction_service import TransactionService
-from backend.models import User, get_session
+from auth import get_current_user
+from core.business.transaction_service import TransactionService
+from models import User, get_session
 
 router = APIRouter(prefix="/api/transactions", tags=["Transactions"])
 

@@ -1,5 +1,5 @@
-from backend.models import Account, Transaction, Credit, Payment, CreditTransaction, User, BankAccount
-from backend.tests.fixtures import ACCOUNT_1, ALICE_AUTH, ALICE_USER, BANK_ACCOUNT_1
+from models import Account, Transaction, Credit, Payment, CreditTransaction, User, BankAccount
+from tests.fixtures import ACCOUNT_1, ALICE_AUTH, ALICE_USER, BANK_ACCOUNT_1
 import pytest
 
 from sqlmodel import Session, select

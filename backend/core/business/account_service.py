@@ -3,8 +3,8 @@ from typing import Annotated, List
 from fastapi import Depends
 from sqlmodel import Session
 
-from backend.core.dataaccess.store import Store
-from backend.models import User, Account, BankAccount, engine
+from core.dataaccess.store import Store
+from models import User, Account, BankAccount, engine
 
 
 class AccountService:

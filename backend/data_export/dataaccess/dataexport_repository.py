@@ -2,7 +2,7 @@ from typing import Optional, List
 
 from sqlmodel import Session, select
 
-from backend.models import Account, Transaction, Payment, User
+from models import Account, Transaction, Payment, User
 
 
 class DataExportRepository:

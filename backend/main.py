@@ -4,12 +4,12 @@ from alembic import command
 from alembic.config import Config
 from fastapi import FastAPI, Depends
 
-import backend.data_export.inbound.api as data_export
-import backend.data_import.inbound.api as data_import
-import backend.dates.inbound.api as dates
-from backend.auth import verify_user_header
-from backend.core.inbound import accounts, balances, bank_accounts, credits, exchanges, payments, transactions
-from backend.models import database_url
+import data_export.inbound.api as data_export
+import data_import.inbound.api as data_import
+import dates.inbound.api as dates
+from auth import verify_user_header
+from core.inbound import accounts, balances, bank_accounts, credits, exchanges, payments, transactions
+from models import database_url
 
 
 @asynccontextmanager

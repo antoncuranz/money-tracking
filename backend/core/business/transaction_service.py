@@ -3,10 +3,10 @@ from typing import Annotated, List
 from fastapi import Depends, HTTPException
 from sqlmodel import Session
 
-from backend.core.dataaccess.store import Store
-from backend.data_export.facade import DataExportFacade
-from backend.exchangerate.facade import ExchangeRateFacade
-from backend.models import Transaction, User, engine, TransactionWithGuessedAmount
+from core.dataaccess.store import Store
+from data_export.facade import DataExportFacade
+from exchangerate.facade import ExchangeRateFacade
+from models import Transaction, User, engine, TransactionWithGuessedAmount
 
 
 class TransactionService:

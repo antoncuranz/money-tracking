@@ -5,10 +5,10 @@ from sqlmodel import SQLModel, Session
 import datetime
 from decimal import Decimal
 
-from backend.auth import require_super_user
-from backend.core.business.exchange_service import CreateExchange, ExchangeService
-from backend.core.inbound.payments import ExchangePaymentTO
-from backend.models import get_session
+from auth import require_super_user
+from core.business.exchange_service import CreateExchange, ExchangeService
+from core.inbound.payments import ExchangePaymentTO
+from models import get_session
 
 router = APIRouter(prefix="/api/exchanges", tags=["Exchanges"], dependencies=[Depends(require_super_user)])
 

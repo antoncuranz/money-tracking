@@ -6,9 +6,9 @@ from fastapi import Depends, HTTPException
 from sqlmodel import Session
 from pydantic import BaseModel
 
-from backend.core.business.balance_service import BalanceService
-from backend.core.dataaccess.store import Store
-from backend.models import Exchange
+from core.business.balance_service import BalanceService
+from core.dataaccess.store import Store
+from models import Exchange
 
 
 class CreateExchange(BaseModel):

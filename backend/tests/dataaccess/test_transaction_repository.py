@@ -1,7 +1,7 @@
-from backend.core.dataaccess.transaction_repository import TransactionRepository
-from backend.models import Account, Transaction, User, BankAccount
+from core.dataaccess.transaction_repository import TransactionRepository
+from models import Account, Transaction, User, BankAccount
 from sqlmodel import Session
-from backend.tests.fixtures import *
+from tests.fixtures import *
 import pytest
 
 under_test = TransactionRepository()
