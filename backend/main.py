@@ -10,14 +10,14 @@ from backend.auth import verify_user_header
 from backend.core.inbound import accounts, balances, bank_accounts, credits, exchanges, payments, transactions
 from backend.models import engine
 
-app = FastAPI(dependencies=[Depends(verify_user_header)])
-for module in [accounts, balances, bank_accounts, credits, dates, exchanges, payments, transactions, data_import, data_export]:
-    app.include_router(module.router)
-
-
 @asynccontextmanager
-async def lifespan():
+async def lifespan(app: FastAPI):
     # on startup
     SQLModel.metadata.create_all(engine)
     yield
     # on shutdown
+
+app = FastAPI(dependencies=[Depends(verify_user_header)], lifespan=lifespan)
+for module in [accounts, balances, bank_accounts, credits, dates, exchanges, payments, transactions, data_import, data_export]:
+    app.include_router(module.router)
+

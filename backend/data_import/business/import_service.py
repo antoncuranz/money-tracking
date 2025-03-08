@@ -32,6 +32,7 @@ class ImportService:
             raise HTTPException(status_code=404)
         
         self._import_account_transactions(session, account)
+        session.commit()
 
     def import_transactions_all_accounts(self, session: Session):
         today = datetime.date.today()

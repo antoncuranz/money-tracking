@@ -40,6 +40,8 @@ class ExchangeRateService:
             else:
                 raise Exception("Not implemented")
             
-            return self.repository.persist_exchange_rate(session, date, source.value, rate).exchange_rate
+            if rate:
+                self.repository.persist_exchange_rate(session, date, source.value, rate)
+            return rate
         else:
             return er.exchange_rate
