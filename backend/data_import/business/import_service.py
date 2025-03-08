@@ -59,7 +59,7 @@ class ImportService:
             print("Importing balances for BankAccount " + str(bank_account.id))
 
             try:
-                self.quiltt_service.update_bank_account_balance(bank_account)
+                self.quiltt_service.update_bank_account_balance(session, bank_account)
             except Exception as e:
                 print("Error importing balances: " + str(e))
                 continue
@@ -68,6 +68,8 @@ class ImportService:
             print("Pending sum: " + str(pending_payment_sum))
             if pending_payment_sum > bank_account.balance:
                 self._send_notification("Betrag {} in Kürze fällig. Bankkonto {} nicht ausreichend gedeckt.".format(pending_payment_sum/100, bank_account.name))
+        
+        session.commit()
 
         # pending_exchanges = Exchange.select().where(Exchange.import_id.is_null())
         # if pending_exchanges:

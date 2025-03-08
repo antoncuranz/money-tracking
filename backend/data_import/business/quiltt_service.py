@@ -22,10 +22,10 @@ class QuilttService:
         self.token = None
         self.token_expires = None
 
-    def update_bank_account_balance(self, bank_account):
+    def update_bank_account_balance(self, session: Session, bank_account):
         new_balance = self.adapter.get_account_balance(bank_account.import_id, self._get_token())
         bank_account.balance = int(new_balance * 100)
-        bank_account.save()
+        session.add(bank_account)
 
     def import_transactions(self, session: Session, account: Account):
         quiltt_response = self.adapter.get_account_transactions(account.import_id, self._get_token())
