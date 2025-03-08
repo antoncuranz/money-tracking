@@ -17,11 +17,11 @@ const PaymentRow = ({payment, account, selectable, onClick, onProcessPaymentClic
   const [inProgress, setInProgress] = useState(false)
 
   function isAppliedToExchange() {
-    return  payment.exchangepayment_set != null && payment.exchangepayment_set.length > 0
+    return  payment.exchanges != null && payment.exchanges.length > 0
   }
 
   function calculateAppliedAmount() {
-    return payment.exchangepayment_set.map(ct => ct.amount).reduce((a, b) => a + b, 0)
+    return payment.exchanges.map(ct => ct.amount).reduce((a, b) => a + b, 0)
   }
 
   function isProcessButtonDisabled() {
@@ -44,7 +44,7 @@ const PaymentRow = ({payment, account, selectable, onClick, onProcessPaymentClic
   return (
     <TableRow onClick={onClick} className={getClasses()} style={{ borderLeftStyle: payment.status == 1 ? "dashed" : "solid" }} date={payment.date} remoteName={payment.counterparty} purpose={payment.description} account={account}>
       <span className="flex items-center">
-        <span className="text-sm w-18 text-right">{formatAmount(payment.amount_eur)} €</span>
+        <span className="text-sm w-20 text-right">{formatAmount(payment.amount_eur)} €</span>
         <Button variant="outline" size="icon" className="ml-2" disabled={isProcessButtonDisabled()}
                 onClick={onProcessPaymentClickLocal}>
           {payment.status == 3 ?

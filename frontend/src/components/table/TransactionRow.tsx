@@ -18,11 +18,11 @@ export default function TransactionRow({
   const { putTransactionAmount, clearTransactionAmount } = useStore()
 
   function isCreditApplied() {
-    return  transaction.credittransaction_set != null && transaction.credittransaction_set.length > 0
+    return  transaction.credits != null && transaction.credits.length > 0
   }
 
   function calculateCredit() {
-    return transaction.credittransaction_set.map(ct => ct.amount).reduce((a, b) => a + b, 0)
+    return transaction.credits.map(ct => ct.amount).reduce((a, b) => a + b, 0)
   }
 
   function getClasses() {

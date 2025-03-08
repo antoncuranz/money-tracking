@@ -6,11 +6,12 @@ from typing import Annotated
 
 import requests
 from fastapi import Depends
+from sqlmodel import Session
 
 from backend.config import config
 from backend.data_import.adapter.quiltt_client import IQuilttClient, QuilttClient
 from backend.data_import.dataaccess.dataimport_repository import DataImportRepository
-from backend.models import Transaction
+from backend.models import Transaction, Account
 
 
 class QuilttService:
@@ -26,7 +27,7 @@ class QuilttService:
         bank_account.balance = int(new_balance * 100)
         bank_account.save()
 
-    def import_transactions(self, account):
+    def import_transactions(self, session: Session, account: Account):
         quiltt_response = self.adapter.get_account_transactions(account.import_id, self._get_token())
 
         for tx in quiltt_response:
@@ -36,41 +37,44 @@ class QuilttService:
                     payment_strings = ["AUTOPAY PAYMENT", "AUTOPAY PYMT", "MOBILE PAYMENT", "MOBILE PYMT"]
                     
                     if any(payment_string in original_description for payment_string in payment_strings):
-                        self._process_payment(account, tx)
+                        self._process_payment(session, account, tx)
                     else:
-                        self._process_credit(account, tx)
+                        self._process_credit(session, account, tx)
                 else:
-                    self._process_transaction(account, tx)
+                    self._process_transaction(session, account, tx)
             except:
                 print("Error processing quiltt_tx: " + json.dumps(tx))
                 traceback.print_exc()
 
-    def _process_payment(self, account, tx):
+    def _process_payment(self, session: Session, account: Account, tx):
         args = self._make_transaction_args(tx, account.id)
         
-        pending_payment = self.repository.get_pending_payment(account.id, args["date"], args["amount_usd"])
+        pending_payment = self.repository.get_pending_payment(session, account.id, args["date"], args["amount_usd"])
         if pending_payment:
             print("Matching payment " + str(pending_payment.id))
-            self.repository.update_payment(pending_payment.id, args)
+            pending_payment = pending_payment.model_copy(update=args)
+            session.add(pending_payment)
+            session.commit()
             return
 
         import_id = tx["remoteData"]["mx"]["transaction"]["id"]
         args = self._make_transaction_args(tx, account.id)
-        result, created = self.repository.get_or_create_payment(import_id, args)
+        result, created = self.repository.get_or_create_payment(session, import_id, args)
 
         if created:
             self._send_notification("A Payment could not be matched")
             print("Error: Could not find pending Payment for {}.".format(json.dumps(tx)))
+            session.commit()
             
-    def _process_transaction(self, account, tx):
+    def _process_transaction(self, session: Session, account: Account, tx):
         import_id = tx["remoteData"]["mx"]["transaction"]["id"]
         args = self._make_transaction_args(tx, account.id)
-        self.repository.get_or_create_transaction(import_id, args)
+        self.repository.get_or_create_transaction(session, import_id, args)
 
-    def _process_credit(self, account, tx):
+    def _process_credit(self, session: Session, account: Account, tx):
         import_id = tx["remoteData"]["mx"]["transaction"]["id"]
         args = self._make_transaction_args(tx, account.id)
-        self.repository.get_or_create_credit(import_id, args)
+        self.repository.get_or_create_credit(session, import_id, args)
 
     def _make_transaction_args(self, tx, account_id):
         args = { # always available args

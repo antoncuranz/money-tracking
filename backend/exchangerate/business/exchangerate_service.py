@@ -3,6 +3,7 @@ from decimal import Decimal
 from typing import Annotated
 
 from fastapi import Depends
+from sqlmodel import Session
 
 from backend.exchangerate.adapter.exchangerates_client import IExchangeRateClient, ExchangeratesApiIoClient, \
     MastercardClient
@@ -18,19 +19,19 @@ class ExchangeRateService:
         self.exchangeratesio = exchangeratesio
         self.repository = repository
         
-    def fetch_exchange_rates(self, account: Account, source: ExchangeRate.Source = ExchangeRate.Source.MASTERCARD):
-        transactions = self.repository.get_transactions_without_eur_amount(account.id)
-        [self._get_exchange_rate(date, source) for date in set([tx.date for tx in transactions])]
+    def fetch_exchange_rates(self, session: Session, account: Account, source: ExchangeRate.Source = ExchangeRate.Source.MASTERCARD):
+        transactions = self.repository.get_transactions_without_eur_amount(session, account.id)
+        [self._get_exchange_rate(session, date, source) for date in set([tx.date for tx in transactions])]
 
-    def guess_amount_eur(self, transaction: Transaction) -> int | None:
+    def guess_amount_eur(self, session: Session, transaction: Transaction) -> int | None:
         try:
-            exchange_rate = self._get_exchange_rate(transaction.date)
+            exchange_rate = self._get_exchange_rate(session, transaction.date)
             return int(transaction.amount_usd / exchange_rate)
         except:
             return None
 
-    def _get_exchange_rate(self, date: datetime.date, source: ExchangeRate.Source = ExchangeRate.Source.MASTERCARD) -> Decimal:
-        er = self.repository.get_exchange_rate(date, source)
+    def _get_exchange_rate(self, session: Session, date: datetime.date, source: ExchangeRate.Source = ExchangeRate.Source.MASTERCARD) -> Decimal:
+        er = self.repository.get_exchange_rate(session, date, source)
         if not er:
             if source == ExchangeRate.Source.MASTERCARD:
                 rate = self.mastercard.get_conversion_rate(date)
@@ -39,6 +40,6 @@ class ExchangeRateService:
             else:
                 raise Exception("Not implemented")
             
-            return self.repository.persist_exchange_rate(date, source.value, rate).exchange_rate
+            return self.repository.persist_exchange_rate(session, date, source.value, rate).exchange_rate
         else:
             return er.exchange_rate

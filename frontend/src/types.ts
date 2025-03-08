@@ -29,13 +29,13 @@ export type Credit = {
   description: string;
   category: string;
   amount_usd: number;
-  credittransaction_set: CreditTransaction[];
+  transactions: CreditTransaction[];
 };
 
 export type CreditTransaction = {
   amount: number;
-  credit: Credit;
-  transaction: Transaction;
+  credit_id: number;
+  transaction_id: number;
 };
 
 export type Transaction = {
@@ -53,7 +53,7 @@ export type Transaction = {
   status: number;
   payment: number | null;
   fees_and_risk_eur: number | null;
-  credittransaction_set: CreditTransaction[];
+  credits: CreditTransaction[];
   ignore: boolean | null;
 };
 
@@ -66,13 +66,13 @@ export type Exchange = {
   amount_eur: number | null;
   paid_eur: number;
   fees_eur: number | null;
-  exchangepayment_set: ExchangePayment[];
+  payments: ExchangePayment[];
 };
 
 export type ExchangePayment = {
   amount: number;
-  exchange: Exchange;
-  payment: Payment;
+  exchange_id: number;
+  payment_id: number;
 };
 
 export type Payment = {
@@ -87,7 +87,7 @@ export type Payment = {
   amount_usd: number;
   amount_eur: number;
   status: number;
-  exchangepayment_set: ExchangePayment[];
+  exchanges: ExchangePayment[];
 };
 
 export type Balances = {

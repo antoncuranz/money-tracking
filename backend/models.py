@@ -1,63 +1,74 @@
-from peewee import *
 import datetime
+from decimal import Decimal
 from enum import Enum
+from typing import List
+
+from sqlmodel import create_engine, Session, SQLModel, Relationship, Field
 
 from backend.config import config
 
-db = PostgresqlDatabase(config.postgres_database,
-                        user=config.postgres_user, password=config.postgres_password, host=config.postgres_host, port=config.postgres_port)
+engine = create_engine("postgresql+psycopg2://{}:{}@{}:{}/{}".format(
+    config.postgres_user, config.postgres_password, config.postgres_host, config.postgres_port, config.postgres_database
+))
 
 
-class BaseModel(Model):
-    class Meta:
-        database = db
+def get_session():
+    with Session(engine) as session:
+        yield session
 
 
-class User(BaseModel):
-    id = AutoField()
-    name = CharField()
-    super_user = BooleanField(default=False)
-    actual_sync_id = CharField(null=True)
-    actual_encryption_password = CharField(null=True)
+class User(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str
+    super_user: bool = False
+    actual_sync_id: str | None
+    actual_encryption_password: str | None
 
 
-class BankAccount(BaseModel):
-    id = AutoField()
-    user = ForeignKeyField(User, backref="bank_accounts")
-    name = CharField()
-    institution = CharField()
-    icon = CharField(null=True)
-    balance = IntegerField(default=0)
-    import_id = CharField(null=True)
+class BankAccount(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    user: User = Relationship()
+    accounts: List["Account"] = Relationship()
+    name: str
+    institution: str
+    icon: str | None
+    balance: int = 0
+    import_id: str | None
 
 
-class Account(BaseModel):
-    id = AutoField()
-    user = ForeignKeyField(User, backref="accounts")
-    bank_account = ForeignKeyField(BankAccount, backref="user", null=True)
-    actual_id = CharField(null=True)
-    import_id = CharField(null=True)
-    name = CharField()
-    institution = CharField()
-    due_day = IntegerField(null=True)
-    autopay_offset = IntegerField(null=True)
-    icon = CharField(null=True)
-    color = CharField(null=True)
-    target_spend = IntegerField(null=True)
+class Account(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    user: User = Relationship()
+    bank_account_id: int | None = Field(foreign_key="bankaccount.id")
+    bank_account: BankAccount | None = Relationship(back_populates="accounts")
+    actual_id: str | None
+    import_id: str | None
+    name: str
+    institution: str
+    due_day: int | None
+    autopay_offset: int | None
+    icon: str | None
+    color: str | None
+    target_spend: int | None
 
 
-class Payment(BaseModel):
-    id = AutoField()
-    account = ForeignKeyField(Account, backref="payments")
-    import_id = CharField(unique=True, null=True)
-    actual_id = CharField(null=True)
-    date = DateField(default=datetime.date.today)
-    counterparty = CharField()
-    description = CharField()
-    category = CharField(null=True)
-    amount_usd = IntegerField()
-    amount_eur = IntegerField(null=True)
-    status = IntegerField()
+class Payment(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    account_id: int = Field(foreign_key="account.id")
+    account: Account = Relationship()
+    import_id: str | None = Field(unique=True)
+    actual_id: str | None
+    date: datetime.date = datetime.date.today
+    counterparty: str
+    description: str
+    category: str | None
+    amount_usd: int
+    amount_eur: int | None
+    status: int
+    exchanges: List["ExchangePayment"] = Relationship(cascade_delete=True)
+    transactions: List["Transaction"] = Relationship()
 
     @property
     def status_enum(self):
@@ -76,42 +87,42 @@ class Payment(BaseModel):
         PROCESSED = 3
 
 
-class Exchange(BaseModel):
-    id = AutoField()
-    actual_id = CharField(unique=True, null=True)
-    date = DateField(default=datetime.date.today)
-    amount_usd = IntegerField()
-    exchange_rate = DecimalField(decimal_places=8)
-    amount_eur = IntegerField(null=True)
-    paid_eur = IntegerField()
-    fees_eur = IntegerField(null=True)
-    import_id = CharField(unique=True, null=True)
+class Exchange(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    date: datetime.date = datetime.date.today
+    amount_usd: int
+    exchange_rate: Decimal = Field(decimal_places=8)
+    amount_eur: int | None
+    paid_eur: int
+    fees_eur: int | None
+    import_id: str | None = Field(unique=True)
+    actual_id: str | None = Field(unique=True)
+    payments: List["ExchangePayment"] = Relationship(cascade_delete=True)
 
 
-class ExchangePayment(BaseModel):
-    class Meta:
-        primary_key = CompositeKey("exchange", "payment")
+class ExchangePayment(SQLModel, table=True):
+    exchange_id: int = Field(primary_key=True, foreign_key="exchange.id")
+    exchange: Exchange = Relationship(back_populates="payments")
+    payment_id: int = Field(primary_key=True, foreign_key="payment.id")
+    payment: Payment = Relationship(back_populates="exchanges")
+    amount: int
 
-    exchange = ForeignKeyField(Exchange, on_delete="CASCADE")
-    payment = ForeignKeyField(Payment, on_delete="CASCADE")
-    amount = IntegerField()
 
-
-class Transaction(BaseModel):
-    id = AutoField()
-    account = ForeignKeyField(Account, backref="transactions")
-    import_id = CharField(unique=True)
-    actual_id = CharField(null=True)
-    date = DateField(default=datetime.date.today)
-    counterparty = CharField()
-    description = CharField()
-    category = CharField(null=True)
-    amount_usd = IntegerField()
-    amount_eur = IntegerField(null=True)
-    status = IntegerField()
-    payment = ForeignKeyField(Payment, backref="transactions", null=True)
-    fees_and_risk_eur = IntegerField(null=True)
-    ignore = BooleanField(null=True)
+class TransactionBase(SQLModel):
+    id: int | None = Field(default=None, primary_key=True)
+    account_id: int = Field(foreign_key="account.id")
+    payment_id: int | None = Field(foreign_key="payment.id")
+    import_id: str = Field(unique=True)
+    actual_id: str | None
+    date: datetime.date = datetime.date.today
+    counterparty: str
+    description: str
+    category: str | None
+    amount_usd: int
+    amount_eur: int | None
+    status: int
+    fees_and_risk_eur: int | None
+    ignore: bool | None = False
 
     @property
     def status_enum(self):
@@ -130,33 +141,42 @@ class Transaction(BaseModel):
         PAID = 3
 
 
-class Credit(BaseModel):
-    id = AutoField()
-    account = ForeignKeyField(Account, backref="credits")
-    import_id = CharField(unique=True)
-    date = DateField(default=datetime.date.today)
-    counterparty = CharField()
-    description = CharField()
-    category = CharField(null=True)
-    amount_usd = IntegerField()
+class Transaction(TransactionBase, table=True):
+    account: Account = Relationship()
+    payment: Payment | None = Relationship(back_populates="transactions")
+    credits: List["CreditTransaction"] = Relationship()
 
 
-class CreditTransaction(BaseModel):
-    class Meta:
-        primary_key = CompositeKey("credit", "transaction")
+class TransactionWithGuessedAmount(TransactionBase):
+    guessed_amount_eur: int | None
+    credits: List["CreditTransaction"]
+    
 
-    credit = ForeignKeyField(Credit, on_delete="CASCADE")
-    transaction = ForeignKeyField(Transaction, on_delete="CASCADE")
-    amount = IntegerField()
+class Credit(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    account_id: int = Field(foreign_key="account.id")
+    account: Account = Relationship()
+    import_id: str = Field(unique=True)
+    date: datetime.date = datetime.date.today
+    counterparty: str
+    description: str
+    category: str | None
+    amount_usd: int
+    transactions: List["CreditTransaction"] = Relationship()
 
 
-class ExchangeRate(BaseModel):
-    class Meta:
-        primary_key = CompositeKey("date", "source")
+class CreditTransaction(SQLModel, table=True):
+    credit_id: int = Field(primary_key=True, foreign_key="credit.id")
+    credit: Credit = Relationship(back_populates="transactions")
+    transaction_id: int = Field(primary_key=True, foreign_key="transaction.id")
+    transaction: Transaction = Relationship(back_populates="credits")
+    amount: int
 
-    date = DateField(default=datetime.date.today)
-    source = IntegerField()
-    exchange_rate = DecimalField(decimal_places=8)
+
+class ExchangeRate(SQLModel, table=True):
+    date: datetime.date = Field(primary_key=True, default=datetime.date.today)
+    source: int = Field(primary_key=True)
+    exchange_rate: Decimal = Field(decimal_places=8)
 
     @property
     def source_enum(self):
@@ -174,4 +194,3 @@ class ExchangeRate(BaseModel):
         MASTERCARD = 2
         EXCHANGERATESIO = 3
 
-ALL_TABLES = [CreditTransaction, Credit, Transaction, ExchangePayment, Exchange, Payment, Account, BankAccount, User, ExchangeRate]

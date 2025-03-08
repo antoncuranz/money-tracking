@@ -3,9 +3,9 @@ import uuid
 from typing import Annotated, List
 
 from fastapi import Depends, HTTPException
+from sqlmodel import Session
 
 from backend.config import config
-from backend.core.util import stringify
 from backend.data_export.adapter.actual_client import IActualClient, ActualClient
 from backend.data_export.dataaccess.dataexport_repository import DataExportRepository
 from backend.exchangerate.facade import ExchangeRateFacade
@@ -20,34 +20,35 @@ class ActualService:
         self.exchangerate = exchangerate
         self.repository = repository
 
-    def export_transactions(self, user: User, account_id: int):
-        transactions = self.repository.get_unexported_transactions(account_id)
+    def export_transactions(self, session: Session, user: User, account_id: int):
+        transactions = self.repository.get_unexported_transactions(session, account_id)
 
         for tx in transactions:
-            self.export_transaction(user, account_id, tx)
+            self.export_transaction(session, user, account_id, tx)
 
-    def export_transaction(self, user: User, account_id: int, tx: Transaction):
-        account = self.repository.get_account(user, account_id)
+    def export_transaction(self, session: Session, user: User, account_id: int, tx: Transaction):
+        account = self.repository.get_account(session, user, account_id)
         if not account:
             raise HTTPException(status_code=404)
         
-        print("Exporting transaction to Actual: " + str(stringify(tx)))
+        print("Exporting transaction to Actual: " + str(tx))
         id = str(uuid.uuid4())
-        self.actual.create_transaction(account, self._create_actual_transaction(tx, id))
+        self.actual.create_transaction(account, self._create_actual_transaction(session, tx, id))
         tx.actual_id = id
-        tx.save()
+        session.add(tx)
+        session.commit()
 
-    def update_transactions(self, user: User, account_id: int, transactions: List[Transaction] | None = None):
+    def update_transactions(self, session: Session, user: User, account_id: int, transactions: List[Transaction] | None = None):
         if transactions is None:
-            transactions = self.repository.get_updatable_transactions(account_id)
+            transactions = self.repository.get_updatable_transactions(session, account_id)
             
         existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees(user)['data']}
 
         for tx in transactions:
-            self.update_transaction(user, account_id, tx, existing_payees)
+            self.update_transaction(session, user, account_id, tx, existing_payees)
 
-    def update_transaction(self, user: User, account_id: int, tx: Transaction, existing_payees=None):
-        account = self.repository.get_account(user, account_id)
+    def update_transaction(self, session: Session, user: User, account_id: int, tx: Transaction, existing_payees=None):
+        account = self.repository.get_account(session, user, account_id)
         if not account:
             raise HTTPException(status_code=404)
         
@@ -55,7 +56,7 @@ class ActualService:
             existing_payees = {payee["name"]: payee["id"] for payee in self.actual.get_payees(user)['data']}
 
         if tx.actual_id is None:
-            self.export_transaction(user, account_id, tx)
+            self.export_transaction(session, user, account_id, tx)
 
         actual_tx = self.actual.get_transaction(account, tx)
         payee = self._get_or_create_payee(account.user, tx, actual_tx, existing_payees)
@@ -63,7 +64,7 @@ class ActualService:
         fee_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == config.actual_fee_category)
         main_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] != config.actual_fee_category)
 
-        amount_eur = tx.amount_eur or self.exchangerate.guess_amount_eur(tx) or 0
+        amount_eur = tx.amount_eur or self.exchangerate.guess_amount_eur(session, tx) or 0
         fees_and_risk_eur = tx.fees_and_risk_eur if tx.fees_and_risk_eur is not None else 0
         self.actual.patch_transaction(account, actual_tx, {
             "cleared": tx.status_enum == Transaction.Status.PAID,
@@ -86,30 +87,34 @@ class ActualService:
             "imported_payee": tx.counterparty,
         })
         
-    def export_payments(self, user: User, account_id: int):
-        payments = self.repository.get_unexported_payments(user)
+    def export_payments(self, session: Session, user: User, account_id: int):
+        payments = self.repository.get_unexported_payments(session, account_id)
 
         for payment in payments:
-            self.export_payment(user, account_id, payment)
+            self.export_payment(session, user, account_id, payment)
 
-    def export_payment(self, user: User, account_id: int, payment: Payment):
-        account = self.repository.get_account(user, account_id)
+    def export_payment(self, session: Session, user: User, account_id: int, payment: Payment):
+        account = self.repository.get_account(session, user, account_id)
         if not account:
             raise HTTPException(status_code=404)
         
         if payment.status_enum != Payment.Status.PROCESSED or payment.actual_id is not None:
+            print("Payment status: " + str(payment.status_enum))
+            print("Payment actual_id: " + str(payment.actual_id))
             raise Exception("Error: Payment not processed or already exported!")
 
-        self.actual.create_transaction(account, self._create_actual_payment(payment, str(uuid.uuid4())))
+        id = str(uuid.uuid4())
+        self.actual.create_transaction(account, self._create_actual_payment(payment, id))
         payment.actual_id = id
-        payment.save()
+        session.add(payment)
+        session.commit()
 
-    def delete_transaction(self, user: User, actual_id: int):
+    def delete_transaction(self, user: User, actual_id: str):
         self.actual.delete_transaction(user, actual_id)
 
-    def _create_actual_transaction(self, tx: Transaction, id: str):
+    def _create_actual_transaction(self, session: Session, tx: Transaction, id: str):
         category = os.getenv("ACTUAL_CAT_" + (tx.category or "unknown").upper(), None)
-        amount_eur = tx.amount_eur or self.exchangerate.guess_amount_eur(tx) or 0
+        amount_eur = tx.amount_eur or self.exchangerate.guess_amount_eur(session, tx) or 0
         return {
             "id": id,
             "date": str(tx.date),

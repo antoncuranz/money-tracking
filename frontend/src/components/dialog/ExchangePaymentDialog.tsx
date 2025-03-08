@@ -25,7 +25,7 @@ const ExchangePaymentDialog = ({open, onClose, payment, exchange}: Props) => {
     if (!payment)
       return
 
-    const ep = payment["exchangepayment_set"].find(ep => ep["exchange"]["id"] == exchange)
+    const ep = payment.exchanges.find(ep => ep.exchange_id == exchange)
     setAmount(ep ? ep["amount"] : null)
   }
 

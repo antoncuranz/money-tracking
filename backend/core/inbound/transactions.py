@@ -1,32 +1,49 @@
-from typing import Annotated
+import datetime
+from typing import Annotated, List
 
 from fastapi import APIRouter, Depends
+from sqlmodel import SQLModel, Session
 
 from backend.auth import get_current_user
 from backend.core.business.transaction_service import TransactionService
-from backend.core.util import stringify
-from backend.exchangerate.facade import ExchangeRateFacade
-from backend.models import Transaction, User
+from backend.models import User, get_session
 
 router = APIRouter(prefix="/api/transactions", tags=["Transactions"])
 
-def map_transaction(transaction: Transaction, exchangerate: ExchangeRateFacade):
-    dict = stringify(transaction)
-    dict["guessed_amount_eur"] = exchangerate.guess_amount_eur(transaction)
-    return dict
+class CreditTransactionTO(SQLModel):
+    credit_id: int
+    transaction_id: int
+    amount: int
+    
+class TransactionTO(SQLModel):
+    id: int
+    account_id: int
+    payment_id: int | None
+    import_id: str
+    actual_id: str | None
+    date: datetime.date
+    counterparty: str
+    description: str
+    category: str | None
+    amount_usd: int
+    amount_eur: int | None
+    status: int
+    fees_and_risk_eur: int | None
+    ignore: bool | None
+    guessed_amount_eur: int | None
+    credits: List[CreditTransactionTO]
 
-@router.get("")
+@router.get("", response_model=List[TransactionTO])
 def get_transactions(user: Annotated[User, Depends(get_current_user)],
+                     session: Annotated[Session, Depends(get_session)],
                      transaction_service: Annotated[TransactionService, Depends()],
-                     exchangerate: Annotated[ExchangeRateFacade, Depends()],
                      account: int | None = None, paid: bool | None = None):
-
-    transactions = transaction_service.get_transactions(user, account, paid)
-    return [map_transaction(tx, exchangerate) for tx in transactions]
+    return transaction_service.get_transactions_with_guessed_amount(session, user, account, paid)
 
 
 @router.put("/{tx_id}")
 def update_transaction(user: Annotated[User, Depends(get_current_user)],
+                       session: Annotated[Session, Depends(get_session)],
                        transaction_service: Annotated[TransactionService, Depends()],
                        tx_id: int, amount_eur: int | None = None):
-    transaction_service.update_transaction(user, tx_id, amount_eur)
+    transaction_service.update_transaction(session, user, tx_id, amount_eur)

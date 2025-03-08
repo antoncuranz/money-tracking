@@ -2,7 +2,6 @@ fastapi[standard]
 pydantic
 pydantic-settings
 psycopg2
-peewee
 ibind
 pytest
 pytest-mock
@@ -12,3 +11,4 @@ gql
 aiohttp
 pebble
 paho-mqtt
+sqlmodel

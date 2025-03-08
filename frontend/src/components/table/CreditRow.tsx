@@ -16,11 +16,11 @@ export default function CreditRow({
 }) {
 
   function isCreditApplied() {
-    return  credit.credittransaction_set != null && credit.credittransaction_set.length > 0
+    return  credit.transactions != null && credit.transactions.length > 0
   }
 
   function calculateCredit() {
-    return credit.credittransaction_set.map(ct => ct.amount).reduce((a, b) => a + b, 0)
+    return credit.transactions.map(ct => ct.amount).reduce((a, b) => a + b, 0)
   }
 
   return (

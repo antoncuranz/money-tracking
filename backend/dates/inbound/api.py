@@ -1,16 +1,18 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
+from sqlmodel import Session
 
 from backend.auth import get_current_user
 from backend.dates.business.date_service import DateService
-from backend.models import User
+from backend.models import User, get_session
 
 router = APIRouter(prefix="/api/dates", tags=["Dates"])
 
 
 @router.get("/{year}/{month}")
 def get_due_dates(user: Annotated[User, Depends(get_current_user)],
+                  session: Annotated[Session, Depends(get_session)],
                   date_service: Annotated[DateService, Depends()],
                   year: int, month: int):
-    return date_service.get_dates(user, year, month)
+    return date_service.get_dates(session, user, year, month)

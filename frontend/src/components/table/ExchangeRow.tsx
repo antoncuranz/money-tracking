@@ -16,11 +16,11 @@ export default function ExchangeRow({
 }) {
 
   function isAppliedToPayment() {
-    return  exchange.exchangepayment_set != null && exchange.exchangepayment_set.length > 0
+    return  exchange.payments != null && exchange.payments.length > 0
   }
 
   function calculateAppliedAmount() {
-    return exchange.exchangepayment_set.map(ep => ep.amount).reduce((a, b) => a + b, 0)
+    return exchange.payments.map(ep => ep.amount).reduce((a, b) => a + b, 0)
   }
 
   return (

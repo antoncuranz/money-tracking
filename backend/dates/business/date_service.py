@@ -2,20 +2,21 @@ import datetime
 from typing import Annotated
 
 from fastapi import Depends
+from sqlmodel import Session
 
 from backend.dates.dataaccess.dates_repository import DatesRepository
-from backend.models import Account, User
+from backend.models import Account, User, engine
 
 
 class DateService:
     def __init__(self, repository: Annotated[DatesRepository, Depends()]):
         self.repository = repository
 
-    def get_dates(self, user: User, year: int, month: int):
+    def get_dates(self, session: Session, user: User, year: int, month: int):
         selected_month = datetime.date(year, month, 1)
 
         result = {}
-        for account in self.repository.get_accounts_of_user(user):
+        for account in self.repository.get_accounts_of_user(session, user):
             if account.due_day is None:
                 continue
 

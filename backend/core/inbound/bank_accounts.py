@@ -1,16 +1,17 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
+from sqlmodel import Session
 
 from backend.auth import get_current_user
 from backend.core.business.account_service import AccountService
-from backend.models import User
+from backend.models import User, get_session
 
 router = APIRouter(prefix="/api/bank_accounts", tags=["Bank Accounts"])
 
 
 @router.get("")
 def get_bank_accounts(user: Annotated[User, Depends(get_current_user)],
+                      session: Annotated[Session, Depends(get_session)],
                       account_service: Annotated[AccountService, Depends()]):
-    bank_accounts = account_service.get_bank_accounts_of_user(user)
-    return list(bank_accounts.dicts())
+    return account_service.get_bank_accounts_of_user(session, user)
 

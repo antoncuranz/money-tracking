@@ -28,7 +28,7 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
     if (!transaction)
       return
 
-    const ct = transaction.credittransaction_set.find(ct => ct.credit.id == appliedCredit)
+    const ct = transaction.credits.find(ct => ct.credit_id == credit)
     setAppliedCredit(ct ? ct.amount : null)
     setAdjustedAmt(transaction.amount_eur ?? 0)
   }
