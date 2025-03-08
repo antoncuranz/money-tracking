@@ -7,9 +7,10 @@ from sqlmodel import create_engine, Session, SQLModel, Relationship, Field
 
 from backend.config import config
 
-engine = create_engine("postgresql+psycopg2://{}:{}@{}:{}/{}".format(
+database_url = "postgresql+psycopg2://{}:{}@{}:{}/{}".format(
     config.postgres_user, config.postgres_password, config.postgres_host, config.postgres_port, config.postgres_database
-))
+)
+engine = create_engine(database_url)
 
 
 def get_session():

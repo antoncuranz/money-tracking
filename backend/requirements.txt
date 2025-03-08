@@ -13,3 +13,4 @@ pebble
 paho-mqtt
 sqlmodel
 plaid_python
+alembic
