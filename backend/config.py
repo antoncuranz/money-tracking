@@ -13,7 +13,6 @@ class Config(BaseSettings):
     plaid_client_id: str | None = None
     plaid_secret: str | None = None
     plaid_environment: str = "sandbox"
-    plaid_access_token: str | None = None
 
     actual_unknown_payee: str | None = None
     actual_fee_category: str = "ff41dcbd-5962-4b32-b3fe-ce9d63cf9c25"
