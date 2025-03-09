@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlmodel import Session, select, func
+from sqlmodel import Session, select, func, true
 
 from models import User, Account, Payment
 
@@ -11,7 +11,7 @@ class PaymentRepository:
         return session.exec(stmt).first()  # TODO: check user!
 
     def get_payments(self, session: Session, user: User, account_id: int, processed: bool | None = None):
-        query = user.super_user or (Account.user_id == user.id)
+        query = (Account.user_id == user.id) if not user.super_user else true()
 
         if processed is not None:
             query = query & (

@@ -1,9 +1,9 @@
 import datetime
 from typing import Optional, List
 
-from sqlmodel import Session, select, func
+from sqlmodel import Session, select, func, true
 
-from models import Account, Transaction, Credit, Payment
+from models import Account, Transaction, Credit, Payment, PlaidAccount, PlaidConnection
 from models import User, BankAccount
 
 
@@ -85,6 +85,32 @@ class DataImportRepository:
 
         if created:
             model = Credit(**args)
+        session.add(model)
+
+        return model, created
+    
+    def create_plaid_connection(self, session: Session, user: User, plaid_item_id: str, plaid_access_token: str) -> PlaidConnection:
+        connection = PlaidConnection(user_id=user.id, plaid_item_id=plaid_item_id, plaid_access_token=plaid_access_token)
+        session.add(connection)
+        return connection
+    
+    def get_plaid_connections(self, session: Session, user: User) -> List[PlaidConnection]:
+        query = (PlaidConnection.user_id == user.id) if not user.super_user else true()
+        stmt = select(PlaidConnection).where(query)
+        return session.exec(stmt).all()
+
+    def get_plaid_connection(self, session: Session, user: User, connection_id: int) -> Optional[PlaidConnection]:
+        query = (PlaidConnection.user_id == user.id) if not user.super_user else true()
+        stmt = select(PlaidConnection).where(query & (PlaidConnection.id == connection_id))
+        return session.exec(stmt).first()
+
+    def get_or_create_plaid_account(self, session: Session, plaid_account_id: str, args) -> tuple[PlaidAccount, bool]:
+        stmt = select(PlaidAccount).where(PlaidAccount.plaid_account_id == plaid_account_id)
+        model = session.exec(stmt).first()
+        created = not model
+
+        if created:
+            model = PlaidAccount(**args)
         session.add(model)
 
         return model, created

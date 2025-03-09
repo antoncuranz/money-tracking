@@ -19,6 +19,7 @@ export default async function Page() {
       <div className="flex justify-between h-10">
         <AccountSelector/>
         <div className="flex items-center gap-2">
+          {/*<PlaidLinkButton/>*/}
           <ImportButton/>
           <ActualButton/>
           <TxSaveButton/>

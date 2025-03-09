@@ -26,6 +26,24 @@ class User(SQLModel, table=True):
     actual_encryption_password: str | None
 
 
+class PlaidAccount(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str
+    plaid_account_id: str = Field(unique=True)
+    connection_id: int = Field(foreign_key="plaidconnection.id")
+    connection: "PlaidConnection" = Relationship(back_populates="plaid_accounts")
+
+
+class PlaidConnection(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    user: User = Relationship()
+    name: str | None
+    plaid_item_id: str
+    plaid_access_token: str
+    plaid_accounts: List[PlaidAccount] = Relationship(cascade_delete=True)
+
+
 class BankAccount(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
@@ -45,7 +63,9 @@ class Account(SQLModel, table=True):
     bank_account_id: int | None = Field(foreign_key="bankaccount.id")
     bank_account: BankAccount | None = Relationship(back_populates="accounts")
     actual_id: str | None
-    import_id: str | None
+    import_id: str | None  # TODO: remove once migrated to plaid
+    plaid_account_id: int | None = Field(foreign_key="plaidaccount.id")
+    plaid_account: PlaidAccount | None = Relationship()
     name: str
     institution: str
     due_day: int | None

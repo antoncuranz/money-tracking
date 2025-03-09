@@ -4,7 +4,6 @@ import {useToast} from "@/components/ui/use-toast.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {LoaderCircle, Plug} from "lucide-react";
 import {useState} from "react";
-import {TellerConnectEnrollment} from "teller-connect-react/src/types";
 import {useRouter} from "next/navigation";
 import {useStore} from "@/store.ts";
 
@@ -15,12 +14,10 @@ const ImportButton = () => {
   const router = useRouter()
   const { toast } = useToast()
 
-  async function onTellerButtonClick(authorization?: TellerConnectEnrollment) {
+  async function onButtonClick() {
     setInProgress(true)
 
-    let url = "/api/import/" + currentAccount!["id"]
-    if (authorization)
-      url += "?access_token=" + authorization.accessToken + "&enrollment_id=" + authorization.enrollment.id
+    const url = "/api/import/" + currentAccount!["id"]
     const response = await fetch(url, {method: "POST"})
 
     if (!response.ok) {
@@ -37,7 +34,7 @@ const ImportButton = () => {
   return (
     <>
       {currentAccount &&
-        <Button size="sm" className="h-8 gap-1" onClick={() => onTellerButtonClick()} disabled={inProgress}>
+        <Button size="sm" className="h-8 gap-1" onClick={() => onButtonClick()} disabled={inProgress}>
           { inProgress ?
             <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
           :

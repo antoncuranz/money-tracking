@@ -24,6 +24,7 @@ class CreditService:
 
         if amount == 0:
             self.store.delete_credit_transaction(session, credit_id, transaction_id)
+            session.commit()
             return
 
         ct = self.store.get_credit_transaction(session, credit_id, transaction_id)

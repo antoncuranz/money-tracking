@@ -7,7 +7,8 @@ from sqlmodel import Session
 
 from config import config
 from data_export.facade import DataExportFacade
-from data_import.business.quiltt_service import QuilttService
+from data_import.business.abstract_importer import AbstractImporter
+from data_import.business.quiltt_importer import QuilttImporter
 from data_import.dataaccess.dataimport_repository import DataImportRepository
 from dates.facade import DatesFacade
 from exchangerate.facade import ExchangeRateFacade
@@ -15,12 +16,12 @@ from models import Account, User, BankAccount
 
 
 class ImportService:
-    def __init__(self, quiltt_service: Annotated[QuilttService, Depends()],
+    def __init__(self, importer: Annotated[AbstractImporter, Depends(QuilttImporter)],
                  repository: Annotated[DataImportRepository, Depends()],
                  exchangerate: Annotated[ExchangeRateFacade, Depends()],
                  dates: Annotated[DatesFacade, Depends()],
                  data_export: Annotated[DataExportFacade, Depends()]):
-        self.quiltt_service = quiltt_service
+        self.importer = importer
         self.repository = repository
         self.exchangerate = exchangerate
         self.dates = dates
@@ -60,7 +61,7 @@ class ImportService:
             print("Importing balances for BankAccount " + str(bank_account.id))
 
             try:
-                self.quiltt_service.update_bank_account_balance(session, bank_account)
+                self.importer.update_bank_account_balance(session, bank_account)
             except Exception as e:
                 print("Error importing balances: " + str(e))
                 continue
@@ -78,7 +79,7 @@ class ImportService:
             # Exchange posted. Please transfer X to bank account A and Y to bank account B
 
     def _import_account_transactions(self, session: Session, account: Account):
-        self.quiltt_service.import_transactions(session, account)
+        self.importer.import_transactions(session, account)
         self.exchangerate.fetch_exchange_rates(session, account)
         if account.actual_id is not None:
             self.data_export.export_transactions(session, account.user, account.id)

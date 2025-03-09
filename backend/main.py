@@ -5,7 +5,7 @@ from alembic.config import Config
 from fastapi import FastAPI, Depends
 
 import data_export.inbound.api as data_export
-import data_import.inbound.api as data_import
+from data_import.inbound import import_routes, plaid_routes
 import dates.inbound.api as dates
 from auth import verify_user_header
 from core.inbound import accounts, balances, bank_accounts, credits, exchanges, payments, transactions
@@ -22,6 +22,6 @@ async def lifespan(app: FastAPI):
     # on shutdown
 
 app = FastAPI(dependencies=[Depends(verify_user_header)], lifespan=lifespan)
-for module in [accounts, balances, bank_accounts, credits, dates, exchanges, payments, transactions, data_import, data_export]:
+for module in [accounts, balances, bank_accounts, credits, dates, exchanges, payments, transactions, import_routes, plaid_routes, data_export]:
     app.include_router(module.router)
 
