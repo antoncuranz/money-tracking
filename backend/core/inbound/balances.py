@@ -7,11 +7,12 @@ from auth import require_super_user, get_current_user
 from core.business.balance_service import BalanceService
 from models import User, get_session
 
-router = APIRouter(prefix="/api/balance", tags=["Balances"], dependencies=[Depends(require_super_user)])
+router = APIRouter(prefix="/api/balance", tags=["Balances"])
 
 
 @router.get("")
-def get_balances(session: Annotated[Session, Depends(get_session)],
+def get_balances(_: Annotated[None, Depends(require_super_user)],
+                 session: Annotated[Session, Depends(get_session)],
                  balance_service: Annotated[BalanceService, Depends()]):
     posted = balance_service.get_balance_posted(session)
     pending = balance_service.get_balance_pending(session)
@@ -36,7 +37,8 @@ def get_account_balances(user: Annotated[User, Depends(get_current_user)],
     return balance_service.get_account_balances(session, user)
 
 @router.get("/fees")
-def get_fee_summary(session: Annotated[Session, Depends(get_session)],
+def get_fee_summary(_: Annotated[None, Depends(require_super_user)],
+                    session: Annotated[Session, Depends(get_session)],
                     balance_service: Annotated[BalanceService, Depends()]):
     return {
         "fees_and_risk_eur": balance_service.get_fees_and_risk_eur(session)

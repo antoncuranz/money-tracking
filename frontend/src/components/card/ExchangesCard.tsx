@@ -1,19 +1,17 @@
-import {fetchExchanges} from "@/requests.ts";
+import {fetchExchanges, hideIfUnauthorized} from "@/requests.ts";
 import Card from "@/components/card/Card.tsx";
 import ExchangeTable from "@/components/table/ExchangeTable.tsx";
-import {Exchange} from "@/types.ts";
 import AddExchangeButton from "@/components/buttons/AddExchangeButton.tsx";
 import React from "react";
 
 export default async function ExchangesCard() {
-  let exchanges: Exchange[] = []
-  try {
-    exchanges = await fetchExchanges()
-  } catch (e) { /* probably unauthorized */ }
+  return hideIfUnauthorized(async () => {
+    const exchanges = await fetchExchanges()
 
-  return (
-    <Card title="Exchanges" headerSlot={<AddExchangeButton/>}>
+    return (
+      <Card title="Exchanges" headerSlot={<AddExchangeButton/>}>
         <ExchangeTable exchanges={exchanges}/>
-    </Card>
-  )
+      </Card>
+    )
+  })
 }

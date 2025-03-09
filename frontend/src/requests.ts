@@ -10,6 +10,20 @@ import {
   Transaction
 } from "@/types.ts";
 import {headers} from "next/headers";
+import React from "react";
+
+class UnauthorizedError extends Error {}
+
+export async function hideIfUnauthorized(func: () => Promise<React.ReactElement>) {
+  try {
+    return await func()
+  } catch (e: unknown) {
+    if (e instanceof UnauthorizedError)
+      return ""
+    else
+      throw e
+  }
+}
 
 async function fetchData(url: string) {
   const usernameHeader = "X-Auth-Request-Preferred-Username"
@@ -17,7 +31,9 @@ async function fetchData(url: string) {
     headers: {[usernameHeader]: (await headers()).get(usernameHeader)!},
     cache: "no-cache"
   })
-  if (!response.ok) {
+  if (response.status == 401) {
+    throw new UnauthorizedError()
+  } else if (!response.ok) {
     throw new Error("Failed to fetch data");
   }
   return await response.json()

@@ -14,5 +14,5 @@ router = APIRouter(prefix="/api/accounts", tags=["Accounts"])
 def get_accounts(user: Annotated[User, Depends(get_current_user)],
                  session: Annotated[Session, Depends(get_session)],
                  account_service: Annotated[AccountService, Depends()]):
-    return account_service.get_accounts_of_user(session, user)
+    return account_service.get_accounts(session, user)
 

@@ -17,6 +17,7 @@ def import_transactions(user: Annotated[User, Depends(get_current_user)],
                         account_id: int):
     import_service.import_transactions(session, user, account_id)
 
+# TODO: require super user
 @router.post("", status_code=status.HTTP_204_NO_CONTENT)
 def import_transactions_all_accounts(session: Annotated[Session, Depends(get_session)],
                                      import_service: Annotated[ImportService, Depends()]):

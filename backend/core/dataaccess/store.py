@@ -31,6 +31,9 @@ class Store:
         
     #### ACCOUNTS ####
     
+    def get_all_accounts(self, session: Session) -> List[Account]:
+        return self.account_repository.get_all_accounts(session)
+
     def get_accounts_of_user(self, session: Session, user: User) -> List[Account]:
         return self.account_repository.get_accounts_of_user(session, user)
 

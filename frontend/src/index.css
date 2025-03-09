@@ -94,12 +94,12 @@ body {
 }
 
 .cal-statement {
-  border: 2px solid green;
-  background: none !important;
+  border: 3px solid transparent;
 }
 
 .cal-statement.bg-accent {
   background-color: hsl(var(--accent)) !important;
+  font-weight: bold;
 }
 
 .card-balance-container:first-child .balance-separator {

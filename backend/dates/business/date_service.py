@@ -16,7 +16,8 @@ class DateService:
         selected_month = datetime.date(year, month, 1)
 
         result = {}
-        for account in self.repository.get_accounts_of_user(session, user):
+        accounts = self.repository.get_all_accounts(session) if user.super_user else self.repository.get_accounts_of_user(session, user)
+        for account in accounts:
             if account.due_day is None:
                 continue
 

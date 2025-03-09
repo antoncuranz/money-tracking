@@ -23,8 +23,9 @@ const DueDateCalendar = () => {
       statementDates: Object.values(dueDates).map(x => new Date(x.statement))
     }
 
-    for (const [key, value] of Object.entries(dueDates)) {
-      modifiers["cal-acc-" + key] = [new Date(value.due), new Date(value.statement)]
+    for (const accountDates of Object.values(dueDates)) {
+      modifiers["due-" + accountDates.due] = [new Date(accountDates.due)]
+      modifiers["statement-" + accountDates.statement] = [new Date(accountDates.statement)]
     }
 
     return modifiers
@@ -32,17 +33,42 @@ const DueDateCalendar = () => {
 
   function getModifiersStyles(): ModifiersStyles {
     const modifiers: { [cls: string]: CSSProperties } = {}
+    
+    const accountDates = Object.values(dueDates)
+    const dues = groupByDate(accountDates, "due")
+    const statements = groupByDate(accountDates, "statement")
+    
+    // Assumption: There are no dates, at which dues and statements overlap
+    
+    for (const [dueDate, colors] of Object.entries(dues)) {
+      const background = colors.length == 1 ? colors[0] : "linear-gradient(" + colors.join(", ") + ")"
+      modifiers["due-" + dueDate] = {
+        background: background
+      }
+    }
 
-    for (const [key, value] of Object.entries(dueDates)) {
-      modifiers["cal-acc-" + key] = {
-        background: value.color,
-        borderColor: value.color
+    for (const [statementDate, colors] of Object.entries(statements)) {
+      const newColors = colors.length == 1 ? [colors[0], colors[0]] : colors
+      const background = "linear-gradient(white 0 0) padding-box, linear-gradient(" + newColors.join(", ") + ") border-box"
+      
+      modifiers["statement-" + statementDate] = {
+        background: background
       }
     }
 
     return modifiers
   }
-
+  
+  function groupByDate(data: AccountDates[], key: 'statement' | 'due'): {[date: string]: string[]} {
+    return data.reduce((acc, { color, [key]: date }) => {
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(color);
+      return acc;
+    }, {} as { [date: string]: string[] });
+  }
+  
   async function onCalendarMonthChange(month: Date) {
     const response = await fetch("/api/dates/" + month.getFullYear() + "/" + (month.getMonth()+1))
     const dueDates = await response.json() as { [id: string] : AccountDates; }

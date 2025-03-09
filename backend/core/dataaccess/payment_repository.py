@@ -11,7 +11,7 @@ class PaymentRepository:
         return session.exec(stmt).first()  # TODO: check user!
 
     def get_payments(self, session: Session, user: User, account_id: int, processed: bool | None = None):
-        query = (Account.user_id == user.id)
+        query = user.super_user or (Account.user_id == user.id)
 
         if processed is not None:
             query = query & (

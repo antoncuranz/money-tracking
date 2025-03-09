@@ -75,7 +75,8 @@ class BalanceService:
 
     def get_account_balances(self, session: Session, user: User):
         result = {}
-        for account in self.store.get_accounts_of_user(session, user):
+        accounts = self.store.get_all_accounts(session) if user.super_user else self.store.get_accounts_of_user(session, user)
+        for account in accounts:
             posted_tx = self.store.get_posted_transaction_amount(session, account.id)
             posted_credits = self.store.get_posted_credit_amount(session, account.id)
             posted_payments = self.store.get_posted_payment_amount(session, account.id)
