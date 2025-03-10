@@ -46,7 +46,6 @@ class PlaidConnectionTO(SQLModel):
     user_id: int
     name: str | None
     plaid_item_id: str
-    plaid_access_token: str
     plaid_accounts: List[PlaidAccountTO]
 
 @router.get("/connections", response_model=List[PlaidConnectionTO])

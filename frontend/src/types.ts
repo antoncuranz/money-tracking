@@ -9,6 +9,8 @@ export type Account = {
   icon?: string;
   color?: string;
   target_spend?: number;
+  bank_account_id?: number;
+  plaid_account_id?: number;
 };
 
 export type BankAccount = {
@@ -116,4 +118,19 @@ export type AccountDates = {
   color: string;
   due: string;
   statement: string;
+};
+
+export type PlaidAccount = {
+  id: number;
+  name: string;
+  plaid_account_id: string;
+  connection_id: number;
+};
+
+export type PlaidConnection = {
+  id: number;
+  user_id: number;
+  name: string | null;
+  plaid_item_id: string;
+  plaid_accounts: PlaidAccount[];
 };

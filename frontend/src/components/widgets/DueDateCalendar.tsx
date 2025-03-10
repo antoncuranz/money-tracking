@@ -4,11 +4,13 @@ import {Calendar} from "@/components/ui/calendar.tsx";
 import {DayModifiers, ModifiersStyles} from "react-day-picker";
 import {CSSProperties, useEffect, useState} from "react";
 import {AccountDates} from "@/types.ts";
+import {useTheme} from "next-themes";
 
 const DueDateCalendar = () => {
   
   const [dueDates, setDueDates] = useState<{ [id: string] : AccountDates; }>({});
   const [month, setMonth] = useState<Date>(new Date());
+  const {resolvedTheme} = useTheme();
   
   useEffect(() => {
     updateDates()
@@ -46,10 +48,12 @@ const DueDateCalendar = () => {
         background: background
       }
     }
+    
+    const themeBackground = resolvedTheme == "dark" ? "black" : "white"
 
     for (const [statementDate, colors] of Object.entries(statements)) {
       const newColors = colors.length == 1 ? [colors[0], colors[0]] : colors
-      const background = "linear-gradient(white 0 0) padding-box, linear-gradient(" + newColors.join(", ") + ") border-box"
+      const background = "linear-gradient(" + themeBackground + " 0 0) padding-box, linear-gradient(" + newColors.join(", ") + ") border-box"
       
       modifiers["statement-" + statementDate] = {
         background: background

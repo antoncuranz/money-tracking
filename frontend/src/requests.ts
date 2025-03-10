@@ -6,7 +6,7 @@ import {
   Credit,
   Exchange,
   FeeSummary,
-  Payment,
+  Payment, PlaidConnection,
   Transaction
 } from "@/types.ts";
 import {headers} from "next/headers";
@@ -76,4 +76,8 @@ export async function fetchAccountBalances() {
 
 export async function fetchFees() {
   return await fetchData("/api/balance/fees") as FeeSummary
+}
+
+export async function fetchPlaidConnections() {
+  return await fetchData("/api/import/plaid/connections") as PlaidConnection[]
 }

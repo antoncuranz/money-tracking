@@ -8,7 +8,7 @@ import {useState} from "react";
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import {useToast} from "@/components/ui/use-toast.ts";
-import AmountInput from "@/components/table/AmountInput.tsx";
+import AmountInput from "@/components/dialog/AmountInput.tsx";
 
 interface Props {
   open: boolean,

@@ -5,7 +5,7 @@ import {useEffect, useState} from "react";
 import {useToast} from "@/components/ui/use-toast.ts";
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {Transaction} from "@/types.ts";
-import AmountInput from "@/components/table/AmountInput.tsx";
+import AmountInput from "@/components/dialog/AmountInput.tsx";
 
 interface Props {
   open: boolean,

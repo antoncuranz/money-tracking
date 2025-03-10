@@ -14,6 +14,9 @@ export default function Navigation(){
         <Link href="/archive">
           <span className="text-muted-foreground transition-colors hover:text-foreground">Archive</span>
         </Link>
+        <Link href="/accounts">
+          <span className="text-muted-foreground transition-colors hover:text-foreground">Accounts</span>
+        </Link>
         <div className="flex-grow"/>
         <ModeToggle/>
       </nav>

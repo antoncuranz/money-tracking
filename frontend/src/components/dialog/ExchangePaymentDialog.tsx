@@ -4,7 +4,7 @@ import {Label} from "@/components/ui/label.tsx";
 import {useEffect, useState} from "react";
 import {useToast} from "@/components/ui/use-toast.ts";
 import {Payment} from "@/types.ts";
-import AmountInput from "@/components/table/AmountInput.tsx";
+import AmountInput from "@/components/dialog/AmountInput.tsx";
 
 interface Props {
   open: boolean,

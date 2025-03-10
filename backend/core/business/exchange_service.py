@@ -3,15 +3,14 @@ from decimal import Decimal
 from typing import Annotated, List
 
 from fastapi import Depends, HTTPException
-from sqlmodel import Session
-from pydantic import BaseModel
+from sqlmodel import Session, SQLModel
 
 from core.business.balance_service import BalanceService
 from core.dataaccess.store import Store
 from models import Exchange
 
 
-class CreateExchange(BaseModel):
+class CreateExchange(SQLModel):
     actual_id: str | None = None
     date: date
     amount_usd: int

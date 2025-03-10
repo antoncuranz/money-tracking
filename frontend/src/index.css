@@ -115,7 +115,7 @@ body {
   padding: 0.5rem 0.75rem 0.5rem 0.5rem;
 }
 
-.left > div {
+.left > div, .left-nowrap > div {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -124,6 +124,16 @@ body {
 .left {
   display: flex;
   flex-direction: column;
+  flex-shrink: 5;
+  gap: 0.5rem 1rem;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.left-nowrap {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   flex-shrink: 5;
   gap: 0.5rem 1rem;
   min-width: 0;
@@ -195,6 +205,6 @@ main.grid {
   font-family: "Redacted Script";
 }
 
-.card:has(.card-table:empty) {
+.card:has(.card-table-needs-content:empty) {
   display: none;
 }

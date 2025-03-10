@@ -4,10 +4,13 @@ import {Button} from "@/components/ui/button.tsx";
 import {LinkIcon, LoaderCircle} from "lucide-react";
 import React, {useCallback, useEffect, useState} from "react";
 import {usePlaidLink} from "react-plaid-link";
+import {useRouter} from "next/navigation";
 
 const PlaidLinkButton = () => {
   const [inProgress, setInProgress] = useState(false)
   const [token, setToken] = useState<string|null>(null);
+  
+  const router = useRouter();
 
   const createLinkToken = useCallback(async () => {
     const response = await fetch("/api/import/plaid/create_link_token", {method: "POST"});
@@ -28,7 +31,7 @@ const PlaidLinkButton = () => {
       headers: {"Content-Type": "application/json"}
     });
     setInProgress(false)
-    // router.refresh()
+    router.refresh()
   }, []);
   
   const onExit = useCallback(() => {
@@ -38,7 +41,7 @@ const PlaidLinkButton = () => {
   const { open, ready } = usePlaidLink({token, onSuccess, onExit});
   
   return (
-    <Button size="sm" className="h-8 gap-1" onClick={() => {setInProgress(true); open()}} disabled={!ready || inProgress}>
+    <Button size="sm" className="h-8 gap-1 mt-0 self-end" onClick={() => {setInProgress(true); open()}} disabled={!ready || inProgress}>
       { inProgress ?
         <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
       :

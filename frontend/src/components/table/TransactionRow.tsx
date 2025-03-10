@@ -1,7 +1,7 @@
 import {formatAmount} from "@/components/util.ts";
 import {MouseEventHandler} from "react";
 import {Account, Transaction} from "@/types.ts";
-import AmountInput from "@/components/table/AmountInput.tsx";
+import AmountInput from "@/components/dialog/AmountInput.tsx";
 import TableRow from "@/components/table/TableRow.tsx";
 import {useStore} from "@/store.ts";
 

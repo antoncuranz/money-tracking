@@ -28,12 +28,12 @@ export default function ExchangeTable({
   }
 
   return (
-    <div className="w-full relative card-table">
+    <div className="w-full relative">
       {exchanges.map(exchange =>
-        <ExchangeRow key={exchange["id"]} exchange={exchange} selected={exchangeSelection == exchange["id"]}
+        <ExchangeRow key={exchange.id} exchange={exchange} selected={exchangeSelection == exchange.id}
                      disabled={exchangeSelection != null}
-                     selectExchange={() => setExchangeSelection(exchange["id"])}
-                     deleteExchange={() => deleteExchange(exchange["id"])}
+                     selectExchange={() => setExchangeSelection(exchange.id)}
+                     deleteExchange={() => deleteExchange(exchange.id)}
                      unselectExchange={() => setExchangeSelection(null)}/>
       )}
     </div>
