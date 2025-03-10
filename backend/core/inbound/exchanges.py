@@ -33,12 +33,11 @@ def get_exchanges(session: Annotated[Session, Depends(get_session)],
     return exchange_service.get_exchanges(session, usable)
 
 
-@router.post("")
+@router.post("", response_model=ExchangeTO)
 def post_exchange(session: Annotated[Session, Depends(get_session)],
                   exchange_service: Annotated[ExchangeService, Depends()],
                   exchange: CreateExchange):
-    model = exchange_service.create_exchange(session, exchange)
-    return str(model.id)
+    return exchange_service.create_exchange(session, exchange)
 
 
 @router.delete("/{exchange_id}", status_code=status.HTTP_204_NO_CONTENT)

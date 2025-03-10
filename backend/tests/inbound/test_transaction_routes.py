@@ -36,5 +36,5 @@ def test_clear_transaction_amount_eur(session: Session, client: TestClient):
     response = client.put("/api/transactions/1", headers=ALICE_AUTH)
 
     # Assert
-    assert response.status_code == 200
+    assert response.status_code == 204
     assert session.exec(select(Transaction).where(Transaction.id == 1)).one().amount_eur is None

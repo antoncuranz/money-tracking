@@ -1,7 +1,7 @@
 import datetime
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlmodel import SQLModel, Session
 
 from auth import get_current_user
@@ -41,7 +41,7 @@ def get_transactions(user: Annotated[User, Depends(get_current_user)],
     return transaction_service.get_transactions_with_guessed_amount(session, user, account, paid)
 
 
-@router.put("/{tx_id}")
+@router.put("/{tx_id}", status_code=status.HTTP_204_NO_CONTENT)
 def update_transaction(user: Annotated[User, Depends(get_current_user)],
                        session: Annotated[Session, Depends(get_session)],
                        transaction_service: Annotated[TransactionService, Depends()],

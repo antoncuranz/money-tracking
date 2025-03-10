@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, List
 from fastapi import APIRouter, Depends, status
 from sqlmodel import Session
 
@@ -9,7 +9,7 @@ from models import User, get_session, BankAccount
 router = APIRouter(prefix="/api/bank_accounts", tags=["Bank Accounts"])
 
 
-@router.get("")
+@router.get("", response_model=List[BankAccount])
 def get_bank_accounts(user: Annotated[User, Depends(get_current_user)],
                       session: Annotated[Session, Depends(get_session)],
                       account_service: Annotated[AccountService, Depends()]):
