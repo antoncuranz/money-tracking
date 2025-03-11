@@ -10,3 +10,14 @@ export function formatAmount(amount: number|null, decimals = 2): string {
 export function titlecase(str: string) {
   return str[0].toUpperCase() + str.substring(1).toLowerCase()
 }
+
+const dateFormat = new Intl.DateTimeFormat("de-DE", {
+  weekday: "short",
+  year: "numeric",
+  month: "short",
+  day: "numeric"
+})
+
+export function formatDate(dateString: string) {
+  return dateFormat.format(new Date(dateString))
+}

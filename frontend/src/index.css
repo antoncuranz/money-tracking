@@ -155,7 +155,7 @@ body {
 }
 
 .date {
-  width: 7.75rem;
+  width: 8.25rem;
   flex-shrink: 0;
 }
 
@@ -171,6 +171,9 @@ main.grid {
   .left {
     flex-direction: row;
     align-items: center;
+  }
+  .left > .date {
+    text-align: right;
   }
   .right {
     flex-direction: row-reverse;
