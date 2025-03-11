@@ -64,7 +64,7 @@ class ActualService:
         fee_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] == config.actual_fee_category)
         main_split = next(sub for sub in actual_tx["subtransactions"] if sub["category"] != config.actual_fee_category)
 
-        amount_eur = tx.amount_eur or self.exchangerate.guess_amount_eur(session, tx) or 0
+        amount_eur = self.exchangerate.guess_amount_eur(session, tx) or 0 if tx.amount_eur is None else tx.amount_eur
         fees_and_risk_eur = tx.fees_and_risk_eur if tx.fees_and_risk_eur is not None else 0
         self.actual.patch_transaction(account, actual_tx, {
             "cleared": tx.status_enum == Transaction.Status.PAID,

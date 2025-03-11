@@ -14,6 +14,6 @@ class ExchangeRateFacade:
     def fetch_exchange_rates(self, session: Session, account: Account):
         self.exchangerate_service.fetch_exchange_rates(session, account)
 
-    def guess_amount_eur(self, session: Session, transaction: Transaction):
+    def guess_amount_eur(self, session: Session, transaction: Transaction) -> int | None:
         return self.exchangerate_service.guess_amount_eur(session, transaction)
 
