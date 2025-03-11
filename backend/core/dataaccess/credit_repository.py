@@ -55,9 +55,8 @@ class CreditRepository:
 
     def delete_credit_transaction(self, session: Session, credit_id: int, transaction_id: int):
         ct = self.get_credit_transaction(session, credit_id, transaction_id)
-        if not ct:
-            raise RuntimeError(f"Exchange payment not found!")
-        session.delete(ct)
+        if ct:
+            session.delete(ct)
 
     def get_or_create_credit_transaction(self, session: Session, credit_id: int, transaction_id: int, amount: int)\
             -> tuple[CreditTransaction, bool]:

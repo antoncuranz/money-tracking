@@ -16,7 +16,7 @@ interface Props {
 
 const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) => {
   const [appliedCredit, setAppliedCredit] = useState<number|null>(null)
-  const [adjustedAmt, setAdjustedAmt] = useState<number>(0)
+  const [adjustedAmt, setAdjustedAmt] = useState<number|null>(null)
   const [adjustAmt, setAdjustAmt] = useState(true)
 
   const { toast } = useToast();
@@ -30,12 +30,12 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
 
     const ct = transaction.credits.find(ct => ct.credit_id == credit)
     setAppliedCredit(ct ? ct.amount : null)
-    setAdjustedAmt(transaction.amount_eur ?? 0)
+    setAdjustedAmt(transaction.amount_eur)
   }
 
   function onClearButtonClick() {
     setAppliedCredit(0)
-    setAdjustedAmt(0)
+    setAdjustedAmt(null)
   }
 
   function onMaximumButtonClick() {
@@ -56,7 +56,7 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
     }
 
     if (adjustAmt) {
-      const response = await fetch("/api/transactions/" + transaction.id + (adjustedAmt ? "?amount_eur=" + adjustedAmt : ""), {method: "PUT"})
+      const response = await fetch("/api/transactions/" + transaction.id + (adjustedAmt != null ? "?amount_eur=" + adjustedAmt : ""), {method: "PUT"})
       if (!response.ok)
         toast({
           title: "Error adjusting Transaction amount",
@@ -102,7 +102,7 @@ const CreditTransactionDialog = ({open, onClose, transaction, credit}: Props) =>
                   id="amount_eur"
                   className="col-span-3"
                   amount={adjustedAmt}
-                  updateAmount={amt => amt ? setAdjustedAmt(amt) : setAdjustedAmt(0)}
+                  updateAmount={setAdjustedAmt}
                 />
               </div>
             }
