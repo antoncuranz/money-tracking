@@ -70,7 +70,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
         <DialogHeader>
           <DialogTitle>Add Exchange</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-4 py-4 overflow-y-auto">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="date" className="text-right">
               Date
@@ -80,7 +80,7 @@ const ExchangeDialog = ({open, onClose}: Props) => {
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-[280px] justify-start text-left font-normal",
+                    "col-span-3 justify-start text-left font-normal",
                     !date && "text-muted-foreground"
                   )}
                 >

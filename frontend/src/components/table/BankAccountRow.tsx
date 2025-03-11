@@ -16,7 +16,7 @@ export default function BankAccountRow({
   return (
     <div className="containers tx-row-border">
       <div className="left-nowrap">
-        <img className="w-8 ml-1" src={bankAccount.icon ?? ""} alt=""/>
+        <img className="w-8 ml-1" src={bankAccount.icon ?? undefined} alt=""/>
         <div className="font-medium">{bankAccount.institution}</div>
         <div>
           {bankAccount.user.name != username &&

@@ -16,7 +16,7 @@ export default function CreditCardRow({
   return (
     <div className="containers tx-row-border border-l-4" style={{borderLeftColor: account.color ?? "transparent"}}>
       <div className="left-nowrap">
-        <img className="w-8" src={account.icon ?? ""} alt=""/>
+        <img className="w-8" src={account.icon ?? undefined} alt=""/>
         <div className="font-medium">{account.institution}</div>
         <div>
           {account.user.name != username &&

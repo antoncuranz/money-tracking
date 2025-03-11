@@ -208,3 +208,7 @@ main.grid {
 .card:has(.card-needs-content:empty) {
   display: none;
 }
+
+.no-scrollbar {
+  scrollbar-width: none;
+}

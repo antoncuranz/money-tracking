@@ -13,7 +13,7 @@ export default async function BankAccountBalance({bankAccount}: Props) {
   
   return (
     <div>
-      <img className="w-8 mr-2 mt-3 inline-block align-top flex-init" src={bankAccount.icon ?? ""} alt=""/>
+      <img className="w-8 mr-2 mt-3 inline-block align-top flex-init" src={bankAccount.icon ?? undefined} alt=""/>
       <div className="inline-block flex-auto">
         <p className="font-medium">
           {bankAccount.user.name != username &&

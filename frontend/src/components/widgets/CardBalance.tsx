@@ -23,7 +23,7 @@ export default async function CardBalance({
 
   return (
     <div>
-      <img className="w-8 mr-2 mt-3 inline-block align-top flex-init" src={account.icon ?? ""} alt=""/>
+      <img className="w-8 mr-2 mt-3 inline-block align-top flex-init" src={account.icon ?? undefined} alt=""/>
       <div className="inline-block flex-auto">
         <p className="font-medium">
           {account.user.name != username &&

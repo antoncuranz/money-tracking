@@ -81,11 +81,11 @@ export default function CreditCardDialog({
 
   return (
     <Dialog open={open} onOpenChange={open => !open ? onClose(false) : {}}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{account ? "Edit" : "Add"} Credit Card</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-4 py-4 overflow-y-auto">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Name
