@@ -24,6 +24,7 @@ class CreateBankAccount(SQLModel):
     name: str
     institution: str
     icon: str | None
+    plaid_account_id: int | None
 
 
 class AccountService:
@@ -62,13 +63,17 @@ class AccountService:
         account.actual_id = create_account.actual_id
         session.commit()
 
-    def get_bank_accounts_of_user(self, session: Session, user: User) -> List[BankAccount]:
-        return self.store.get_bank_accounts_of_user(session, user)
+    def get_bank_accounts(self, session: Session, user: User) -> List[BankAccount]:
+        if user.super_user:
+            return self.store.get_all_bank_accounts(session)
+        else:
+            return self.store.get_bank_accounts_of_user(session, user)
     
     def create_bank_account(self, session: Session, user: User, create_bank_account: CreateBankAccount) -> BankAccount:
         bank_account = self.store.create_bank_account(session, user, name=create_bank_account.name,
                                                       institution=create_bank_account.institution,
-                                                      icon=create_bank_account.icon)
+                                                      icon=create_bank_account.icon,
+                                                      plaid_account_id=create_bank_account.plaid_account_id)
         session.commit()
         return bank_account
 
@@ -80,4 +85,5 @@ class AccountService:
         bank_account.name = create_bank_account.name
         bank_account.institution = create_bank_account.institution
         bank_account.icon = create_bank_account.icon
+        bank_account.plaid_account_id = create_bank_account.plaid_account_id
         session.commit()

@@ -1,6 +1,6 @@
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, status
-from sqlmodel import Session
+from sqlmodel import Session, SQLModel
 
 from auth import get_current_user
 from core.business.account_service import AccountService, CreateBankAccount
@@ -9,13 +9,22 @@ from models import User, get_session, BankAccount
 router = APIRouter(prefix="/api/bank_accounts", tags=["Bank Accounts"])
 
 
-@router.get("", response_model=List[BankAccount])
+class BankAccountTO(SQLModel):
+    id: int
+    user: User
+    name: str
+    institution: str
+    icon: str | None
+    balance: int
+    plaid_account_id: int | None
+
+@router.get("", response_model=List[BankAccountTO])
 def get_bank_accounts(user: Annotated[User, Depends(get_current_user)],
                       session: Annotated[Session, Depends(get_session)],
                       account_service: Annotated[AccountService, Depends()]):
-    return account_service.get_bank_accounts_of_user(session, user)
+    return account_service.get_bank_accounts(session, user)
 
-@router.post("", response_model=BankAccount)
+@router.post("", response_model=BankAccountTO)
 def create_bank_account(user: Annotated[User, Depends(get_current_user)],
                    session: Annotated[Session, Depends(get_session)],
                    account_service: Annotated[AccountService, Depends()],

@@ -8,6 +8,7 @@ import PlaidAccountSelector from "@/components/dialog/PlaidAccountSelector.tsx";
 import BankAccountSelector from "@/components/dialog/BankAccountSelector.tsx";
 import {useToast} from "@/components/ui/use-toast.ts";
 import {Account, BankAccount, PlaidConnection} from "@/types.ts";
+import {useUser} from "@/components/provider/UserProvider.tsx";
 
 export default function CreditCardDialog({
   connections, bank_accounts, open, onClose, account
@@ -29,7 +30,12 @@ export default function CreditCardDialog({
   const [bankAccountId, setBankAccountId] = useState<number|null>(null)
   const [plaidAccountId, setPlaidAccountId] = useState<number|null>(null)
 
-  const { toast } = useToast();
+  const { toast } = useToast()
+  const { username } = useUser()
+  
+  function getUsername() {
+    return account?.user.name ?? username
+  }
   
   useEffect(() => {
     setName(account?.name ?? "")
@@ -148,13 +154,13 @@ export default function CreditCardDialog({
             <Label htmlFor="color" className="text-right">
               Bank Account
             </Label>
-            <BankAccountSelector bank_accounts={bank_accounts} value={bankAccountId} onValueChange={setBankAccountId}/>
+            <BankAccountSelector bank_accounts={bank_accounts} username={getUsername()} value={bankAccountId} onValueChange={setBankAccountId}/>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="color" className="text-right">
               Plaid Connection
             </Label>
-            <PlaidAccountSelector connections={connections} value={plaidAccountId} onValueChange={setPlaidAccountId}/>
+            <PlaidAccountSelector connections={connections} username={getUsername()} value={plaidAccountId} onValueChange={setPlaidAccountId}/>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="actual_id" className="text-right">

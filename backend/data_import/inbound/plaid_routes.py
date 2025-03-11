@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, status
 from sqlmodel import Session, SQLModel
 
 from auth import get_current_user
+from core.inbound.user import UserTO
 from data_import.business.plaid_service import PlaidService
 from models import get_session, User
 
@@ -43,7 +44,7 @@ class PlaidAccountTO(SQLModel):
     
 class PlaidConnectionTO(SQLModel):
     id: int
-    user_id: int
+    user: UserTO
     name: str | None
     plaid_item_id: str
     plaid_accounts: List[PlaidAccountTO]

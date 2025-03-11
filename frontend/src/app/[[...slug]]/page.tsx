@@ -11,8 +11,36 @@ import SkeletonCard from "@/components/card/SkeletonCard.tsx";
 import CreditsCard from "@/components/card/CreditsCard.tsx";
 import TransactionsCard from "@/components/card/TransactionsCard.tsx";
 import {ErrorBoundary} from "react-error-boundary";
+import {isSuperUser} from "@/requests.ts";
 
 export default async function Page() {
+
+  const widgets = [
+    {
+      title: "Calendar",
+      content: <DueDateCalendar/>,
+      hideTitleDesktop: true
+    },
+    {
+      title: "Balances",
+      content: (
+        <Suspense fallback={<Skeleton className="h-10"/>}>
+          <BalancesWidget/>
+        </Suspense>
+      )
+    }
+  ]
+  
+  if (await isSuperUser()) {
+    widgets.push({
+      title: "Other Balances",
+      content: (
+        <Suspense fallback={<Skeleton className="h-10"/>}>
+          <BalancesWidget showMyAccounts={false}/>
+        </Suspense>
+      )
+    })
+  }
 
   return (
     <>
@@ -26,21 +54,7 @@ export default async function Page() {
       </div>
       <div className="not-mobile-flex gap-2 mb-2">
         <div className="shrink-0" style={{minWidth: "18.1rem"}}>
-          <WidgetContainer widgets={[
-            {
-              title: "Calendar",
-              content: <DueDateCalendar/>,
-              hideTitleDesktop: true
-            },
-            {
-              title: "Balances",
-              content: (
-                <Suspense fallback={<Skeleton className="h-10"/>}>
-                  <BalancesWidget/>
-                </Suspense>
-              )
-            }
-          ]}/>
+          <WidgetContainer widgets={widgets}/>
         </div>
         <div className="flex-auto min-w-0">
           <Suspense fallback={<SkeletonCard/>}>

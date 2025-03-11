@@ -25,10 +25,11 @@ export async function hideIfUnauthorized(func: () => Promise<React.ReactElement>
   }
 }
 
+const usernameHeader = "X-Auth-Request-Preferred-Username"
+
 async function fetchData(url: string) {
-  const usernameHeader = "X-Auth-Request-Preferred-Username"
   const response = await fetch(process.env.BACKEND_URL + url, {
-    headers: {[usernameHeader]: (await headers()).get(usernameHeader)!},
+    headers: {[usernameHeader]: await getCurrentUser()},
     cache: "no-cache"
   })
   if (response.status == 401) {
@@ -37,6 +38,24 @@ async function fetchData(url: string) {
     throw new Error("Failed to fetch data");
   }
   return await response.json()
+}
+
+export async function getCurrentUser(): Promise<string> {
+  const usernameFromHeader = (await headers()).get(usernameHeader)
+  if (usernameFromHeader)
+    return usernameFromHeader
+  
+  // get user from backend call (only for development)
+  const response = await fetch(process.env.BACKEND_URL + "/api/username", {cache: "no-cache"})
+  
+  if (response.ok)
+    return await response.json()
+  else
+    throw new Error("Failed to fetch data");
+}
+
+export async function isSuperUser(): Promise<boolean> {
+  return await fetchData("/api/user/super") as boolean
 }
 
 export async function fetchAccounts() {

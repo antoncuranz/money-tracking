@@ -53,18 +53,20 @@ class BankAccount(SQLModel, table=True):
     institution: str
     icon: str | None
     balance: int = 0
-    import_id: str | None
+    import_id: str | None  # TODO: remove once migrated to plaid
+    plaid_account_id: int | None = Field(foreign_key="plaidaccount.id", ondelete="SET NULL")
+    plaid_account: PlaidAccount | None = Relationship()
 
 
 class Account(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
     user: User = Relationship()
-    bank_account_id: int | None = Field(foreign_key="bankaccount.id")
+    bank_account_id: int | None = Field(foreign_key="bankaccount.id", ondelete="SET NULL")
     bank_account: BankAccount | None = Relationship(back_populates="accounts")
     actual_id: str | None
     import_id: str | None  # TODO: remove once migrated to plaid
-    plaid_account_id: int | None = Field(foreign_key="plaidaccount.id")
+    plaid_account_id: int | None = Field(foreign_key="plaidaccount.id", ondelete="SET NULL")
     plaid_account: PlaidAccount | None = Relationship()
     name: str
     institution: str

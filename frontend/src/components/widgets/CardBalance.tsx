@@ -1,14 +1,17 @@
-import {formatAmount} from "@/components/util.ts";
+import {formatAmount, titlecase} from "@/components/util.ts";
 import {Progress} from "@/components/ui/progress.tsx";
 import {Account, AccountBalances} from "@/types.ts";
 import PrivacyFilter from "@/components/PrivacyFilter.tsx";
+import React from "react";
+import {getCurrentUser} from "@/requests.ts";
 
-interface Props {
+export default async function CardBalance({
+  account, accountBalances
+}: {
   account: Account,
-  accountBalances: AccountBalances,
-}
-
-const CardBalance = ({account, accountBalances}: Props) => {
+  accountBalances: AccountBalances
+}) {
+  const username = await getCurrentUser()
   
   function getTotalSpent(account: Account) {
     return accountBalances[account.id].total_spent
@@ -20,9 +23,14 @@ const CardBalance = ({account, accountBalances}: Props) => {
 
   return (
     <div>
-      <img className="w-8 mr-2 mt-3 inline-block align-top flex-init" src={account.icon} alt=""/>
+      <img className="w-8 mr-2 mt-3 inline-block align-top flex-init" src={account.icon ?? ""} alt=""/>
       <div className="inline-block flex-auto">
-        <p className="font-medium">{account.name}</p>
+        <p className="font-medium">
+          {account.user.name != username &&
+            <>{titlecase(account.user.name)}'s </>
+          }
+          {account.name}
+        </p>
         <p className="text-sm text-muted-foreground">{account.institution}</p>
         <PrivacyFilter className="mt-2">
           <span className="font-medium">{formatAmount(accountBalances[account.id].posted)}</span>
@@ -43,5 +51,3 @@ const CardBalance = ({account, accountBalances}: Props) => {
     </div>
   )
 }
-
-export default CardBalance

@@ -10,9 +10,10 @@ import {
 import {PlaidConnection} from "@/types.ts";
 
 export default function PlaidAccountSelector({
-  connections, value, onValueChange
+  connections, username, value, onValueChange
 }: {
   connections: PlaidConnection[],
+  username: string;
   value: number | null,
   onValueChange: (value: number | null) => void
 }) {
@@ -34,7 +35,7 @@ export default function PlaidAccountSelector({
       <SelectContent>
         <SelectGroup>
           <SelectItem value="-1">Not connected</SelectItem>
-          {connections.map(connection =>
+          {connections.filter(c => c.user.name == username).map(connection =>
             <span key={connection.id}>
               <SelectLabel>{connection.name ?? connection.plaid_item_id}</SelectLabel>
               {connection.plaid_accounts.map(account =>

@@ -1,8 +1,9 @@
 import AccountSelectorClient from "@/components/AccountSelector/client.tsx";
-import {fetchAccounts} from "@/requests.ts";
+import {fetchAccounts, getCurrentUser} from "@/requests.ts";
 
 export default async function AccountsSelector() {
-  const accounts = await fetchAccounts()
+  const username = await getCurrentUser()
+  const accounts = (await fetchAccounts()).filter(account => account.user.name == username)
 
   return <AccountSelectorClient accounts={accounts}/>
 }

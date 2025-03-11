@@ -17,7 +17,7 @@ const CreditTable = ({credits, accounts}: Props) => {
   }
 
   return (
-    <div className="w-full relative card-table-needs-content">
+    <div className="w-full relative card-needs-content">
       {getFilteredCredits().map(credit =>
         <CreditRow key={credit.id} credit={credit} selected={creditSelection?.id == credit.id} disabled={creditSelection != null}
                    selectCredit={() => setCreditSelection(credit, accounts)} unselectCredit={() => setCreditSelection(null, accounts)}

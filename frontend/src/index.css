@@ -205,6 +205,6 @@ main.grid {
   font-family: "Redacted Script";
 }
 
-.card:has(.card-table-needs-content:empty) {
+.card:has(.card-needs-content:empty) {
   display: none;
 }

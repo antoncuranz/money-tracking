@@ -1,22 +1,37 @@
 from typing import Annotated, List
 
-from sqlmodel import Session
+from sqlmodel import Session, SQLModel
 from fastapi import APIRouter, Depends, status
 
 from auth import get_current_user
 from core.business.account_service import AccountService, CreateAccount
-from models import User, get_session, Account
+from core.inbound.user import UserTO
+from models import User, get_session
 
 router = APIRouter(prefix="/api/accounts", tags=["Accounts"])
 
 
-@router.get("", response_model=List[Account])
+class AccountTO(SQLModel):
+    id: int
+    user: UserTO
+    bank_account_id: int | None
+    actual_id: str | None
+    plaid_account_id: int | None
+    name: str
+    institution: str
+    due_day: int | None
+    autopay_offset: int | None
+    icon: str | None
+    color: str | None
+    target_spend: int | None
+
+@router.get("", response_model=List[AccountTO])
 def get_accounts(user: Annotated[User, Depends(get_current_user)],
                  session: Annotated[Session, Depends(get_session)],
                  account_service: Annotated[AccountService, Depends()]):
     return account_service.get_accounts(session, user)
 
-@router.post("", response_model=Account)
+@router.post("", response_model=AccountTO)
 def create_account(user: Annotated[User, Depends(get_current_user)],
                    session: Annotated[Session, Depends(get_session)],
                    account_service: Annotated[AccountService, Depends()],

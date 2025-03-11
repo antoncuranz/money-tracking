@@ -6,3 +6,7 @@ export function formatAmount(amount: number|null, decimals = 2): string {
     result += "," + Math.abs(amount % Math.pow(10, decimals)).toString().padStart(decimals, "0")
   return result
 }
+
+export function titlecase(str: string) {
+  return str[0].toUpperCase() + str.substring(1).toLowerCase()
+}

@@ -9,9 +9,10 @@ import {
 import {BankAccount} from "@/types.ts";
 
 export default function BankAccountSelector({
-  bank_accounts, value, onValueChange
+  bank_accounts, username, value, onValueChange
 }: {
   bank_accounts: BankAccount[],
+  username: string,
   value: number | null,
   onValueChange: (value: number | null) => void
 }) {
@@ -33,7 +34,7 @@ export default function BankAccountSelector({
       <SelectContent>
         <SelectGroup>
           <SelectItem value="-1">Not connected</SelectItem>
-          {bank_accounts.map(bank_account =>
+          {bank_accounts.filter(ba => ba.user.name == username).map(bank_account =>
             <SelectItem key={bank_account.id} value={bank_account.id.toString()}>{bank_account.name}</SelectItem>
           )}
         </SelectGroup>

@@ -1,25 +1,32 @@
+export type User = {
+  id: number;
+  name: string;
+  super_user: boolean;
+};
+
 export type Account = {
   id: number;
+  user: User;
+  bank_account_id: number | null;
   actual_id: string;
-  import_id?: string;
+  plaid_account_id: number | null;
   name: string;
   institution: string;
-  due_day?: number;
-  autopay_offset?: number;
-  icon?: string;
-  color?: string;
-  target_spend?: number;
-  bank_account_id?: number;
-  plaid_account_id?: number;
+  due_day: number | null;
+  autopay_offset: number | null;
+  icon: string | null;
+  color: string | null;
+  target_spend: number | null;
 };
 
 export type BankAccount = {
   id: number;
-  import_id?: string;
+  user: User;
   name: string;
   institution: string;
-  icon?: string;
+  icon: string | null;
   balance: number;
+  plaid_account_id: number | null;
 };
 
 export type Credit = {
@@ -129,7 +136,7 @@ export type PlaidAccount = {
 
 export type PlaidConnection = {
   id: number;
-  user_id: number;
+  user: User;
   name: string | null;
   plaid_item_id: string;
   plaid_accounts: PlaidAccount[];

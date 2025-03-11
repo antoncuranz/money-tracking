@@ -30,6 +30,10 @@ class AccountRepository:
         session.add(account)
         return account
 
+    def get_all_bank_accounts(self, session: Session) -> List[BankAccount]:
+        stmt = select(BankAccount).order_by(BankAccount.id)
+        return session.exec(stmt).all()
+    
     def get_bank_accounts_of_user(self, session: Session, user: User) -> List[BankAccount]:
         stmt = select(BankAccount).where(BankAccount.user_id == user.id).order_by(BankAccount.id)
         return session.exec(stmt).all()
@@ -40,7 +44,7 @@ class AccountRepository:
         stmt = select(BankAccount).where(query & (BankAccount.id == bank_account_id))
         return session.exec(stmt).first()
 
-    def create_bank_account(self, session: Session, user: User, name: str, institution: str, icon: str | None) -> BankAccount:
-        bank_account = BankAccount(user_id=user.id, name=name, institution=institution, icon=icon)
+    def create_bank_account(self, session: Session, user: User, name: str, institution: str, icon: str | None, plaid_account_id: int | None) -> BankAccount:
+        bank_account = BankAccount(user_id=user.id, name=name, institution=institution, icon=icon, plaid_account_id=plaid_account_id)
         session.add(bank_account)
         return bank_account

@@ -6,6 +6,7 @@ import {Input} from "@/components/ui/input.tsx";
 import {BankAccount, PlaidConnection} from "@/types.ts";
 import {useToast} from "@/components/ui/use-toast.ts";
 import PlaidAccountSelector from "@/components/dialog/PlaidAccountSelector.tsx";
+import {useUser} from "@/components/provider/UserProvider.tsx";
 
 export default function BankAccountDialog({
   open, onClose, connections, bank_account
@@ -21,12 +22,17 @@ export default function BankAccountDialog({
   const [plaidAccountId, setPlaidAccountId] = useState<number|null>(null)
 
   const { toast } = useToast();
+  const { username } = useUser()
+
+  function getUsername() {
+    return bank_account?.user.name ?? username
+  }
   
   useEffect(() => {
     setName(bank_account?.name ?? "")
     setInstitution(bank_account?.institution ?? "")
     setIcon(bank_account?.icon ?? "")
-    setPlaidAccountId(null) // TODO
+    setPlaidAccountId(bank_account?.plaid_account_id ?? null)
   }, [bank_account])
 
   async function onSaveButtonClick() {
@@ -40,7 +46,7 @@ export default function BankAccountDialog({
         name: name,
         institution: institution,
         icon: icon.length > 0 ? icon : null,
-        // plaid_account_id: plaidAccountId // TODO!
+        plaid_account_id: plaidAccountId
       })
     })
 
@@ -84,7 +90,7 @@ export default function BankAccountDialog({
             <Label htmlFor="color" className="text-right">
               Plaid Connection
             </Label>
-            <PlaidAccountSelector connections={connections} value={plaidAccountId} onValueChange={setPlaidAccountId}/>
+            <PlaidAccountSelector connections={connections} username={getUsername()} value={plaidAccountId} onValueChange={setPlaidAccountId}/>
           </div>
         </div>
         <DialogFooter>

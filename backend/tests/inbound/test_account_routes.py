@@ -17,6 +17,5 @@ def test_get_accounts(session: Session, client: TestClient):
     print(parsed)
     assert len(parsed) == 1
     assert parsed[0]["actual_id"] == ACCOUNT_1["actual_id"]
-    assert parsed[0]["import_id"] == ACCOUNT_1["import_id"]
     assert parsed[0]["name"] == ACCOUNT_1["name"]
     assert parsed[0]["institution"] == ACCOUNT_1["institution"]
