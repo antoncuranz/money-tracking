@@ -22,7 +22,7 @@ const TxSaveButton = () => {
     for (const [txId, amount] of Object.entries(changedTransactionAmounts)) {
       const response = await fetch("/api/transactions/" + txId + (amount ? "?amount_eur=" + amount : ""), {method: "PUT"})
 
-      if (response.status != 200) {
+      if (!response.ok) {
         toast({title: "Error updating transaction " + txId})
         savedSuccessfully = false;
         break;
