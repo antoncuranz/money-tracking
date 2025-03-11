@@ -1,5 +1,7 @@
 /teller/
 /scripts/
 /.idea/
+/.vscode/
 /money-tracking.iml
 /frontend/.env
+/frontend/.next
