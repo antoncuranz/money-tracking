@@ -16,17 +16,17 @@ class BalanceService:
         balance = 0
 
         for exchange in self.store.get_exchanges(session):
-            balance += self.calc_exchange_remaining(session, exchange, include_not_processed=True)
+            balance += self.calc_exchange_remaining(session, exchange)
 
         return balance
 
-    def calc_exchange_remaining(self, session: Session, exchange: Exchange, include_not_processed=False) -> int:
+    def calc_exchange_remaining(self, session: Session, exchange: Exchange, include_pending=False, include_posted=False) -> int:
         balance = exchange.amount_usd
         query = self.store.get_exchange_payments_by_exchange(session, exchange.id)
 
         for exchange_payment in query:
-            # TODO: check if "not" is correct
-            if not include_not_processed or exchange_payment.payment.status_enum == Payment.Status.PROCESSED:
+            status = exchange_payment.payment.status_enum
+            if (status == Payment.Status.PROCESSED) or (status == Payment.Status.PENDING and include_pending) or (status == Payment.Status.POSTED and include_posted):
                 balance -= exchange_payment.amount
 
         if balance < 0:
@@ -126,7 +126,7 @@ class BalanceService:
 
         exchanges = self.store.get_exchanges(session)
         for exchange in reversed(exchanges):
-            remaining = self.calc_exchange_remaining(session, exchange)
+            remaining = self.calc_exchange_remaining(session, exchange, include_posted=True)
 
             minimum = min(remaining_payments, remaining)
             remaining_payments -= minimum
@@ -134,7 +134,7 @@ class BalanceService:
 
             virtual_balance += round(Decimal(remaining)/exchange.amount_usd * exchange.amount_eur)
 
-        if virtual_balance > 0:
+        if virtual_balance >= 0:
             return str(virtual_balance)
         else:
             return "negative"

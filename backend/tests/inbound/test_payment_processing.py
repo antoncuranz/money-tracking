@@ -130,6 +130,7 @@ def test_payment_processing_applied_credit(session: Session, client, balance_ser
     tx5 = session.exec(select(Transaction).where(Transaction.id == 5)).one()
     assert tx5.fees_and_risk_eur == 120
 
+
 def test_payment_processing_with_multiple_exchanges(session: Session, client, balance_service):
     # Arrange
     for tx in TRANSACTIONS:
@@ -158,6 +159,7 @@ def test_payment_processing_with_multiple_exchanges(session: Session, client, ba
     assert balance_service.calc_exchange_remaining(session, ex1) == 0
     assert balance_service.calc_exchange_remaining(session, ex2) == ex2.amount_usd - (payment.amount_usd - ex1.amount_usd)
 
+
 def test_payment_processing_with_multiple_exchanges_real_case(session: Session, client: TestClient):
     # Arrange
     session.add(Transaction(
@@ -183,8 +185,8 @@ def test_payment_processing_with_multiple_exchanges_real_case(session: Session, 
     )
     session.add(payment)
 
-    session.add(Exchange(id=1, date="2024-09-17", amount_usd=49789, paid_eur=-1, exchange_rate=Decimal(1.11210)))
-    session.add(Exchange(id=2, date="2024-10-16", amount_usd=26378, paid_eur=-1, exchange_rate=Decimal(1.08890)))
+    session.add(Exchange(id=1, date="2024-09-17", amount_usd=49789, paid_eur=-1, exchange_rate=Decimal(1.11210), amount_eur=44770))
+    session.add(Exchange(id=2, date="2024-10-16", amount_usd=26378, paid_eur=-1, exchange_rate=Decimal(1.08890), amount_eur=24224))
 
     session.add(ExchangePayment(exchange_id=1, payment_id=1, amount=1048))
     session.add(ExchangePayment(exchange_id=2, payment_id=1, amount=3296))
@@ -225,8 +227,8 @@ def test_payment_processing_with_multiple_exchanges_real_case_2(session: Session
     )
     session.add(payment)
 
-    session.add(Exchange(id=1, date="2024-08-06", amount_usd=27995, paid_eur=-1, exchange_rate=Decimal(1.09219)))
-    session.add(Exchange(id=2, date="2024-09-17", amount_usd=49789, paid_eur=-1, exchange_rate=Decimal(1.11210)))
+    session.add(Exchange(id=1, date="2024-08-06", amount_usd=27995, paid_eur=-1, exchange_rate=Decimal(1.09219), amount_eur=25632))
+    session.add(Exchange(id=2, date="2024-09-17", amount_usd=49789, paid_eur=-1, exchange_rate=Decimal(1.11210), amount_eur=44770))
 
     session.add(ExchangePayment(exchange_id=1, payment_id=1, amount=1903))
     session.add(ExchangePayment(exchange_id=2, payment_id=1, amount=702))
@@ -269,6 +271,7 @@ def _setup_tables(session: Session, transactions, credits=[], exchange_rate=1.0)
 
     exchange.amount_usd = sum_usd
     exchange.exchange_rate = Decimal(exchange_rate)
+    exchange.amount_eur = round(Decimal(exchange.amount_usd) / exchange.exchange_rate)
     session.add(exchange)
 
     payment = Payment(**PAYMENT_1)

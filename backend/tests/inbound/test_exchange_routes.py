@@ -90,7 +90,7 @@ def test_update_exchange(session: Session, client, balance_service):
 
     # Assert
     assert response.status_code == 204
-    assert balance_service.calc_exchange_remaining(session, exchange) == 0
+    assert balance_service.calc_exchange_remaining(session, exchange, include_posted=True) == 0
     assert balance_service.calc_payment_remaining(session, payment) == 0
 
 

@@ -86,7 +86,7 @@ class ActualService:
             "payee": payee,
             "imported_payee": tx.counterparty,
         })
-        
+
     def export_payments(self, session: Session, user: User, account_id: int):
         payments = self.repository.get_unexported_payments(session, account_id)
 

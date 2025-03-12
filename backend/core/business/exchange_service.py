@@ -11,14 +11,10 @@ from models import Exchange
 
 
 class CreateExchange(SQLModel):
-    actual_id: str | None = None
     date: date
     amount_usd: int
     exchange_rate: int
-    amount_eur: int | None = None
     paid_eur: int
-    fees_eur: int | None = None
-    import_id: str | None = None
 
 
 class ExchangeService:
@@ -74,7 +70,7 @@ class ExchangeService:
 
         current_amount = self.store.get_exchange_payment_amount(session, exchange_id, payment_id)
 
-        if self.balance_service.calc_exchange_remaining(session, exchange) + current_amount < amount:
+        if self.balance_service.calc_exchange_remaining(session, exchange, include_pending=True, include_posted=True) + current_amount < amount:
             raise HTTPException(status_code=500, detail=f"Error: Exchange {exchange_id} has not enough balance!")
 
         if self.balance_service.calc_payment_remaining(session, payment) + current_amount < amount:

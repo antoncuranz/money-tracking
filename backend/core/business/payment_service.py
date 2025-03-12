@@ -8,7 +8,7 @@ from core.business.balance_service import BalanceService
 from core.business.exchange_service import ExchangeService
 from core.dataaccess.store import Store
 from data_export.facade import DataExportFacade
-from models import Transaction, ExchangePayment, Payment, User, engine
+from models import Transaction, ExchangePayment, Payment, User
 
 
 class PaymentService:
@@ -39,6 +39,9 @@ class PaymentService:
     
     def unprocess_payment(self, session: Session, user: User, payment_id: int):
         payment = self.store.get_payment(session, user, payment_id)
+        if not payment:
+            raise HTTPException(status_code=404)
+        
         payment.status_enum = Payment.Status.POSTED
         payment.amount_eur = None
         payment.actual_id = None
@@ -91,18 +94,15 @@ class PaymentService:
             raise Exception("Error: Payment amount does not match sum of transactions!")
 
         exchange_payments = self.store.get_exchange_payments_by_payment(session, payment.id)
-        avg_eur_usd_exchanged, neutral_sum = self._calc_avg_eur_usd_exchanged(session, payment, exchange_payments, transactions)
+        amount_eur = self._calc_payment_amount_eur(exchange_payments)
 
         for tx in transactions:
-            amount = self.balance_service.calc_transaction_remaining(session, tx)
-            tx.fees_and_risk_eur = self._calc_fees_and_risk(amount, tx.amount_eur, avg_eur_usd_exchanged)
-
+            tx.fees_and_risk_eur = self._calc_fees_and_risk(session, tx, payment, exchange_payments, amount_eur)
             tx.payment_id = payment.id
             tx.status_enum = Transaction.Status.PAID
             session.add(tx)
 
-        amount_usd = payment.amount_usd - neutral_sum
-        payment.amount_eur = round(amount_usd / avg_eur_usd_exchanged) if amount_usd > 0 else 0
+        payment.amount_eur = round(amount_eur)
         payment.status_enum = Payment.Status.PROCESSED
         session.add(payment)
 
@@ -116,29 +116,35 @@ class PaymentService:
         session.add(largest_tx)
         session.commit()
 
-    def _calc_fees_and_risk(self, value_usd: int, value_eur: int, eur_usd_exchanged: Decimal) -> int:
-        if value_eur == 0:
+    def _calc_fees_and_risk(self, session: Session, tx: Transaction, payment: Payment, exchange_payments: List[ExchangePayment], payment_amount_eur: Decimal) -> int:
+        neutral_sum = self._calc_neutral_sum(exchange_payments)
+        eur_usd_exchanged = Decimal(payment.amount_usd - neutral_sum) / payment_amount_eur
+        
+        if tx.amount_eur == 0:
             return 0
 
-        value_eur_exchanged = value_usd / eur_usd_exchanged
-        effective_fees_total = value_eur_exchanged - value_eur
+        amount_usd = self.balance_service.calc_transaction_remaining(session, tx)
+        value_eur_exchanged = amount_usd / eur_usd_exchanged
+        effective_fees_total = value_eur_exchanged - tx.amount_eur
 
         return round(effective_fees_total)
 
-    def _calc_avg_eur_usd_exchanged(self, session: Session, payment: Payment, exchange_payments: List[ExchangePayment], transactions: List[Transaction]):
+
+    def _calc_payment_amount_eur(self, exchange_payments: List[ExchangePayment]) -> Decimal:
+        amount_eur = Decimal(0)
+        for ep in exchange_payments:
+            if ep.exchange.paid_eur != 0:  # ignore neutral exchanges
+                amount_eur += (Decimal(ep.amount) / Decimal(ep.exchange.amount_usd)) * ep.exchange.amount_eur
+
+        return amount_eur
+    
+    
+    def _calc_neutral_sum(self, exchange_payments: List[ExchangePayment]) -> int:
         # Ignore "neutral" exchanges (i.e. exchange.paid_eur == 0). Ignored exchanges won't affect the avg rate.
-        
+
         neutral_sum = 0
         for ep in exchange_payments:
             if ep.exchange.paid_eur == 0:
                 neutral_sum += ep.amount
 
-        avg_eur_usd_exchanged = 0
-        for ep in exchange_payments:
-            if ep.exchange.paid_eur != 0:
-                avg_eur_usd_exchanged += (Decimal(ep.amount) / Decimal(payment.amount_usd - neutral_sum)) * ep.exchange.exchange_rate
-
-        if neutral_sum != sum(self.balance_service.calc_transaction_remaining(session, tx) for tx in transactions if tx.amount_eur == 0):
-            raise Exception("Error: neutral sum differs between Transactions and Exchanges!")
-
-        return avg_eur_usd_exchanged, neutral_sum
+        return neutral_sum

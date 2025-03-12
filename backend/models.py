@@ -115,7 +115,7 @@ class Exchange(SQLModel, table=True):
     date: datetime.date = datetime.date.today
     amount_usd: int
     exchange_rate: Decimal = Field(decimal_places=8)
-    amount_eur: int | None
+    amount_eur: int
     paid_eur: int
     fees_eur: int | None
     import_id: str | None = Field(unique=True)

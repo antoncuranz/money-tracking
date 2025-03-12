@@ -144,6 +144,8 @@ EXCHANGE_2 = dict(
 EXCHANGE_3 = dict(
     id=3, date="2024-01-29", amount_usd=5000, paid_eur=-1, exchange_rate=Decimal(1.085199)
 )
+for exchange in [EXCHANGE_1, EXCHANGE_2, EXCHANGE_3]:
+    exchange["amount_eur"] = round(Decimal(exchange["amount_usd"]) / exchange["exchange_rate"])
 
 EXCHANGE_PAYMENT_1 = dict(
     exchange_id=1, payment_id=1, amount=PAYMENT_1["amount_usd"]
