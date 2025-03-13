@@ -6,9 +6,9 @@ from models import User, Account, Payment
 
 
 class PaymentRepository:
-    def get_payment(self, session: Session, user: User, payment_id: int) -> Optional[Payment]:
+    def get_payment_unsafe(self, session: Session, payment_id: int) -> Optional[Payment]:
         stmt = select(Payment).where(Payment.id == payment_id)
-        return session.exec(stmt).first()  # TODO: check user!
+        return session.exec(stmt).first()
 
     def get_payments(self, session: Session, user: User, account_id: int, processed: bool | None = None):
         query = (Account.user_id == user.id) if not user.super_user else true()

@@ -8,7 +8,7 @@ class Config(BaseSettings):
     postgres_port: str = "5432"
 
     actual_base_url: str = "http://localhost:5007"
-    actual_api_key: str | None = None
+    actual_api_key: str = "apikey"
 
     plaid_client_id: str | None = None
     plaid_secret: str | None = None

@@ -83,7 +83,6 @@ class ImportService:
         self.exchangerate.fetch_exchange_rates(session, account)
         if account.actual_id is not None:
             self.data_export.export_transactions(session, account.user, account.id)
-            self.data_export.export_payments(session, account.user, account.id)
 
     def _get_pending_payments_in_days(self, session: Session, bank_account: BankAccount, days: int):
         today = datetime.date.today()

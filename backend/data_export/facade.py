@@ -20,11 +20,8 @@ class DataExportFacade:
     def update_transaction(self, session: Session, user: User, account_id: int, transaction: Transaction):
         self.actual_service.update_transaction(session, user, account_id, transaction)
 
-    def export_payments(self, session: Session, user: User, account_id: int):
-        self.actual_service.export_payments(session, user, account_id)
+    def export_payment(self, session: Session, super_user: User, account_id: int, payment: Payment):
+        self.actual_service.export_payment(session, super_user, account_id, payment)
 
-    def export_payment(self, session: Session, user: User, account_id: int, payment: Payment):
-        self.actual_service.export_payment(session, user, account_id, payment)
-
-    def delete_transaction(self, user: User, actual_id: str):
-        self.actual_service.delete_transaction(user, actual_id)
+    def delete_payment(self, super_user: User, actual_id: str):
+        self.actual_service.delete_payment(super_user, actual_id)

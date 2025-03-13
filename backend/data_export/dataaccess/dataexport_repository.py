@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from sqlmodel import Session, select
+from sqlmodel import Session, select, true
 
 from models import Account, Transaction, Payment, User
 
@@ -33,5 +33,13 @@ class DataExportRepository:
         return session.exec(stmt).all()
 
     def get_account(self, session: Session, user: User, account_id: int) -> Optional[Account]:
-        stmt = select(Account).where((Account.user_id == user.id) & (Account.id == account_id))
+        query = (Account.user_id == user.id) if not user.super_user else true()
+        stmt = select(Account).where(query & (Account.id == account_id))
         return session.exec(stmt).first()
+    
+    def get_paid_transactions_by_payment(self, session: Session, payment_id: int) -> List[Transaction]:
+        stmt = select(Transaction).join(Account).where(
+            (Transaction.payment_id == payment_id) &
+            (Transaction.status == Transaction.Status.PAID.value)
+        )
+        return session.exec(stmt).all()

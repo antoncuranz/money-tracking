@@ -24,9 +24,8 @@ class TransactionRepository:
         stmt = select(Transaction).join(Account).where(query).order_by(Transaction.date.desc(), Transaction.id.desc())
         return session.exec(stmt).all()
 
-    def get_paid_transactions_by_payment(self, session: Session, user: User, payment_id: int) -> List[Transaction]:
+    def get_paid_transactions_by_payment(self, session: Session, payment_id: int) -> List[Transaction]:
         stmt = select(Transaction).join(Account).where(
-            (Account.user_id == user.id) &
             (Transaction.payment_id == payment_id) &
             (Transaction.status == Transaction.Status.PAID.value)
         )

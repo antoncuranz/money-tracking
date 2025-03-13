@@ -24,8 +24,11 @@ class PaymentService:
     def get_payments(self, session: Session, user: User, account_id: int, processed: bool | None = None):
         return self.store.get_payments(session, user, account_id, processed)
 
-    def process_payment(self, session: Session, user: User, payment_id: int, transactions=None):
-        payment = self.store.get_payment(session, user, payment_id)
+    def process_payment(self, session: Session, super_user: User, payment_id: int, transactions=None):
+        if not super_user.super_user:
+            raise HTTPException(status_code=403)
+        
+        payment = self.store.get_payment_unsafe(session, payment_id)
         if not payment:
             raise HTTPException(status_code=404)
 
@@ -34,20 +37,23 @@ class PaymentService:
         
         self._process_payment(session, payment, transactions)
     
-        self.data_export.update_transactions(session, user, payment.account.id, transactions)
-        self.data_export.export_payment(session, user, payment.account.id, payment)
+        if super_user == payment.account.user:
+            self.data_export.update_transactions(session, super_user, payment.account.id, transactions)
+        self.data_export.export_payment(session, super_user, payment.account.id, payment)
     
-    def unprocess_payment(self, session: Session, user: User, payment_id: int):
-        payment = self.store.get_payment(session, user, payment_id)
+    def unprocess_payment(self, session: Session, super_user: User, payment_id: int):
+        if not super_user.super_user:
+            raise HTTPException(status_code=403)
+        
+        payment = self.store.get_payment_unsafe(session, payment_id)
         if not payment:
             raise HTTPException(status_code=404)
         
         payment.status_enum = Payment.Status.POSTED
         payment.amount_eur = None
-        payment.actual_id = None
         session.add(payment)
 
-        transactions = self.store.get_paid_transactions_by_payment(session, user, payment_id)
+        transactions = self.store.get_paid_transactions_by_payment(session, payment_id)
         for tx in transactions:
             tx.status_enum = Transaction.Status.POSTED
             tx.payment = None
@@ -55,10 +61,14 @@ class PaymentService:
             session.add(tx)
         session.commit()
 
-        self.data_export.update_transactions(session, user, payment.account.id, transactions)
-            
+        if super_user == payment.account.user:
+            self.data_export.update_transactions(session, super_user, payment.account.id, transactions)
+
         if payment.actual_id is not None:
-            self.data_export.delete_transaction(user, payment.actual_id)
+            self.data_export.delete_payment(super_user, payment.actual_id)
+            payment.actual_id = None
+            session.add(payment)
+            session.commit()
 
     def _guess_transactions_to_process(self, session: Session, payment: Payment):
         transactions = self.store.get_posted_transactions_by_account(session, payment.account.id)

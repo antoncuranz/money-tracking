@@ -67,8 +67,8 @@ class Store:
     def get_transactions(self, session: Session, user: User, account_id: int = None, paid: bool | None = None) -> List[Transaction]:
         return self.transaction_repository.get_transactions(session, user, account_id, paid)
 
-    def get_paid_transactions_by_payment(self, session: Session, user: User, payment_id: int) -> List[Transaction]:
-        return self.transaction_repository.get_paid_transactions_by_payment(session, user, payment_id)
+    def get_paid_transactions_by_payment(self, session: Session, payment_id: int) -> List[Transaction]:
+        return self.transaction_repository.get_paid_transactions_by_payment(session, payment_id)
 
     def get_posted_transactions_by_account(self, session: Session, account_id: int) -> List[Transaction]:
         return self.transaction_repository.get_posted_transactions_by_account(session, account_id)
@@ -90,8 +90,8 @@ class Store:
 
     #### PAYMENTS ####
 
-    def get_payment(self, session: Session, user: User, payment_id: int) -> Optional[Payment]:
-        return self.payment_repository.get_payment(session, user, payment_id)
+    def get_payment_unsafe(self, session: Session, payment_id: int) -> Optional[Payment]:
+        return self.payment_repository.get_payment_unsafe(session, payment_id)
 
     def get_payments(self, session: Session, user: User, account_id: int, processed: bool | None = None) -> List[Payment]:
         return self.payment_repository.get_payments(session, user, account_id, processed)

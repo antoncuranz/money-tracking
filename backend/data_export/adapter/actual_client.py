@@ -1,26 +1,41 @@
+import abc
+from typing import List, Optional
+
 import requests
 
 from config import config
+from data_export.adapter import openapi
+from models import Account, Transaction, User
 
 
-class IActualClient:
-    def create_transaction(self, account, transaction):
-        raise NotImplementedError
+class IActualClient(abc.ABC):
+    @abc.abstractmethod
+    def create_transaction(self, account: Account, transaction: openapi.Transaction):
+        pass
+    
+    @abc.abstractmethod
+    def create_transaction_super_misc(self, super_user: User, transaction: openapi.Transaction):
+        pass
 
-    def get_transaction(self, account, tx):
-        raise NotImplementedError
+    @abc.abstractmethod
+    def get_transaction(self, account: Account, tx: Transaction) -> Optional[openapi.Transaction]:
+        pass
 
-    def patch_transaction(self, account, actual_tx, updated_fields):
-        raise NotImplementedError
+    @abc.abstractmethod
+    def patch_transaction(self, account: Account, actual_tx: openapi.Transaction, updated_fields):
+        pass
 
-    def delete_transaction(self, user, actual_id):
-        raise NotImplementedError
+    @abc.abstractmethod
+    def delete_transaction(self, user: User, actual_id: str):
+        pass
 
-    def get_payees(self, user):
-        raise NotImplementedError
+    @abc.abstractmethod
+    def get_payees(self, user: User) -> List[openapi.Payee]:
+        pass
 
-    def create_payee(self, user, payee_name):
-        raise NotImplementedError
+    @abc.abstractmethod
+    def create_payee(self, user: User, payee_name: str) -> str:
+        pass
 
 
 class ActualClient(IActualClient):
@@ -28,7 +43,8 @@ class ActualClient(IActualClient):
         self.api_key = config.actual_api_key
         self.base_url = config.actual_base_url
 
-    def create_transaction(self, account, transaction):
+
+    def create_transaction(self, account: Account, transaction: openapi.Transaction):
         user = account.user
         url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/accounts/{account.actual_id}/transactions"
         headers = {
@@ -39,17 +55,35 @@ class ActualClient(IActualClient):
             headers["budget-encryption-password"] = user.actual_encryption_password
 
         payload = {
-            "transaction": transaction
+            "transaction": transaction.model_dump(exclude_unset=True)
         }
 
         response = requests.post(url, headers=headers, json=payload)
 
-        if response.ok:
-            return response.json()
-        else:
+        if not response.ok:
             response.raise_for_status()
 
-    def get_transaction(self, account, tx):
+
+    def create_transaction_super_misc(self, super_user: User, transaction: openapi.Transaction):
+        url = f"{self.base_url}/v1/budgets/{super_user.actual_sync_id}/accounts/{super_user.actual_misc_account}/transactions"
+        headers = {
+            "x-api-key": self.api_key,
+            "Content-Type": "application/json",
+        }
+        if super_user.actual_encryption_password is not None:
+            headers["budget-encryption-password"] = super_user.actual_encryption_password
+
+        payload = {
+            "transaction": transaction.model_dump(exclude_unset=True)
+        }
+
+        response = requests.post(url, headers=headers, json=payload)
+
+        if not response.ok:
+            response.raise_for_status()
+
+
+    def get_transaction(self, account: Account, tx: Transaction) -> Optional[openapi.Transaction]:
         user = account.user
         url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/accounts/{account.actual_id}/transactions" \
               + f"?since_date={tx.date}&until_date={tx.date}"
@@ -61,15 +95,21 @@ class ActualClient(IActualClient):
 
         response = requests.get(url, headers=headers)
 
-        if response.ok:
-            data = response.json()["data"]
-            return next(actual_tx for actual_tx in data if actual_tx["id"] == tx.actual_id)
-        else:
+        if not response.ok:
             response.raise_for_status()
+            
+        data = response.json()["data"]
+        
+        found = next((actual_tx for actual_tx in data if actual_tx["id"] == tx.actual_id), None)
+        if not found:
+            return None
+        
+        return openapi.Transaction(**found)
 
-    def patch_transaction(self, account, actual_tx, updated_fields):
+
+    def patch_transaction(self, account: Account, actual_tx: openapi.Transaction, updated_fields):
         user = account.user
-        url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/transactions/{actual_tx["id"]}"
+        url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/transactions/{actual_tx.id}"
         headers = {
             "x-api-key": self.api_key,
             "Content-Type": "application/json",
@@ -78,17 +118,16 @@ class ActualClient(IActualClient):
             headers["budget-encryption-password"] = user.actual_encryption_password
 
         payload = {
-            "transaction": actual_tx | updated_fields
+            "transaction": actual_tx.model_dump(exclude_unset=True, exclude={"subtransactions"}) | updated_fields
         }
 
         response = requests.patch(url, headers=headers, json=payload)
 
-        if response.ok:
-            return response.json()
-        else:
+        if not response.ok:
             response.raise_for_status()
 
-    def delete_transaction(self, user, actual_id):
+
+    def delete_transaction(self, user: User, actual_id: str):
         url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/transactions/{actual_id}"
         headers = {
             'x-api-key': self.api_key
@@ -98,12 +137,11 @@ class ActualClient(IActualClient):
 
         response = requests.delete(url, headers=headers)
 
-        if response.ok:
-            return response.json()
-        else:
+        if not response.ok:
             response.raise_for_status()
-            
-    def get_payees(self, user):
+
+
+    def get_payees(self, user: User) -> List[openapi.Payee]:
         url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/payees"
         headers = {
             "x-api-key": self.api_key,
@@ -113,12 +151,13 @@ class ActualClient(IActualClient):
 
         response = requests.get(url, headers=headers)
 
-        if response.ok:
-            return response.json()
-        else:
+        if not response.ok:
             response.raise_for_status()
 
-    def create_payee(self, user, payee_name):
+        return [openapi.Payee(**payee) for payee in response.json()["data"]]
+
+
+    def create_payee(self, user: User, payee_name: str) -> str:
         url = f"{self.base_url}/v1/budgets/{user.actual_sync_id}/payees"
         headers = {
             "x-api-key": self.api_key,
@@ -131,7 +170,7 @@ class ActualClient(IActualClient):
 
         response = requests.post(url, headers=headers, json=payload)
 
-        if response.ok:
-            return response.json()
-        else:
+        if not response.ok:
             response.raise_for_status()
+
+        return response.json()["data"]

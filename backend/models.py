@@ -24,6 +24,7 @@ class User(SQLModel, table=True):
     super_user: bool = False
     actual_sync_id: str | None
     actual_encryption_password: str | None
+    actual_misc_account: str | None
 
 
 class PlaidAccount(SQLModel, table=True):
