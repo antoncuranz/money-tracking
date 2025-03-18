@@ -8,7 +8,7 @@ from sqlmodel import Session
 from config import config
 from data_export.facade import DataExportFacade
 from data_import.business.abstract_importer import AbstractImporter
-from data_import.business.quiltt_importer import QuilttImporter
+from data_import.business.plaid_importer import PlaidImporter
 from data_import.dataaccess.dataimport_repository import DataImportRepository
 from dates.facade import DatesFacade
 from exchangerate.facade import ExchangeRateFacade
@@ -16,7 +16,7 @@ from models import Account, User, BankAccount
 
 
 class ImportService:
-    def __init__(self, importer: Annotated[AbstractImporter, Depends(QuilttImporter)],
+    def __init__(self, importer: Annotated[AbstractImporter, Depends(PlaidImporter)],
                  repository: Annotated[DataImportRepository, Depends()],
                  exchangerate: Annotated[ExchangeRateFacade, Depends()],
                  dates: Annotated[DatesFacade, Depends()],

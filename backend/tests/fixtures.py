@@ -171,3 +171,14 @@ EXCHANGE_RATES = [
         date="2024-01-"+str(i+1).zfill(2), source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=Decimal(er)
     ) for i, er in enumerate(EXCHANGERATESIO_EXCHANGE_RATES)
 ]
+
+PLAID_CONNECTION_1 = dict(
+    id=1, user_id=1, name="Capital One", plaid_item_id="item-1", plaid_access_token="token-1"
+)
+
+PLAID_ACCOUNT_1 = dict(
+    id=1, name="Savor", connection_id=1, cursor="cursor-1", plaid_account_id="plaid-account-1"
+)
+PLAID_ACCOUNT_2 = dict(
+    id=2, name="Delta Gold", connection_id=1, cursor="cursor-2", plaid_account_id="plaid-account-2"
+)

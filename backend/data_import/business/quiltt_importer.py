@@ -42,7 +42,7 @@ class QuilttImporter(AbstractImporter):
                 else:
                     self._process_transaction(session, account, tx)
             except:
-                print("Error processing quiltt_tx: " + json.dumps(tx))
+                print("Error processing quiltt_tx: " + self._print_tx(tx))
                 traceback.print_exc()
 
     def _make_transaction_args(self, tx, account_id):

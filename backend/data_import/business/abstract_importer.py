@@ -8,7 +8,7 @@ from abc import ABC
 
 from config import config
 from data_import.dataaccess.dataimport_repository import DataImportRepository
-from models import Account
+from models import Account, BankAccount
 
 
 class AbstractImporter(ABC):
@@ -16,7 +16,7 @@ class AbstractImporter(ABC):
         self.repository = repository
 
     @abc.abstractmethod
-    def update_bank_account_balance(self, session: Session, bank_account):
+    def update_bank_account_balance(self, session: Session, bank_account: BankAccount):
         pass
 
     @abc.abstractmethod
@@ -38,7 +38,6 @@ class AbstractImporter(ABC):
             session.commit()
             return
 
-        args = self._make_transaction_args(tx, account.id)
         result, created = self.repository.get_or_create_payment(session, args["import_id"], args)
 
         if created:

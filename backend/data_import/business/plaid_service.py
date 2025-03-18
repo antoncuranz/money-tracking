@@ -1,4 +1,5 @@
 import time
+from decimal import Decimal
 from typing import Annotated
 
 import plaid
@@ -16,7 +17,7 @@ from sqlmodel import Session
 
 from config import config
 from data_import.dataaccess.dataimport_repository import DataImportRepository
-from models import User
+from models import User, PlaidAccount
 
 
 class PlaidService:
@@ -66,12 +67,25 @@ class PlaidService:
                 "name": account.name, "plaid_account_id": account.account_id, "connection_id": connection.id
             })
         session.commit()
+    
+    def get_account_balance(self, plaid_account: PlaidAccount):
+        access_token = plaid_account.connection.plaid_access_token
+        
+        accounts_get_request = AccountsGetRequest(access_token=access_token)
+        accounts_get_response = self.client.accounts_get(accounts_get_request)
+        
+        account = next(account for account in accounts_get_response["accounts"] if account["account_id"] == plaid_account.plaid_account_id)
+        return int(Decimal(account["balances"]["current"] * 100).quantize(1))
 
-    def sync_transactions(self, access_token: str):
-        request = TransactionsSyncRequest(access_token=access_token)
+    def sync_transactions(self, plaid_account: PlaidAccount):
+        access_token = plaid_account.connection.plaid_access_token
+        
+        request = TransactionsSyncRequest(access_token=access_token, cursor=plaid_account.cursor if plaid_account.cursor else "")
         response = self.client.transactions_sync(request)
-        accounts = response["accounts"]
-        transactions = response["added"]
+        
+        added = response["added"]
+        modified = response["modified"]
+        removed = response["removed"]
 
         # the transactions in the response are paginated, so make multiple calls while incrementing the cursor to
         # retrieve all transactions
@@ -81,9 +95,15 @@ class PlaidService:
                 cursor=response["next_cursor"]
             )
             response = self.client.transactions_sync(request)
-            transactions += response["added"]
+            added += response["added"]
+            modified += response["modified"]
+            removed += response["removed"]
+        
+        added = [tx for tx in added if tx.account_id == plaid_account.plaid_account_id]
+        modified = [tx for tx in modified if tx.account_id == plaid_account.plaid_account_id]
+        removed = [tx for tx in removed if tx.account_id == plaid_account.plaid_account_id]
 
-        return accounts, transactions
+        return added, modified, removed, response["next_cursor"]
     
     def get_connections(self, session: Session, user: User):
         return self.repository.get_plaid_connections(session, user)

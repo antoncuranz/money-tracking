@@ -3,16 +3,13 @@ import traceback
 from decimal import Decimal
 from typing import Annotated
 
-import plaid
 from fastapi import Depends
-from plaid.api import plaid_api
 from sqlmodel import Session
 
-from config import config
 from data_import.business.abstract_importer import AbstractImporter
 from data_import.business.plaid_service import PlaidService
 from data_import.dataaccess.dataimport_repository import DataImportRepository
-from models import Transaction, Account
+from models import Transaction, Account, BankAccount
 
 
 class PlaidImporter(AbstractImporter):
@@ -20,25 +17,17 @@ class PlaidImporter(AbstractImporter):
                  plaid_service: Annotated[PlaidService, Depends()]):
         super().__init__(repository)
         self.plaid_service = plaid_service
-        configuration = plaid.Configuration(
-            host=plaid.Environment.Production if config.plaid_environment == "production" else plaid.Environment.Sandbox,
-            api_key={"clientId": config.plaid_client_id, "secret": config.plaid_secret, "plaidVersion": "2020-09-14"}
-        )
-        self.client = plaid_api.PlaidApi(plaid.ApiClient(configuration))
 
-    def update_bank_account_balance(self, session: Session, bank_account):
-        # TODO
-        # accounts, _ = self._plaid_request(bank_account.plaid_token)
-        pass
-        # new_balance = self.adapter.get_account_balance(bank_account.import_id, self._get_token())
-        # bank_account.balance = int(new_balance * 100)
-        # session.add(bank_account)
+    def update_bank_account_balance(self, session: Session, bank_account: BankAccount):
+        balance = self.plaid_service.get_account_balance(bank_account.plaid_account)
+        bank_account.balance = balance
+        session.add(bank_account)
     
     def import_transactions(self, session: Session, account: Account):
-        _, transactions = self.plaid_service.sync_transactions(config.plaid_access_token)  # TODO: access_token = account.plaid_token
-        # FIXME: might contain transactions of multiple accounts
+        plaid_account = account.plaid_account
+        added, _, removed, next_cursor = self.plaid_service.sync_transactions(plaid_account)
         
-        for tx in transactions:
+        for tx in reversed(added):
             if tx["pending"]:
                 print("Skipping pending transaction")
                 continue
@@ -52,8 +41,26 @@ class PlaidImporter(AbstractImporter):
                 else:
                     self._process_transaction(session, account, tx)
             except:
-                print("Error processing plaid transaction: " + json.dumps(tx))
+                print("Error processing plaid transaction: " + self._print_tx(tx))
                 traceback.print_exc()
+        
+        for tx in removed:
+            payment = self.repository.get_payment_by_import_id(session, tx["transaction_id"])
+            if payment is not None:
+                session.delete(payment)
+                
+            credit = self.repository.get_credit_by_import_id(session, tx["transaction_id"])
+            if credit is not None:
+                session.delete(credit)
+                
+            tx = self.repository.get_transaction_by_import_id(session, tx["transaction_id"])
+            if tx is not None:
+                session.delete(tx)
+        
+        plaid_account.cursor = next_cursor
+        session.add(plaid_account)
+        session.commit()
+        
 
     def _make_transaction_args(self, tx, account_id):
         counterparty = next((cp["name"] for cp in tx["counterparties"] if "HIGH" in cp["confidence_level"]), None)
