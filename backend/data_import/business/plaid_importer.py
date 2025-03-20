@@ -67,7 +67,7 @@ class PlaidImporter(AbstractImporter):
         return {
             "account_id": account_id,
             "import_id": tx["transaction_id"],
-            "date": tx["date"],
+            "date": tx["authorized_date"] or tx["date"],
             "counterparty": counterparty or tx["merchant_name"] or tx["name"],
             "description": tx["name"],
             "amount_usd": abs(int(Decimal(tx["amount"] * 100).quantize(1))),
