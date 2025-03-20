@@ -131,6 +131,4 @@ def test_sync_transactions(mocker):
     assert actual_modified == [tx for tx in modified if tx.account_id == "plaid-account-1"]
     assert actual_removed == [tx for tx in removed if tx.account_id == "plaid-account-1"]
     assert next_cursor == "cursor-4"
-    
-    # assert False  # FIXME: test and fix filtering based on account_id
 

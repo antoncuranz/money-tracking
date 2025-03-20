@@ -26,8 +26,8 @@ class PlaidImporter(AbstractImporter):
     def import_transactions(self, session: Session, account: Account):
         plaid_account = account.plaid_account
         added, _, removed, next_cursor = self.plaid_service.sync_transactions(plaid_account)
-        
-        for tx in reversed(added):
+
+        for tx in sorted(added, key=lambda tx: tx["date"]):
             if tx["pending"]:
                 print("Skipping pending transaction")
                 continue

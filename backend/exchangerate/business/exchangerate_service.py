@@ -42,6 +42,7 @@ class ExchangeRateService:
             
             if rate:
                 self.repository.persist_exchange_rate(session, date, source.value, rate)
+                session.commit()
             return rate
         else:
             return er.exchange_rate
