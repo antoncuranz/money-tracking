@@ -27,6 +27,7 @@ export type BankAccount = {
   icon: string | null;
   balance: number;
   plaid_account_id: number | null;
+  last_successful_update: number | null;
 };
 
 export type Credit = {
@@ -115,6 +116,7 @@ export type AccountBalance = {
   pending: number;
   total_spent: number;
   total_credits: number;
+  last_successful_update: number | null;
 }
 
 export type FeeSummary = {

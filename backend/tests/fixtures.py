@@ -1,3 +1,4 @@
+import datetime
 from decimal import Decimal
 
 from models import ExchangeRate
@@ -181,4 +182,14 @@ PLAID_ACCOUNT_1 = dict(
 )
 PLAID_ACCOUNT_2 = dict(
     id=2, name="Delta Gold", connection_id=1, cursor="cursor-2", plaid_account_id="plaid-account-2"
+)
+
+PLAID_TX_1 = dict(
+    name="Description", transaction_id="plaid-tx-1", date=datetime.date(2025, 1, 1),
+    authorized_date=datetime.date(2025, 1, 1), amount=1000, counterparties=[], merchant_name=None, pending=False
+)
+
+PLAID_PAYMENT_1 = dict(
+    name="AUTOPAY PAYMENT - THANK YOU", transaction_id="plaid-payment-1", date=datetime.date(2025, 1, 1),
+    authorized_date=datetime.date(2025, 1, 1), amount=-12022, counterparties=[], merchant_name=None, pending=False
 )

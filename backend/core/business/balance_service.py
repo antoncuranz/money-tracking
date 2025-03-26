@@ -5,12 +5,15 @@ from fastapi import Depends
 from sqlmodel import Session
 
 from core.dataaccess.store import Store
+from data_import.facade import DataImportFacade
 from models import Exchange, Credit, Transaction, Payment, engine, User
 
 
 class BalanceService:
-    def __init__(self, store: Annotated[Store, Depends()]):
+    def __init__(self, store: Annotated[Store, Depends()],
+                 data_import: Annotated[DataImportFacade, Depends()]):
         self.store = store
+        self.data_import = data_import
         
     def calc_balance_exchanged(self, session: Session) -> int:
         balance = 0
@@ -81,12 +84,14 @@ class BalanceService:
             posted_credits = self.store.get_posted_credit_amount(session, account.id)
             posted_payments = self.store.get_posted_payment_amount(session, account.id)
             pending = self.store.get_pending_transaction_amount(session, account.id)
+            last_successful_update = self.data_import.get_last_successful_update(session, account.plaid_account_id) if account.plaid_account_id else None
 
             result[account.id] = {
                 "posted": posted_tx - posted_credits - posted_payments,
                 "pending": pending,
                 "total_spent": posted_tx,
-                "total_credits": posted_credits
+                "total_credits": posted_credits,
+                "last_successful_update": last_successful_update
             }
 
         return result

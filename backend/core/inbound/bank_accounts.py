@@ -1,22 +1,13 @@
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, status
-from sqlmodel import Session, SQLModel
+from sqlmodel import Session
 
 from auth import get_current_user
-from core.business.account_service import AccountService, CreateBankAccount
-from models import User, get_session, BankAccount
+from core.business.account_service import AccountService, CreateBankAccount, BankAccountTO
+from models import User, get_session
 
 router = APIRouter(prefix="/api/bank_accounts", tags=["Bank Accounts"])
 
-
-class BankAccountTO(SQLModel):
-    id: int
-    user: User
-    name: str
-    institution: str
-    icon: str | None
-    balance: int
-    plaid_account_id: int | None
 
 @router.get("", response_model=List[BankAccountTO])
 def get_bank_accounts(user: Annotated[User, Depends(get_current_user)],

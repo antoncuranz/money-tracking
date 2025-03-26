@@ -1,9 +1,11 @@
+import datetime
 from typing import Annotated, List
 
 from fastapi import Depends, HTTPException
 from sqlmodel import Session, SQLModel
 
 from core.dataaccess.store import Store
+from data_import.facade import DataImportFacade
 from models import User, Account, BankAccount
 
 
@@ -27,9 +29,22 @@ class CreateBankAccount(SQLModel):
     plaid_account_id: int | None
 
 
+class BankAccountTO(SQLModel):
+    id: int
+    user: User
+    name: str
+    institution: str
+    icon: str | None
+    balance: int
+    plaid_account_id: int | None
+    last_successful_update: datetime.datetime | None
+
+
 class AccountService:
-    def __init__(self, store: Annotated[Store, Depends()]):
+    def __init__(self, store: Annotated[Store, Depends()],
+                 data_import: Annotated[DataImportFacade, Depends()]):
         self.store = store
+        self.data_import = data_import
 
     def get_accounts(self, session: Session, user: User) -> List[Account]:
         if user.super_user:
@@ -63,12 +78,20 @@ class AccountService:
         account.actual_id = create_account.actual_id
         session.commit()
 
-    def get_bank_accounts(self, session: Session, user: User) -> List[BankAccount]:
+    def get_bank_accounts(self, session: Session, user: User) -> List[BankAccountTO]:
         if user.super_user:
-            return self.store.get_all_bank_accounts(session)
+            bank_accounts = self.store.get_all_bank_accounts(session)
         else:
-            return self.store.get_bank_accounts_of_user(session, user)
-    
+            bank_accounts = self.store.get_bank_accounts_of_user(session, user)
+            
+        def map_bank_account(bank_account: BankAccount):
+            return BankAccountTO.model_validate(bank_account, update={
+                "last_successful_update": self.data_import.get_last_successful_update(session, bank_account.plaid_account_id) if bank_account.plaid_account_id else None
+            })
+
+        return [map_bank_account(bank_account) for bank_account in bank_accounts]
+
+
     def create_bank_account(self, session: Session, user: User, create_bank_account: CreateBankAccount) -> BankAccount:
         bank_account = self.store.create_bank_account(session, user, name=create_bank_account.name,
                                                       institution=create_bank_account.institution,

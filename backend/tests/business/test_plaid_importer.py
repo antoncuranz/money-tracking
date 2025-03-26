@@ -2,6 +2,7 @@ import datetime
 
 import pytest
 from plaid.model.transaction import Transaction as PlaidTransaction
+from plaid.model.removed_transaction import RemovedTransaction
 from sqlmodel import Session, select
 
 from data_import.business.plaid_importer import PlaidImporter
@@ -52,6 +53,51 @@ def test_import_transactions(mocker, session: Session):
 
     # Assert
     transactions = session.exec(select(Transaction)).all()
-    assert len(transactions) == 2
+    assert len(transactions) == 3
     assert transactions[0].amount_usd == 1234
+    assert transactions[0].status == Transaction.Status.POSTED.value
     assert transactions[1].amount_usd == 4321
+    assert transactions[1].status == Transaction.Status.POSTED.value
+    assert transactions[2].amount_usd == 1234
+    assert transactions[2].status == Transaction.Status.PENDING.value
+
+
+def test_pending_transactions(mocker, session: Session):
+    # Arrange (general)
+    account = session.exec(select(Account)).one()
+    assert len(session.exec(select(Transaction)).all()) == 0
+    
+    plaid_service_mock = mocker.Mock()
+    under_test = PlaidImporter(DataImportRepository(), plaid_service_mock)
+    
+    # Arrange 1
+    pending = _create_plaid_tx(account_id="plaid-account-1", amount=12.34, date=datetime.date(2025, 1, 3), pending=True, transaction_id="plaid-tx-1")
+    plaid_service_mock.sync_transactions.return_value = [pending], [], [], None
+
+    # Act 1
+    under_test.import_transactions(session, account)
+
+    # Assert 1
+    persisted = session.exec(select(Transaction)).one()
+    assert persisted.amount_usd == 1234
+    assert persisted.amount_eur is None
+    assert persisted.status == Transaction.Status.PENDING.value
+    
+    # Act 2
+    persisted.amount_eur = 1000
+    session.add(persisted)
+
+    # Arrange 3
+    posted = _create_plaid_tx(account_id="plaid-account-1", amount=12.34, date=datetime.date(2025, 1, 3), pending=False, transaction_id="plaid-tx-2")
+    posted.pending_transaction_id = "plaid-tx-1"
+    removed = RemovedTransaction(account_id="plaid-account-1", transaction_id=pending.transaction_id)
+    plaid_service_mock.sync_transactions.return_value = [posted], [], [removed], None
+    
+    # Act 3
+    under_test.import_transactions(session, account)
+
+    # Assert 3
+    persisted = session.exec(select(Transaction)).one()
+    assert persisted.amount_usd == 1234
+    assert persisted.amount_eur == 1000
+    assert persisted.status == Transaction.Status.POSTED.value

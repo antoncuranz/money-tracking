@@ -33,7 +33,8 @@ class PlaidAccount(SQLModel, table=True):
     plaid_account_id: str = Field(unique=True)
     connection_id: int = Field(foreign_key="plaidconnection.id")
     connection: "PlaidConnection" = Relationship(back_populates="plaid_accounts")
-    cursor: str | None = Field(default=None)
+    cursor: str | None = None
+    last_successful_update: datetime.datetime | None = None
 
 
 class PlaidConnection(SQLModel, table=True):

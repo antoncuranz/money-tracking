@@ -12,6 +12,7 @@ from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchan
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
 from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
+from plaid.model.item_get_request import ItemGetRequest
 from plaid.model.item_remove_request import ItemRemoveRequest
 from sqlmodel import Session
 
@@ -74,6 +75,10 @@ class PlaidService:
         accounts_get_request = AccountsGetRequest(access_token=access_token)
         accounts_get_response = self.client.accounts_get(accounts_get_request)
         
+        item_get_request = ItemGetRequest(access_token=access_token)
+        item_get_response = self.client.item_get(item_get_request)
+        plaid_account.last_successful_update = item_get_response.status.transactions.last_successful_update
+
         account = next(account for account in accounts_get_response["accounts"] if account["account_id"] == plaid_account.plaid_account_id)
         return int(Decimal(account["balances"]["current"] * 100).quantize(1))
 
@@ -102,6 +107,10 @@ class PlaidService:
         added = [tx for tx in added if tx.account_id == plaid_account.plaid_account_id]
         modified = [tx for tx in modified if tx.account_id == plaid_account.plaid_account_id]
         removed = [tx for tx in removed if tx.account_id == plaid_account.plaid_account_id]
+        
+        item_get_request = ItemGetRequest(access_token=access_token)
+        item_get_response = self.client.item_get(item_get_request)
+        plaid_account.last_successful_update = item_get_response.status.transactions.last_successful_update
 
         return added, modified, removed, response["next_cursor"]
     

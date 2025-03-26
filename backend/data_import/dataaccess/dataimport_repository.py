@@ -114,3 +114,7 @@ class DataImportRepository:
         session.add(model)
 
         return model, created
+
+    def get_last_successful_update(self, session: Session, plaid_account_id: int) -> Optional[datetime.datetime]:
+        stmt = select(PlaidAccount).where(PlaidAccount.id == plaid_account_id)
+        return session.exec(stmt).first().last_successful_update

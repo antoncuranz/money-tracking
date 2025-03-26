@@ -4,6 +4,9 @@ from plaid.api import plaid_api
 from plaid.model.account_balance import AccountBalance
 from plaid.model.account_base import AccountBase
 from plaid.model.accounts_get_response import AccountsGetResponse
+from plaid.model.item_get_response import ItemGetResponse
+from plaid.model.item_status_nullable import ItemStatusNullable
+from plaid.model.item_status_transactions import ItemStatusTransactions
 from plaid.model.item import Item
 from plaid.model.transactions_sync_response import TransactionsSyncResponse
 from plaid.model.transaction import Transaction
@@ -77,11 +80,16 @@ def test_get_account_balance(mocker):
                                             unofficial_currency_code=None), mask=None,
                     official_name="Official Plaid Account 2", type=None, subtype=None, _check_type=False)
     ]
-    accounts_get_response = AccountsGetResponse(accounts=accounts, item=None, request_id="request-1", _check_type=False)
 
     accounts_get_mock = mocker.Mock()
+    accounts_get_response = AccountsGetResponse(accounts=accounts, item=None, request_id="request-1", _check_type=False)
     accounts_get_mock.return_value = accounts_get_response
     mocker.patch.object(plaid_api.PlaidApi, "accounts_get", accounts_get_mock)
+
+    item_get_mock = mocker.Mock()
+    item_get_response = ItemGetResponse(item=None, request_id="request-1", status=ItemStatusNullable(transactions=ItemStatusTransactions(last_successful_update=datetime.datetime.now(), last_failed_update=None)), _check_type=False)
+    item_get_mock.return_value = item_get_response
+    mocker.patch.object(plaid_api.PlaidApi, "item_get", item_get_mock)
 
     repository_mock = mocker.Mock()
     under_test = PlaidService(repository_mock)
@@ -115,6 +123,11 @@ def test_sync_transactions(mocker):
     sync_response_mock = mocker.Mock()
     sync_response_mock.side_effect = [sync_response_1, sync_response_2, sync_response_3]
     mocker.patch.object(plaid_api.PlaidApi, "transactions_sync", sync_response_mock)
+    
+    item_get_mock = mocker.Mock()
+    item_get_response = ItemGetResponse(item=None, request_id="request-1", status=ItemStatusNullable(transactions=ItemStatusTransactions(last_successful_update=datetime.datetime.now(), last_failed_update=None)), _check_type=False)
+    item_get_mock.return_value = item_get_response
+    mocker.patch.object(plaid_api.PlaidApi, "item_get", item_get_mock)
 
     repository_mock = mocker.Mock()
     under_test = PlaidService(repository_mock)

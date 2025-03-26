@@ -28,18 +28,21 @@ class PlaidImporter(AbstractImporter):
         added, _, removed, next_cursor = self.plaid_service.sync_transactions(plaid_account)
 
         for tx in sorted(added, key=lambda tx: tx["date"]):
-            if tx["pending"]:
-                print("Skipping pending transaction")
-                continue
             try:
-                if tx["amount"] < 0:
+                if tx["amount"] >= 0:
+                    created_tx = self._process_transaction(session, account, tx)
+                    if tx["pending_transaction_id"] is not None:
+                        pending_tx = self.repository.get_transaction_by_import_id(session, tx["pending_transaction_id"])
+                        if pending_tx is not None:
+                            created_tx.amount_eur = pending_tx.amount_eur
+                            session.add(created_tx)
+                            
+                elif not tx["pending"]:
                     payment_strings = ["AUTOPAY PAYMENT", "AUTOPAY PYMT", "MOBILE PAYMENT", "MOBILE PYMT"]
                     if any(payment_string in tx["name"] for payment_string in payment_strings):
                         self._process_payment(session, account, tx)
                     else:
                         self._process_credit(session, account, tx)
-                else:
-                    self._process_transaction(session, account, tx)
             except:
                 print("Error processing plaid transaction: " + self._print_tx(tx))
                 traceback.print_exc()
@@ -71,5 +74,5 @@ class PlaidImporter(AbstractImporter):
             "counterparty": counterparty or tx["merchant_name"] or tx["name"],
             "description": tx["name"],
             "amount_usd": abs(int(Decimal(tx["amount"] * 100).quantize(1))),
-            "status": Transaction.Status.POSTED.value
+            "status": Transaction.Status.PENDING.value if tx["pending"] else Transaction.Status.POSTED.value
         }
