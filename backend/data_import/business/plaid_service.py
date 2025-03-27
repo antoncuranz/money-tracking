@@ -7,13 +7,14 @@ from fastapi import HTTPException, Depends
 from plaid.api import plaid_api
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.country_code import CountryCode
-from plaid.model.products import Products
+from plaid.model.item_get_request import ItemGetRequest
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
+from plaid.model.item_remove_request import ItemRemoveRequest
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
 from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
+from plaid.model.products import Products
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
-from plaid.model.item_get_request import ItemGetRequest
-from plaid.model.item_remove_request import ItemRemoveRequest
+from prometheus_client import Gauge
 from sqlmodel import Session
 
 from config import config
@@ -78,6 +79,9 @@ class PlaidService:
         item_get_request = ItemGetRequest(access_token=access_token)
         item_get_response = self.client.item_get(item_get_request)
         plaid_account.last_successful_update = item_get_response.status.transactions.last_successful_update
+        
+        last_successful_update_gauge = Gauge("plaid_account_" + str(plaid_account.id) + "_last_successful_update", "Timestamp of the last successful update")
+        last_successful_update_gauge.set(plaid_account.last_successful_update.timestamp())
 
         account = next(account for account in accounts_get_response["accounts"] if account["account_id"] == plaid_account.plaid_account_id)
         return int(Decimal(account["balances"]["current"] * 100).quantize(1))
@@ -111,6 +115,9 @@ class PlaidService:
         item_get_request = ItemGetRequest(access_token=access_token)
         item_get_response = self.client.item_get(item_get_request)
         plaid_account.last_successful_update = item_get_response.status.transactions.last_successful_update
+        
+        last_successful_update_gauge = Gauge("plaid_account_" + str(plaid_account.id) + "_last_successful_update", "Timestamp of the last successful update")
+        last_successful_update_gauge.set(plaid_account.last_successful_update.timestamp())
 
         return added, modified, removed, response["next_cursor"]
     
