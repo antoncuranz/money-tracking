@@ -173,21 +173,22 @@ class ActualService:
     
     def _create_actual_payment_misc(self, payment: Payment, transactions: List[Transaction], id: str) -> openapi.Transaction:
         tx_eur_sum = sum([tx.amount_eur for tx in transactions])
-        fees = payment.amount_eur - tx_eur_sum
-        notes = "({}) {}".format(payment.account.user.name.title(), payment.description)
+        fees = tx_eur_sum - payment.amount_eur 
+        payee = "{}'s {}".format(payment.account.user.name.title(), payment.account.name)
+        notes = "({}) {}".format(payee, payment.description)
 
         return openapi.Transaction(
             id=id,
             date=str(payment.date),
-            amount=payment.amount_eur,
-            payee_name=payment.counterparty,
-            imported_payee=payment.counterparty,
+            amount=-payment.amount_eur,
+            payee_name=payee,
+            imported_payee=payee,
             notes=notes,
             imported_id=payment.import_id,
             cleared=True,
             subtransactions=[
                 openapi.Transaction(
-                    amount=tx_eur_sum,
+                    amount=-tx_eur_sum,
                     notes="Original value in EUR"
                 ),
                 openapi.Transaction(
