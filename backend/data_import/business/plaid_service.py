@@ -30,6 +30,7 @@ class PlaidService:
             api_key={"clientId": config.plaid_client_id, "secret": config.plaid_secret, "plaidVersion": "2020-09-14"}
         )
         self.client = plaid_api.PlaidApi(plaid.ApiClient(configuration))
+        self.gauges = {}
 
     def create_link_token(self):
         request = LinkTokenCreateRequest(
@@ -79,9 +80,8 @@ class PlaidService:
         item_get_request = ItemGetRequest(access_token=access_token)
         item_get_response = self.client.item_get(item_get_request)
         plaid_account.last_successful_update = item_get_response.status.transactions.last_successful_update
-        
-        last_successful_update_gauge = Gauge("plaid_account_" + str(plaid_account.id) + "_last_successful_update", "Timestamp of the last successful update")
-        last_successful_update_gauge.set(plaid_account.last_successful_update.timestamp())
+
+        self._get_gauge(plaid_account.id).set(plaid_account.last_successful_update.timestamp())
 
         account = next(account for account in accounts_get_response["accounts"] if account["account_id"] == plaid_account.plaid_account_id)
         return int(Decimal(account["balances"]["current"] * 100).quantize(1))
@@ -115,9 +115,8 @@ class PlaidService:
         item_get_request = ItemGetRequest(access_token=access_token)
         item_get_response = self.client.item_get(item_get_request)
         plaid_account.last_successful_update = item_get_response.status.transactions.last_successful_update
-        
-        last_successful_update_gauge = Gauge("plaid_account_" + str(plaid_account.id) + "_last_successful_update", "Timestamp of the last successful update")
-        last_successful_update_gauge.set(plaid_account.last_successful_update.timestamp())
+
+        self._get_gauge(plaid_account.id).set(plaid_account.last_successful_update.timestamp())
 
         return added, modified, removed, response["next_cursor"]
     
@@ -134,3 +133,10 @@ class PlaidService:
         
         session.delete(connection)
         session.commit()
+
+    def _get_gauge(self, plaid_account_id: int):
+        gauge_name = "plaid_account_" + str(plaid_account_id) + "_last_successful_update"
+        if gauge_name not in self.gauges:
+            self.gauges[gauge_name] = Gauge(gauge_name, "Timestamp of the last successful update")
+
+        return self.gauges[gauge_name]
