@@ -19,6 +19,7 @@ from sqlmodel import Session
 
 from config import config
 from data_import.dataaccess.dataimport_repository import DataImportRepository
+from data_import.metrics import last_update_gauges
 from models import User, PlaidAccount
 
 
@@ -30,7 +31,6 @@ class PlaidService:
             api_key={"clientId": config.plaid_client_id, "secret": config.plaid_secret, "plaidVersion": "2020-09-14"}
         )
         self.client = plaid_api.PlaidApi(plaid.ApiClient(configuration))
-        self.gauges = {}
 
     def create_link_token(self):
         request = LinkTokenCreateRequest(
@@ -136,7 +136,8 @@ class PlaidService:
 
     def _get_gauge(self, plaid_account_id: int):
         gauge_name = "plaid_account_" + str(plaid_account_id) + "_last_successful_update"
-        if gauge_name not in self.gauges:
-            self.gauges[gauge_name] = Gauge(gauge_name, "Timestamp of the last successful update")
+        if gauge_name not in last_update_gauges:
+            print("Creating gauge " + gauge_name)
+            last_update_gauges[gauge_name] = Gauge(gauge_name, "Timestamp of the last successful update")
 
-        return self.gauges[gauge_name]
+        return last_update_gauges[gauge_name]
