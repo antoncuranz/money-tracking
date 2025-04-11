@@ -82,6 +82,9 @@ class Store:
     def get_all_posted_transactions(self, session: Session) -> List[Transaction]:
         return self.transaction_repository.get_all_posted_transactions(session)
 
+    def get_all_pending_transactions(self, session: Session) -> List[Transaction]:
+        return self.transaction_repository.get_all_pending_transactions(session)
+
     def get_balance_pending(self, session: Session) -> int:
        return self.transaction_repository.get_balance_pending(session)
     

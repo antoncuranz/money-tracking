@@ -55,6 +55,10 @@ class TransactionRepository:
         stmt = select(Transaction).where(Transaction.status == Transaction.Status.POSTED.value)
         return session.exec(stmt).all()
 
+    def get_all_pending_transactions(self, session: Session) -> List[Transaction]:
+        stmt = select(Transaction).where(Transaction.status == Transaction.Status.PENDING.value)
+        return session.exec(stmt).all()
+
     def get_balance_pending(self, session: Session) -> int:
         stmt = select(func.sum(Transaction.amount_usd)).where(
             (Transaction.status == Transaction.Status.PENDING.value) & Transaction.ignore.is_not(True)

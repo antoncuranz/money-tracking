@@ -1,10 +1,11 @@
+import datetime
+from decimal import Decimal
 from typing import Annotated
 
-from fastapi import Depends
-from sqlmodel import Session
-
 from exchangerate.business.exchangerate_service import ExchangeRateService
+from fastapi import Depends
 from models import Account, Transaction
+from sqlmodel import Session
 
 
 class ExchangeRateFacade:
@@ -16,4 +17,7 @@ class ExchangeRateFacade:
 
     def guess_amount_eur(self, session: Session, transaction: Transaction) -> int | None:
         return self.exchangerate_service.guess_amount_eur(session, transaction)
+
+    def get_exchange_rate(self, session: Session, date: datetime.date) -> Decimal:
+        return self.exchangerate_service.get_exchange_rate(session, date)
 

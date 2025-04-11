@@ -44,16 +44,19 @@ class ImportService:
             try:
                 self._import_account_transactions(session, account)
             except Exception as e:
-                print("Error importing transactions: " + str(e))
+                err_msg = "Error importing transactions: " + str(e)
+                print(err_msg)
+                self._send_notification(err_msg)
                 continue
 
             due_date = self.dates.get_next_due_date(account)
             last_statement_date = self.dates.get_statement_date_for_due_date(account, self.dates.get_last_due_date(account))
             statement_date = self.dates.get_statement_date_for_due_date(account, due_date)
             pending_payment = self.repository.get_pending_payment(session, account.id, due_date)
+            last_successful_update = account.plaid_account.last_successful_update
 
-            if statement_date + datetime.timedelta(days=1) < today < due_date and pending_payment is None:
-                print("Creating pending payment")
+            if pending_payment is None and last_successful_update > statement_date and today < due_date:
+                print("Creating pending payment (statement_date: {}; last_update: {})".format(statement_date, last_successful_update))
                 pending_payment = self.repository.create_pending_payment(session, account, statement_date, last_statement_date, due_date)
                 self._send_notification("Created pending Payment of {}. Please check amount_eur and exchange money.".format(pending_payment.amount_usd/100))
 

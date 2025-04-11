@@ -6,13 +6,16 @@ from sqlmodel import Session
 
 from core.dataaccess.store import Store
 from data_import.facade import DataImportFacade
-from models import Exchange, Credit, Transaction, Payment, engine, User
+from exchangerate.facade import ExchangeRateFacade
+from models import Exchange, Credit, Transaction, Payment, User
 
 
 class BalanceService:
     def __init__(self, store: Annotated[Store, Depends()],
+                 exchange_rate: Annotated[ExchangeRateFacade, Depends()],
                  data_import: Annotated[DataImportFacade, Depends()]):
         self.store = store
+        self.exchange_rate = exchange_rate
         self.data_import = data_import
         
     def calc_balance_exchanged(self, session: Session) -> int:
@@ -146,3 +149,29 @@ class BalanceService:
 
     def get_fees_and_risk_eur(self, session: Session) -> int:
         return self.store.get_fees_and_risk_eur(session)
+
+    def get_avg_exchange_rate(self, session: Session) -> int:
+        # TODO: (don't) consider already exchanged sum
+
+        transactions = self.store.get_all_posted_transactions(session) + self.store.get_all_pending_transactions(session)
+
+        amount_usd_sum = 0
+        exchange_rate_weighted_sum = Decimal(0)
+
+        for tx in transactions:
+            if tx.amount_eur == 0:
+                continue
+            elif tx.amount_eur is not None:
+                exchange_rate = Decimal(tx.amount_usd) / Decimal(tx.amount_eur)
+            else:
+                exchange_rate = self.exchange_rate.get_exchange_rate(session, tx.date)
+
+            if not exchange_rate:
+                continue
+
+            amount_usd_sum += tx.amount_usd
+            exchange_rate_weighted_sum += tx.amount_usd * exchange_rate
+
+        print("amount_usd_sum: " + str(amount_usd_sum))
+
+        return exchange_rate_weighted_sum / amount_usd_sum

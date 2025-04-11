@@ -1,6 +1,6 @@
 import datetime
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import Depends
 from sqlmodel import Session
@@ -21,16 +21,16 @@ class ExchangeRateService:
         
     def fetch_exchange_rates(self, session: Session, account: Account, source: ExchangeRate.Source = ExchangeRate.Source.MASTERCARD):
         transactions = self.repository.get_transactions_without_eur_amount(session, account.id)
-        [self._get_exchange_rate(session, date, source) for date in set([tx.date for tx in transactions])]
+        [self.get_exchange_rate(session, date, source) for date in set([tx.date for tx in transactions])]
 
     def guess_amount_eur(self, session: Session, transaction: Transaction) -> int | None:
         try:
-            exchange_rate = self._get_exchange_rate(session, transaction.date)
+            exchange_rate = self.get_exchange_rate(session, transaction.date)
             return int(transaction.amount_usd / exchange_rate)
         except:
             return None
 
-    def _get_exchange_rate(self, session: Session, date: datetime.date, source: ExchangeRate.Source = ExchangeRate.Source.MASTERCARD) -> Decimal:
+    def get_exchange_rate(self, session: Session, date: datetime.date, source: ExchangeRate.Source = ExchangeRate.Source.MASTERCARD) -> Optional[Decimal]:
         er = self.repository.get_exchange_rate(session, date, source)
         if not er:
             if source == ExchangeRate.Source.MASTERCARD:

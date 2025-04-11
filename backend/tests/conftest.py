@@ -70,4 +70,4 @@ def client_fixture(session: Session):
 
 @pytest.fixture()
 def balance_service():
-    return BalanceService(Store(AccountRepository(), TransactionRepository(), CreditRepository(), PaymentRepository(), ExchangeRepository()), None)
+    return BalanceService(Store(AccountRepository(), TransactionRepository(), CreditRepository(), PaymentRepository(), ExchangeRepository()), None, None)

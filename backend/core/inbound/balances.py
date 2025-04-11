@@ -20,6 +20,7 @@ def get_balances(_: Annotated[None, Depends(require_super_user)],
     exchanged = balance_service.calc_balance_exchanged(session)
     total = posted + pending - credits - exchanged
     virtual_account = balance_service.get_virtual_account_balance(session)
+    avg_exchange_rate = balance_service.get_avg_exchange_rate(session)
 
     return {
         "total": total,
@@ -27,7 +28,8 @@ def get_balances(_: Annotated[None, Depends(require_super_user)],
         "pending": pending,
         "credits": credits,
         "exchanged": exchanged,
-        "virtual_account": virtual_account
+        "virtual_account": virtual_account,
+        "avg_exchange_rate": avg_exchange_rate
     }
 
 @router.get("/accounts")
