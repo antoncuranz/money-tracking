@@ -80,10 +80,9 @@ class Account(SQLModel, table=True):
     target_spend: int | None
 
 
-class Payment(SQLModel, table=True):
+class PaymentBase(SQLModel):
     id: int | None = Field(default=None, primary_key=True)
     account_id: int = Field(foreign_key="account.id")
-    account: Account = Relationship()
     import_id: str | None = Field(unique=True)
     actual_id: str | None
     date: datetime.date = datetime.date.today
@@ -91,10 +90,7 @@ class Payment(SQLModel, table=True):
     description: str
     category: str | None
     amount_usd: int
-    amount_eur: int | None
     status: int
-    exchanges: List["ExchangePayment"] = Relationship(cascade_delete=True)
-    transactions: List["Transaction"] = Relationship()
 
     @property
     def status_enum(self):
@@ -112,6 +108,16 @@ class Payment(SQLModel, table=True):
         POSTED = 2
         PROCESSED = 3
 
+class Payment(PaymentBase, table=True):
+    amount_eur: int | None
+    account: Account = Relationship()
+    exchanges: List["ExchangePayment"] = Relationship(cascade_delete=True)
+    transactions: List["Transaction"] = Relationship()
+
+class PaymentWithAmounts(PaymentBase):
+    amount_eur_with_fx: int | None
+    amount_eur_without_fx: int | None
+    exchanges: List["ExchangePayment"]
 
 class Exchange(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)

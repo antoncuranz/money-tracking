@@ -44,16 +44,25 @@ const PaymentRow = ({payment, account, selectable, onClick, onProcessPaymentClic
   return (
     <TableRow onClick={onClick} className={getClasses()} style={{ borderLeftStyle: payment.status == 1 ? "dashed" : "solid" }} date={payment.date} remoteName={payment.counterparty} purpose={payment.description} account={account}>
       <span className="flex items-center">
-        <span className="text-sm w-20 text-right">{formatAmount(payment.amount_eur)} €</span>
+        <span className="text-sm w-20 text-right">
+          {payment.status == 1 ?
+            <>
+              {formatAmount(payment.amount_eur_without_fx)} €<br/>
+              <span className="text-yellow-600">w/o fx</span>
+            </>
+            :
+            <>{formatAmount(payment.amount_eur_with_fx)} €</>
+          }
+        </span>
         <Button variant="outline" size="icon" className="ml-2" disabled={isProcessButtonDisabled()}
                 onClick={onProcessPaymentClickLocal}>
           {payment.status == 3 ?
             <Check className="h-4 w-4"/>
-          :
-            (inProgress ?
-              <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
             :
-              <DraftingCompass className="h-4 w-4"/>
+            (inProgress ?
+                <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
+                :
+                <DraftingCompass className="h-4 w-4"/>
             )
           }
         </Button>

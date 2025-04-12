@@ -1,11 +1,12 @@
+import datetime
 from typing import Annotated, List
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import SQLModel, Session
-import datetime
 
+from auth import get_current_user
 from core.business.payment_service import PaymentService
 from models import User, get_session
-from auth import get_current_user
 
 router = APIRouter(prefix="/api/payments", tags=["Payments"])
 
@@ -24,7 +25,8 @@ class PaymentTO(SQLModel):
     description: str
     category: str | None
     amount_usd: int
-    amount_eur: int | None
+    amount_eur_with_fx: int | None
+    amount_eur_without_fx: int | None
     status: int
     exchanges: List[ExchangePaymentTO]
 

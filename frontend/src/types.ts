@@ -95,7 +95,8 @@ export type Payment = {
   description: string;
   category: string;
   amount_usd: number;
-  amount_eur: number;
+  amount_eur_with_fx: number;
+  amount_eur_without_fx: number | null;
   status: number;
   exchanges: ExchangePayment[];
 };

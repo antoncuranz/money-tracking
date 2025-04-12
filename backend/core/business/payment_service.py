@@ -3,12 +3,13 @@ from typing import List, Annotated
 
 from fastapi import Depends, HTTPException
 from sqlmodel import Session
+from typing_extensions import Optional
 
 from core.business.balance_service import BalanceService
 from core.business.exchange_service import ExchangeService
 from core.dataaccess.store import Store
 from data_export.facade import DataExportFacade
-from models import Transaction, ExchangePayment, Payment, User
+from models import Transaction, ExchangePayment, Payment, User, PaymentWithAmounts
 
 
 class PaymentService:
@@ -22,7 +23,22 @@ class PaymentService:
         self.data_export = data_export
     
     def get_payments(self, session: Session, user: User, account_id: int, processed: bool | None = None):
-        return self.store.get_payments(session, user, account_id, processed)
+        payments = self.store.get_payments(session, user, account_id, processed)
+
+        def map_payment(payment: Payment):
+            return PaymentWithAmounts.model_validate(payment, update={
+                "amount_eur_with_fx": payment.amount_eur,
+                "amount_eur_without_fx": self._calc_amount_eur_without_fx(session, payment)
+            })
+
+        return [map_payment(payment) for payment in payments]
+
+    def _calc_amount_eur_without_fx(self, session: Session, payment: Payment) -> Optional[int]:
+        if payment.status == Payment.Status.PENDING.value:
+            guessed_transactions = self._guess_transactions_to_process(session, payment)
+            return sum(tx.amount_eur for tx in guessed_transactions)
+
+        return sum(tx.amount_eur for tx in payment.transactions)
 
     def process_payment(self, session: Session, super_user: User, payment_id: int, transactions=None):
         if not super_user.super_user:
