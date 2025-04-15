@@ -7,6 +7,7 @@ import requests
 actual_base_url = os.getenv("ACTUAL_BASE_URL", "http://localhost:5007")
 actual_api_key = os.getenv("ACTUAL_API_KEY")
 actual_sync_id = os.getenv("ACTUAL_SYNC_ID")
+actual_encryption_passwd = os.getenv("ACTUAL_ENCRYPTION_PASSWD")
 actual_account_id = os.getenv("ACTUAL_ACCOUNT_ID")
 
 testmail_api_key = os.getenv("TESTMAIL_API_KEY")
@@ -20,6 +21,7 @@ def import_transaction(transaction):
     url = f"{actual_base_url}/v1/budgets/{actual_sync_id}/accounts/{actual_account_id}/transactions/import"
     headers = {
         'x-api-key': actual_api_key,
+        "budget-encryption-password": actual_encryption_passwd,
         'Content-Type': 'application/json',
     }
     payload = {
