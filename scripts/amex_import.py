@@ -1,7 +1,8 @@
 import os
-import sys
-import requests
 import re
+import sys
+
+import requests
 
 actual_base_url = os.getenv("ACTUAL_BASE_URL", "http://localhost:5007")
 actual_api_key = os.getenv("ACTUAL_API_KEY")
@@ -12,7 +13,7 @@ testmail_api_key = os.getenv("TESTMAIL_API_KEY")
 testmail_namespace = os.getenv("TESTMAIL_NAMESPACE")
 
 url = f"https://api.testmail.app/api/json?apikey={testmail_api_key}&namespace={testmail_namespace}"
-regex = r"<b>\s*(\d+,\d\d)\s*EUR<\/b>.*?<b>(\d\d)\.(\d\d)\.(\d\d\d\d)<\/b>.*?<b>([^>]*)<\/b>"
+regex = r"<div style=\"[^\"]*\">\s*(\d\d)\.(\d\d)\.(\d\d\d\d)([^<]*)<\/div>.*<div style=\"[^\"]*\">\s*€(\d+,\d\d)\s*<\/div>"
 
 
 def import_transaction(transaction):
@@ -49,9 +50,9 @@ for mail in response["emails"]:
         print(f"Error matching regex for mail {imported_id}!")
         sys.exit(1)
 
-    amount = int(match.group(1).replace(",", ""))
-    date = f"{match.group(4)}-{match.group(3)}-{match.group(2)}"
-    description = match.group(5)
+    amount = int(match.group(5).replace(",", ""))
+    date = f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
+    description = " ".join(line.strip() for line in match.group(4).splitlines()).strip()
 
     print("ID: " + imported_id)
     print("Amount: " + str(amount))
