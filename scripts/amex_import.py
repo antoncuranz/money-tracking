@@ -50,7 +50,11 @@ for mail in response["emails"]:
     match = re.search(regex, html, re.DOTALL)
     if not match:
         print(f"Error matching regex for mail {imported_id}!")
-        sys.exit(1)
+
+        if "Benachrichtigung über einen neuen Kartenumsatz" in mail["subject"]:
+            sys.exit(1)
+        else:
+            continue  # might be a test mail
 
     amount = int(match.group(5).replace(",", ""))
     date = f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
