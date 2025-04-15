@@ -14,7 +14,7 @@ testmail_api_key = os.getenv("TESTMAIL_API_KEY")
 testmail_namespace = os.getenv("TESTMAIL_NAMESPACE")
 
 url = f"https://api.testmail.app/api/json?apikey={testmail_api_key}&namespace={testmail_namespace}"
-regex = r"<div style=\"[^\"]*\">\s*(\d\d)\.(\d\d)\.(\d\d\d\d)([^<]*)<\/div>.*<div style=\"[^\"]*\">\s*€(\d+,\d\d)\s*<\/div>"
+regex = r"<div style=\"[^\"]*\">\s*(\d\d)\.(\d\d)\.(\d\d\d\d)([^<]*)<\/div>.*<div style=\"[^\"]*\">\s*€(\d+(?:\.\d{3}),\d\d)\s*<\/div>"
 
 
 def import_transaction(transaction):
@@ -56,7 +56,7 @@ for mail in response["emails"]:
         else:
             continue  # might be a test mail
 
-    amount = int(match.group(5).replace(",", ""))
+    amount = int(match.group(5).replace(",", "").replace(".", ""))
     date = f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
     description = " ".join(line.strip() for line in match.group(4).splitlines()).strip()
 
