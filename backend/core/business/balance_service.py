@@ -152,6 +152,7 @@ class BalanceService:
 
     def get_avg_exchange_rate(self, session: Session) -> Decimal:
         transactions = self.store.get_all_posted_transactions(session) + self.store.get_all_pending_transactions(session)
+        transactions.sort(key=lambda tx: tx.date)
 
         already_exchanged_usd = 0
         for exchange in self.store.get_exchanges(session, True):
