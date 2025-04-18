@@ -65,6 +65,7 @@ export type Transaction = {
   fees_and_risk_eur: number | null;
   credits: CreditTransaction[];
   ignore: boolean | null;
+  exchange_rate: number | null;
 };
 
 export type Exchange = {

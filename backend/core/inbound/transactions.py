@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, status
@@ -32,6 +33,7 @@ class TransactionTO(SQLModel):
     ignore: bool | None
     guessed_amount_eur: int | None
     credits: List[CreditTransactionTO]
+    exchange_rate: Decimal | None
 
 @router.get("", response_model=List[TransactionTO])
 def get_transactions(user: Annotated[User, Depends(get_current_user)],

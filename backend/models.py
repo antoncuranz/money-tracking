@@ -182,6 +182,7 @@ class Transaction(TransactionBase, table=True):
 class TransactionWithGuessedAmount(TransactionBase):
     guessed_amount_eur: int | None
     credits: List["CreditTransaction"]
+    exchange_rate: Decimal | None
     
 
 class Credit(SQLModel, table=True):

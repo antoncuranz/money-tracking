@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Annotated, List
 
 from fastapi import Depends, HTTPException
@@ -6,7 +7,7 @@ from sqlmodel import Session
 from core.dataaccess.store import Store
 from data_export.facade import DataExportFacade
 from exchangerate.facade import ExchangeRateFacade
-from models import Transaction, User, engine, TransactionWithGuessedAmount
+from models import Transaction, User, TransactionWithGuessedAmount
 
 
 class TransactionService:
@@ -21,8 +22,14 @@ class TransactionService:
         transactions = self.store.get_transactions(session, user, account_id, paid)
 
         def map_transaction(transaction: Transaction):
+            guessed_amount_eur = self.exchangerate.guess_amount_eur(session, transaction)
+            exchange_rate = transaction.amount_eur or guessed_amount_eur
+            if exchange_rate is not None:
+                exchange_rate = (transaction.amount_usd / Decimal(exchange_rate)).quantize(Decimal("0.00000001"))
+
             return TransactionWithGuessedAmount.model_validate(transaction, update={
-                "guessed_amount_eur": self.exchangerate.guess_amount_eur(session, transaction)
+                "guessed_amount_eur": guessed_amount_eur,
+                "exchange_rate": exchange_rate
             })
 
         return [map_transaction(tx) for tx in transactions]

@@ -4,6 +4,7 @@ import {Account, Transaction} from "@/types.ts";
 import AmountInput from "@/components/dialog/AmountInput.tsx";
 import TableRow from "@/components/table/TableRow.tsx";
 import {useStore} from "@/store.ts";
+import {useToast} from "@/components/ui/use-toast.ts";
 
 export default function TransactionRow({
   transaction, account, readonly, selectable, onClick
@@ -16,6 +17,7 @@ export default function TransactionRow({
 }) {
 
   const { putTransactionAmount, clearTransactionAmount } = useStore()
+  const { toast } = useToast();
 
   function isCreditApplied() {
     return  transaction.credits != null && transaction.credits.length > 0
@@ -37,6 +39,12 @@ export default function TransactionRow({
     return classes.join(" ")
   }
 
+  function toastExchangeRate() {
+    toast({
+      title: "Exchange rate: " + transaction.exchange_rate?.toString()
+    })
+  }
+
   function largeDeviation(transaction: Transaction, value: number|null) {
     if (!transaction.guessed_amount_eur || value == null)
       return false
@@ -55,7 +63,7 @@ export default function TransactionRow({
   return (
     <TableRow onClick={onClick} className={getClasses()} style={{ borderLeftStyle: transaction.status == 1 ? "dashed" : "solid" }} account={account} date={transaction.date} remoteName={transaction.counterparty} purpose={transaction.description}>
       <AmountInput className="w-24 placeholder:opacity-50" amount={transaction.amount_eur} placeholder={formatAmount(transaction.guessed_amount_eur)} updateAmount={amount => updateTransactionAmount(transaction, amount)} disabled={readonly} warnPredicate={amount => largeDeviation(transaction, amount)}/>
-      <span className="price text-sm">
+      <span className="price text-sm" onClick={toastExchangeRate}>
         { isCreditApplied() ?
           <>
             <span className="line-through mr-1">{formatAmount(transaction.amount_usd)}</span>
