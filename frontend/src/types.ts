@@ -108,6 +108,7 @@ export type Balances = {
   credits: number;
   exchanged: number;
   virtual_account: number;
+  avg_exchange_rate: number;
 };
 
 export type AccountBalances = { [id: string] : AccountBalance };

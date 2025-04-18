@@ -6,6 +6,7 @@ import VirtualAccountBalanceWidget from "@/components/widgets/VirtualAccountBala
 import ExchangeAmountWidget from "@/components/widgets/ExchangeAmountWidget.tsx";
 import SkeletonWidget from "@/components/widgets/SkeletonWidget.tsx";
 import {ErrorBoundary} from "react-error-boundary";
+import AverageExchangeRateWidget from "@/components/widgets/AverageExchangeRateWidget.tsx";
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +21,9 @@ export default async function Page() {
           </Suspense>
           <Suspense fallback={<SkeletonWidget/>}>
             <VirtualAccountBalanceWidget/>
+          </Suspense>
+          <Suspense fallback={<SkeletonWidget/>}>
+            <AverageExchangeRateWidget/>
           </Suspense>
         </div>
         <div className="flex-auto min-w-0">

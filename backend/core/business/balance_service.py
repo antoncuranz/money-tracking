@@ -150,10 +150,12 @@ class BalanceService:
     def get_fees_and_risk_eur(self, session: Session) -> int:
         return self.store.get_fees_and_risk_eur(session)
 
-    def get_avg_exchange_rate(self, session: Session) -> int:
-        # TODO: (don't) consider already exchanged sum
-
+    def get_avg_exchange_rate(self, session: Session) -> Decimal:
         transactions = self.store.get_all_posted_transactions(session) + self.store.get_all_pending_transactions(session)
+
+        already_exchanged_usd = 0
+        for exchange in self.store.get_exchanges(session, True):
+            already_exchanged_usd += self.calc_exchange_remaining(session, exchange)
 
         amount_usd_sum = 0
         exchange_rate_weighted_sum = Decimal(0)
@@ -169,9 +171,14 @@ class BalanceService:
             if not exchange_rate:
                 continue
 
-            amount_usd_sum += tx.amount_usd
-            exchange_rate_weighted_sum += tx.amount_usd * exchange_rate
+            remaining = self.calc_transaction_remaining(session, tx)
+            minimum = min(already_exchanged_usd, remaining)
+            already_exchanged_usd -= minimum
+            remaining -= minimum
+
+            amount_usd_sum += remaining
+            exchange_rate_weighted_sum += remaining * exchange_rate
 
         print("amount_usd_sum: " + str(amount_usd_sum))
 
-        return exchange_rate_weighted_sum / amount_usd_sum
+        return (exchange_rate_weighted_sum / amount_usd_sum).quantize(Decimal("0.00000001"))
