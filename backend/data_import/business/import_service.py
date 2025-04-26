@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, datetime, time, timedelta
 from typing import Annotated
 
 import requests
@@ -36,7 +36,7 @@ class ImportService:
         session.commit()
 
     def import_transactions_all_accounts(self, session: Session):
-        today = datetime.date.today()
+        today = date.today()
 
         for account in self.repository.get_all_accounts(session):
             print("Importing transactions for Account {} {} ({})".format(account.institution, account.name, str(account.id)))
@@ -55,7 +55,7 @@ class ImportService:
             pending_payment = self.repository.get_pending_payment(session, account.id, due_date)
             last_successful_update = account.plaid_account.last_successful_update
 
-            if pending_payment is None and last_successful_update > statement_date and today < due_date:
+            if pending_payment is None and last_successful_update > datetime.combine(statement_date, time(0, 0)) and today < due_date:
                 print("Creating pending payment (statement_date: {}; last_update: {})".format(statement_date, last_successful_update))
                 pending_payment = self.repository.create_pending_payment(session, account, statement_date, last_statement_date, due_date)
                 self._send_notification("Created pending Payment of {}. Please check amount_eur and exchange money.".format(pending_payment.amount_usd/100))
@@ -88,8 +88,8 @@ class ImportService:
             self.data_export.export_transactions(session, account.user, account.id)
 
     def _get_pending_payments_in_days(self, session: Session, bank_account: BankAccount, days: int):
-        today = datetime.date.today()
-        end = today + datetime.timedelta(days=days)
+        today = date.today()
+        end = today + timedelta(days=days)
         return self.repository.get_pending_payments_between(session, bank_account.id, today, end)
 
     def _send_notification(self, msg: str, priority=0):
