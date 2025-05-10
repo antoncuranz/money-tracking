@@ -35,8 +35,12 @@ class PaymentService:
 
     def _calc_amount_eur_without_fx(self, session: Session, payment: Payment) -> Optional[int]:
         if payment.status == Payment.Status.PENDING.value:
-            guessed_transactions = self._guess_transactions_to_process(session, payment)
-            return sum(tx.amount_eur for tx in guessed_transactions)
+            try:
+                guessed_transactions = self._guess_transactions_to_process(session, payment)
+                return sum(tx.amount_eur for tx in guessed_transactions)
+            except:
+                print("Unable to calculate amount_eur (probably some tx.amount_eur is missing)")
+                return 0
 
         return sum(tx.amount_eur for tx in payment.transactions)
 
