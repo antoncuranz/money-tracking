@@ -49,6 +49,21 @@ const createTransactionAmountSlice: StateCreator<
   putTransactionAmount: (id, amount) => set((state) => ({ changedTransactionAmounts: { ...state.changedTransactionAmounts, [id]: amount } })),
 })
 
+type FilterSlice = {
+  filterMissingAmountEur: boolean;
+  setFilterMissingAmountEur: (enabled: boolean) => void;
+};
+
+const createFilterSlice: StateCreator<
+  FilterSlice,
+  [],
+  [],
+  FilterSlice
+> = (set) => ({
+  filterMissingAmountEur: false,
+  setFilterMissingAmountEur: (enabled) => set(() => ({ filterMissingAmountEur: enabled })),
+})
+
 type PrivacySlice = {
   privacyMode: boolean;
   togglePrivacyMode: () => void,
@@ -64,8 +79,9 @@ const createPrivacySlice: StateCreator<
   togglePrivacyMode: () => set(state => ({ privacyMode: !state.privacyMode })),
 })
 
-export const useStore = create<SelectionSlice & TransactionAmountSlice & PrivacySlice>()((...a) => ({
+export const useStore = create<SelectionSlice & TransactionAmountSlice & FilterSlice & PrivacySlice>()((...a) => ({
   ...createSelectionSlice(...a),
   ...createTransactionAmountSlice(...a),
   ...createPrivacySlice(...a),
+  ...createFilterSlice(...a),
 }))

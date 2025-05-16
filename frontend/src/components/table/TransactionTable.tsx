@@ -16,12 +16,14 @@ const TransactionTable = ({transactions, accounts}: Props) => {
   const [transactionSelection, setTransactionSelection] = useState<Transaction|null>()
   const [ctDialogOpen, setCtDialogOpen] = useState(false)
 
-  const { currentAccount, creditSelection } = useStore()
+  const { currentAccount, creditSelection, filterMissingAmountEur } = useStore()
 
   const router = useRouter();
 
   function getFilteredTransactions() {
-    return transactions.filter(tx => currentAccount == null || tx.account_id == currentAccount.id)
+    return transactions.filter(tx =>
+      (currentAccount == null || tx.account_id == currentAccount.id) && (!filterMissingAmountEur || tx.amount_eur == null)
+    )
   }
 
   function openCreditTransactionDialog(tx: Transaction) {

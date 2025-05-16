@@ -38,9 +38,9 @@ class PaymentService:
             try:
                 guessed_transactions = self._guess_transactions_to_process(session, payment)
                 return sum(tx.amount_eur for tx in guessed_transactions)
-            except:
-                print("Unable to calculate amount_eur (probably some tx.amount_eur is missing)")
-                return 0
+            except Exception as e:
+                print("Unable to calculate amount_eur (probably some tx.amount_eur is missing): " + str(e))
+                return None
 
         return sum(tx.amount_eur for tx in payment.transactions)
 
