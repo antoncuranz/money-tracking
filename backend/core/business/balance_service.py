@@ -1,8 +1,7 @@
 from decimal import Decimal
-from typing import Annotated
-
 from fastapi import Depends
 from sqlmodel import Session
+from typing import Annotated
 
 from core.dataaccess.store import Store
 from data_import.facade import DataImportFacade
@@ -182,4 +181,7 @@ class BalanceService:
 
         print("amount_usd_sum: " + str(amount_usd_sum))
 
-        return (exchange_rate_weighted_sum / amount_usd_sum).quantize(Decimal("0.00000001"))
+        if amount_usd_sum > 0:
+            return (exchange_rate_weighted_sum / amount_usd_sum).quantize(Decimal("0.00000001"))
+        else:
+            return Decimal(0)
