@@ -1,6 +1,5 @@
 import requests
 
-from models import ExchangeRate
 from config import config
 
 
@@ -21,16 +20,16 @@ class ExchangeratesApiIoClient(IExchangeRateClient):
 
 
 class MastercardClient(IExchangeRateClient):
-    _URL = "https://www.mastercard.de/settlement/currencyrate/conversion-rate"
+    _URL = "https://www.mastercard.com/marketingservices/public/mccom-services/currency-conversions/conversion-rates"
 
     def get_conversion_rate(self, date):
         print("Retrieving Conversion Rate for date " + str(date))
         params = {
-            "fxDate": str(date),
-            "transCurr": "EUR",
-            "crdhldBillCurr": "USD",
-            "bankFee": 0,
-            "transAmt": 100
+            "exchange_date": str(date),
+            "transaction_currency": "EUR",
+            "cardholder_billing_currency": "USD",
+            "bank_fee": 0,
+            "transaction_amount": 100
         }
 
         headers = {
