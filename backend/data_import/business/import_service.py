@@ -55,7 +55,7 @@ class ImportService:
             pending_payment = self.repository.get_pending_payment(session, account.id, due_date)
             last_successful_update = account.plaid_account.last_successful_update
 
-            if pending_payment is None and last_successful_update > datetime.combine(statement_date, time(0, 0)) and today < due_date:
+            if pending_payment is None and last_successful_update > datetime.combine(statement_date, time(0, 0)) + timedelta(days=1) and today < due_date:
                 print("Creating pending payment (statement_date: {}; last_update: {})".format(statement_date, last_successful_update))
                 pending_payment = self.repository.create_pending_payment(session, account, statement_date, last_statement_date, due_date)
                 self._send_notification("Created pending Payment of {}. Please check amount_eur and exchange money.".format(pending_payment.amount_usd/100))
