@@ -97,5 +97,6 @@ class ImportService:
             "token": config.pushover_token,
             "user": config.pushover_user,
             "message": msg,
-            "priority": priority
+            "priority": priority,
+            "device": "iphone"
         })

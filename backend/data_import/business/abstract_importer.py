@@ -1,10 +1,10 @@
 import abc
+from abc import ABC
 from typing import Annotated
 
 import requests
 from fastapi import Depends
 from sqlmodel import Session
-from abc import ABC
 
 from config import config
 from data_import.dataaccess.dataimport_repository import DataImportRepository
@@ -69,5 +69,6 @@ class AbstractImporter(ABC):
             "token": config.pushover_token,
             "user": config.pushover_user,
             "message": msg,
-            "priority": priority
+            "priority": priority,
+            "device": "iphone"
         })
