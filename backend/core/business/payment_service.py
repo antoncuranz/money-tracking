@@ -44,7 +44,7 @@ class PaymentService:
 
         return sum(tx.amount_eur for tx in payment.transactions)
 
-    def process_payment(self, session: Session, super_user: User, payment_id: int, transactions=None):
+    def process_payment(self, session: Session, super_user: User, payment_id: int, transaction_ids=None):
         if not super_user.super_user:
             raise HTTPException(status_code=403)
         
@@ -52,7 +52,9 @@ class PaymentService:
         if not payment:
             raise HTTPException(status_code=404)
 
-        if not transactions:
+        if transaction_ids:
+            transactions = [self.store.get_transaction(session, super_user, tx_id) for tx_id in transaction_ids]
+        else:
             transactions = self._guess_transactions_to_process(session, payment)
         
         self._process_payment(session, payment, transactions)

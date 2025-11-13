@@ -24,7 +24,7 @@ class TransactionService:
         def map_transaction(transaction: Transaction):
             guessed_amount_eur = self.exchangerate.guess_amount_eur(session, transaction)
             exchange_rate = transaction.amount_eur or guessed_amount_eur
-            if exchange_rate is not None:
+            if exchange_rate is not None and exchange_rate != 0:
                 exchange_rate = (transaction.amount_usd / Decimal(exchange_rate)).quantize(Decimal("0.00000001"))
 
             return TransactionWithGuessedAmount.model_validate(transaction, update={
