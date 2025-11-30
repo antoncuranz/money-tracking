@@ -33,7 +33,7 @@ class MastercardClient(IExchangeRateClient):
         }
 
         headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:136.0) Gecko/20100101 Firefox/136.0",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:145.0) Gecko/20100101 Firefox/145.0",
             "Accept-Encoding": "gzip, deflate, br, zstd"
         }
 
