@@ -1,4 +1,4 @@
-import {LoaderCircle, Telescope, Trash2} from "lucide-react";
+import {Hammer, LoaderCircle, Telescope, Trash2} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
 import {PlaidConnection} from "@/types.ts";
 import React, {useState} from "react";
@@ -6,11 +6,13 @@ import {titlecase} from "@/components/util.ts";
 import {useUser} from "@/components/provider/UserProvider.tsx";
 
 export default function ConnectionRow({
-  connection, deleteConnection, discoverAccounts
+  connection, deleteConnection, discoverAccounts, selected, onSelectUpdate
 }: {
   connection: PlaidConnection,
   deleteConnection: () => void,
   discoverAccounts: () => void,
+  selected: boolean,
+  onSelectUpdate: () => void,
 }) {
   const [discoverInProgress, setDiscoverInProgress] = useState(false)
   const [deletionInProgress, setDeletionInProgress] = useState(false)
@@ -48,6 +50,9 @@ export default function ConnectionRow({
             :
               <Telescope className="h-4 w-4" />
             }
+          </Button>
+          <Button variant={selected ? "default" : "outline"} size="icon" className="ml-2" onClick={onSelectUpdate} disabled={discoverInProgress || deletionInProgress}>
+            <Hammer className="h-4 w-4"/>
           </Button>
           <Button variant="outline" size="icon" className="ml-2" onClick={privateDeleteConnection} disabled={discoverInProgress || deletionInProgress}>
             {deletionInProgress ?

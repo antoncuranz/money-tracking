@@ -2,7 +2,7 @@ import {Card as InternalCard, CardContent, CardHeader, CardTitle} from "@/compon
 import {Separator} from "@/components/ui/separator.tsx";
 import React from "react";
 
-export default async function Card({
+export default function Card({
   title,
   children,
   headerSlot

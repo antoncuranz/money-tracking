@@ -1,22 +1,26 @@
 "use client"
 
 import {Button} from "@/components/ui/button.tsx";
-import {LinkIcon, LoaderCircle} from "lucide-react";
+import {Hammer, LinkIcon, LoaderCircle} from "lucide-react";
 import React, {useCallback, useEffect, useState} from "react";
 import {usePlaidLink} from "react-plaid-link";
 import {useRouter} from "next/navigation";
 
-const PlaidLinkButton = () => {
+const PlaidLinkButton = ({updateId, onDone}: {
+  updateId?: number,
+  onDone?: () => void
+}) => {
   const [inProgress, setInProgress] = useState(false)
   const [token, setToken] = useState<string|null>(null);
   
   const router = useRouter();
 
   const createLinkToken = useCallback(async () => {
-    const response = await fetch("/api/import/plaid/create_link_token", {method: "POST"});
+    const url = "/api/import/plaid/create_link_token" + (updateId ? `?update_id=${updateId}` : "");
+    const response = await fetch(url, {method: "POST"});
     const data = await response.json();
     setToken(data.link_token);
-  }, []);
+  }, [updateId]);
   
   useEffect(() => {
     if (token == null) {
@@ -26,13 +30,16 @@ const PlaidLinkButton = () => {
 
   const onSuccess = useCallback(async (publicToken: string) => {
     setInProgress(true);
-    await fetch("/api/import/plaid/exchange_token?public_token=" + publicToken, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"}
-    });
+    if (!updateId) {
+      await fetch("/api/import/plaid/exchange_token?public_token=" + publicToken, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"}
+      });
+    }
     setInProgress(false)
+    onDone?.()
     router.refresh()
-  }, []);
+  }, [updateId, onDone, router]);
   
   const onExit = useCallback(() => {
     setInProgress(false)
@@ -40,15 +47,17 @@ const PlaidLinkButton = () => {
 
   const { open, ready } = usePlaidLink({token, onSuccess, onExit});
   
+  const isUpdate = !!updateId;
+
   return (
     <Button size="sm" className="h-8 gap-1 mt-0 self-end" onClick={() => {setInProgress(true); open()}} disabled={!ready || inProgress}>
       { inProgress ?
         <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
       :
-        <LinkIcon className="h-3.5 w-3.5"/>
+        isUpdate ? <Hammer className="h-3.5 w-3.5"/> : <LinkIcon className="h-3.5 w-3.5"/>
       }
       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-      Plaid Link
+      {isUpdate ? "Repair" : "Plaid Link"}
       </span>
     </Button>
   )

@@ -16,9 +16,12 @@ class PlaidLinkTokenTO(SQLModel):
     link_token: str
 
 @router.post("/create_link_token", response_model=PlaidLinkTokenTO)
-def create_link_token(plaid_service: Annotated[PlaidService, Depends()]):
+def create_link_token(user: Annotated[User, Depends(get_current_user)],
+                      session: Annotated[Session, Depends(get_session)],
+                      plaid_service: Annotated[PlaidService, Depends()],
+                      update_id: int | None = None):
     try:
-        return plaid_service.create_link_token()
+        return plaid_service.create_link_token(session, user, update_id)
     except plaid.ApiException as e:
         print(e)
         return json.loads(e.body)

@@ -32,16 +32,22 @@ class PlaidService:
         )
         self.client = plaid_api.PlaidApi(plaid.ApiClient(configuration))
 
-    def create_link_token(self):
-        request = LinkTokenCreateRequest(
-            products=[Products("transactions")],
+    def create_link_token(self, session: Session, user: User, update_id: int | None = None):
+        params = dict(
             client_name="Plaid Quickstart",
             country_codes=[CountryCode("US")],
             language="en",
             user=LinkTokenCreateRequestUser(client_user_id=str(time.time()))
         )
+        if update_id:
+            connection = self.repository.get_plaid_connection(session, user, update_id)
+            if not connection:
+                raise HTTPException(404)
+            params["access_token"] = connection.plaid_access_token
+        else:
+            params["products"] = [Products("transactions")]
 
-        response = self.client.link_token_create(request)
+        response = self.client.link_token_create(LinkTokenCreateRequest(**params))
         return response.to_dict()
     
     def exchange_token(self, session: Session, user: User, public_token: str):

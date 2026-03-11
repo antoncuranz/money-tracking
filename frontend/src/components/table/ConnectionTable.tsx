@@ -5,8 +5,10 @@ import ConnectionRow from "@/components/table/ConnectionRow.tsx";
 import {useToast} from "@/components/ui/use-toast.ts";
 import {useRouter} from "next/navigation";
 
-export default function ConnectionTable({connections}: {
+export default function ConnectionTable({connections, selectedUpdateId, onSelectUpdate}: {
   connections: PlaidConnection[],
+  selectedUpdateId: number | null,
+  onSelectUpdate: (id: number | null) => void,
 }) {
   const { toast } = useToast();
   const router = useRouter();
@@ -41,6 +43,8 @@ export default function ConnectionTable({connections}: {
         <ConnectionRow key={connection.id} connection={connection}
                        deleteConnection={() => deleteConnection(connection.id)}
                        discoverAccounts={() => discoverAccounts(connection.id)}
+                       selected={selectedUpdateId === connection.id}
+                       onSelectUpdate={() => onSelectUpdate(selectedUpdateId === connection.id ? null : connection.id)}
         />
       )}
     </div>
