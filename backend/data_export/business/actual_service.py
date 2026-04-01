@@ -26,6 +26,7 @@ class ActualService:
 
         for tx in transactions:
             self.export_transaction(session, user, account_id, tx)
+            session.commit()
 
     def export_transaction(self, session: Session, user: User, account_id: int, tx: Transaction):
         account = self.repository.get_account(session, user, account_id)

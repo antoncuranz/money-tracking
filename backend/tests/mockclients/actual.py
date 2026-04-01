@@ -6,6 +6,7 @@ from models import config, Account, Transaction, User
 
 
 class MockActualClient(IActualClient):
+    fail_on_transaction_create_call = None
     fail_on_patch_call = None
     fail_on_payment_create = False
     patch_calls = []
@@ -14,6 +15,7 @@ class MockActualClient(IActualClient):
 
     @classmethod
     def reset(cls):
+        cls.fail_on_transaction_create_call = None
         cls.fail_on_patch_call = None
         cls.fail_on_payment_create = False
         cls.patch_calls = []
@@ -22,6 +24,8 @@ class MockActualClient(IActualClient):
 
     def create_transaction(self, account: Account, transaction: openapi.Transaction):
         self.created_transactions.append(transaction)
+        if self.fail_on_transaction_create_call == len(self.created_transactions):
+            raise Exception("Actual transaction export failed")
         if self.fail_on_payment_create and transaction.imported_id and transaction.imported_id.startswith("import_test_pm_"):
             raise Exception("Actual payment export failed")
     
