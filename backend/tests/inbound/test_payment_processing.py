@@ -255,6 +255,52 @@ def test_payment_processing_with_multiple_exchanges_real_case_2(session: Session
     assert sum_usd == payment.amount_usd
 
 
+def test_unprocess_payment_success(session: Session, client: TestClient):
+    session.add(Transaction(**TX_1, payment_id=1, status=Transaction.Status.PAID.value, fees_and_risk_eur=5))
+    session.add(Payment(**PAYMENT_1, amount_eur=1000, status=Payment.Status.PROCESSED.value))
+    session.commit()
+
+    response = client.post("/api/payments/1/unprocess", headers=ALICE_AUTH)
+
+    payment = session.get(Payment, 1)
+    tx = session.get(Transaction, 1)
+
+    assert response.status_code == 204
+    assert payment.status_enum == Payment.Status.POSTED
+    assert payment.amount_eur is None
+    assert tx.status_enum == Transaction.Status.POSTED
+    assert tx.payment_id is None
+    assert tx.fees_and_risk_eur is None
+
+
+def test_unprocess_payment_rejects_posted_payment(session: Session, client: TestClient):
+    session.add(Payment(**PAYMENT_1))
+    session.commit()
+
+    response = client.post("/api/payments/1/unprocess", headers=ALICE_AUTH)
+
+    assert response.status_code == 400
+
+
+def test_delete_pending_payment_success(session: Session, client: TestClient):
+    session.add(Payment(**PAYMENT_1, status=Payment.Status.PENDING.value))
+    session.commit()
+
+    response = client.delete("/api/payments/1", headers=ALICE_AUTH)
+
+    assert response.status_code == 204
+    assert session.get(Payment, 1) is None
+
+
+def test_delete_pending_payment_rejects_processed_payment(session: Session, client: TestClient):
+    session.add(Payment(**PAYMENT_1, amount_eur=1000, status=Payment.Status.PROCESSED.value))
+    session.commit()
+
+    response = client.delete("/api/payments/1", headers=ALICE_AUTH)
+
+    assert response.status_code == 400
+
+
 def test_payment_processing_rolls_back_on_actual_update_failure(sqlite_engine, sqlite_session: Session, sqlite_client):
     payment, _ = _setup_tables(sqlite_session, [
         {"date": "2024-01-01", "amount_eur": 1000, "amount_usd": 1015, "rate": 1.01},

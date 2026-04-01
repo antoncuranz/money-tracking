@@ -35,17 +35,34 @@ export default function PaymentTable({
       router.refresh()
   }
 
-  async function processPayment(payment: Payment) {
-    const url = "/api/payments/" + payment.id + "/process"
-    const response = await fetch(url, {method: "POST"})
+  async function mutatePayment(url: string, method: "POST" | "DELETE", title: string, description?: string) {
+    const response = await fetch(url, {method})
 
     if (!response.ok)
       toast({
-        title: "Payment processing failed",
-        description: "Changes were not saved and were reverted."
+        title,
+        description: description || await response.text() || response.statusText
       })
 
-    router.refresh()
+    if (response.ok)
+      router.refresh()
+  }
+
+  async function processPayment(payment: Payment) {
+    await mutatePayment(
+      "/api/payments/" + payment.id + "/process",
+      "POST",
+      "Payment processing failed",
+      "Changes were not saved and were reverted."
+    )
+  }
+
+  async function unprocessPayment(payment: Payment) {
+    await mutatePayment("/api/payments/" + payment.id + "/unprocess", "POST", "Error unprocessing payment")
+  }
+
+  async function deletePayment(payment: Payment) {
+    await mutatePayment("/api/payments/" + payment.id, "DELETE", "Error deleting payment")
   }
 
   return (
@@ -53,9 +70,11 @@ export default function PaymentTable({
       <div className="w-full relative">
         {payments.map(payment =>
           <PaymentRow key={payment.id} payment={payment} account={accounts.find(acct => acct.id == payment.account_id)}
-                                       selectable={exchangeSelection != null}
-                                       onProcessPaymentClick={() => processPayment(payment)}
-                                       onClick={() => openExchangePaymentDialog(payment)}/>
+                                        selectable={exchangeSelection != null}
+                                        onProcessPaymentClick={() => processPayment(payment)}
+                                        onUnprocessPaymentClick={() => unprocessPayment(payment)}
+                                        onDeletePaymentClick={() => deletePayment(payment)}
+                                        onClick={() => openExchangePaymentDialog(payment)}/>
         )}
       </div>
       <ExchangePaymentDialog open={epDialogOpen} onClose={onEpDialogClose} exchange={exchangeSelection!}

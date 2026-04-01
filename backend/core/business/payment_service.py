@@ -90,12 +90,16 @@ class PaymentService:
         payment = self.store.get_payment_unsafe(session, payment_id)
         if not payment:
             raise HTTPException(status_code=404)
+
+        if payment.status_enum != Payment.Status.PROCESSED:
+            raise HTTPException(status_code=400, detail="Only processed payments can be unprocessed")
+
+        transactions = self.store.get_paid_transactions_by_payment(session, payment_id)
         
         payment.status_enum = Payment.Status.POSTED
         payment.amount_eur = None
         session.add(payment)
 
-        transactions = self.store.get_paid_transactions_by_payment(session, payment_id)
         for tx in transactions:
             tx.status_enum = Transaction.Status.POSTED
             tx.payment = None
@@ -111,6 +115,20 @@ class PaymentService:
             payment.actual_id = None
             session.add(payment)
             session.commit()
+
+    def delete_payment(self, session: Session, super_user: User, payment_id: int):
+        if not super_user.super_user:
+            raise HTTPException(status_code=403)
+
+        payment = self.store.get_payment_unsafe(session, payment_id)
+        if not payment:
+            raise HTTPException(status_code=404)
+
+        if payment.status_enum != Payment.Status.PENDING:
+            raise HTTPException(status_code=400, detail="Only pending payments can be deleted")
+
+        session.delete(payment)
+        session.commit()
 
     def _guess_transactions_to_process(self, session: Session, payment: Payment):
         transactions = self.store.get_posted_transactions_by_account(session, payment.account.id)

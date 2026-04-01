@@ -4,16 +4,19 @@ import {formatAmount} from "@/components/util.ts";
 import {MouseEventHandler, useState} from "react";
 import {Account, Payment} from "@/types.ts";
 import TableRow from "@/components/table/TableRow.tsx";
+import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger} from "@/components/ui/context-menu.tsx";
 
 interface Props {
   payment: Payment,
   account?: Account,
   onClick: MouseEventHandler<HTMLTableRowElement> | undefined,
-  onProcessPaymentClick: () => void,
+  onProcessPaymentClick: () => Promise<void>,
+  onUnprocessPaymentClick: () => Promise<void>,
+  onDeletePaymentClick: () => Promise<void>,
   selectable?: boolean,
 }
 
-const PaymentRow = ({payment, account, selectable, onClick, onProcessPaymentClick}: Props) => {
+const PaymentRow = ({payment, account, selectable, onClick, onProcessPaymentClick, onUnprocessPaymentClick, onDeletePaymentClick}: Props) => {
   const [inProgress, setInProgress] = useState(false)
 
   function isAppliedToExchange() {
@@ -34,6 +37,12 @@ const PaymentRow = ({payment, account, selectable, onClick, onProcessPaymentClic
     setInProgress(false)
   }
 
+  async function runContextAction(action: () => Promise<void>) {
+    setInProgress(true)
+    await action()
+    setInProgress(false)
+  }
+
   function getClasses() {
     if (selectable)
       return "hover:bg-muted cursor-pointer"
@@ -42,42 +51,52 @@ const PaymentRow = ({payment, account, selectable, onClick, onProcessPaymentClic
   }
 
   return (
-    <TableRow onClick={onClick} className={getClasses()} style={{ borderLeftStyle: payment.status == 1 ? "dashed" : "solid" }} date={payment.date} remoteName={payment.counterparty} purpose={payment.description} account={account}>
-      <span className="flex items-center">
-        <span className="text-sm w-20 text-right">
-          {payment.status == 1 ?
-            <>
-              {formatAmount(payment.amount_eur_without_fx)} €<br/>
-              <span className="text-yellow-600">w/o fx</span>
-            </>
-            :
-            <>{formatAmount(payment.amount_eur_with_fx)} €</>
-          }
-        </span>
-        <Button variant="outline" size="icon" className="ml-2" disabled={isProcessButtonDisabled()}
-                onClick={onProcessPaymentClickLocal}>
-          {payment.status == 3 ?
-            <Check className="h-4 w-4"/>
-            :
-            (inProgress ?
-                <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
-                :
-                <DraftingCompass className="h-4 w-4"/>
-            )
-          }
-        </Button>
-      </span>
-      <span className="text-sm ml-2">
-        {isAppliedToExchange() ?
-          <>
-            $ <span className="line-through mr-1">{formatAmount(payment.amount_usd)}</span>
-            <span style={{color: "green"}}>{formatAmount(payment.amount_usd - calculateAppliedAmount())}</span>
-          </>
-        :
-          "$ " + formatAmount(payment.amount_usd)
-        }
-      </span>
-    </TableRow>
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div>
+          <TableRow onClick={onClick} className={getClasses()} style={{ borderLeftStyle: payment.status == 1 ? "dashed" : "solid" }} date={payment.date} remoteName={payment.counterparty} purpose={payment.description} account={account}>
+            <span className="flex items-center">
+              <span className="text-sm w-20 text-right">
+                {payment.status == 1 ?
+                  <>
+                    {formatAmount(payment.amount_eur_without_fx)} €<br/>
+                    <span className="text-yellow-600">w/o fx</span>
+                  </>
+                  :
+                  <>{formatAmount(payment.amount_eur_with_fx)} €</>
+                }
+              </span>
+              <Button variant="outline" size="icon" className="ml-2" disabled={isProcessButtonDisabled()}
+                      onClick={onProcessPaymentClickLocal}>
+                {payment.status == 3 ?
+                  <Check className="h-4 w-4"/>
+                  :
+                  (inProgress ?
+                      <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
+                      :
+                      <DraftingCompass className="h-4 w-4"/>
+                  )
+                }
+              </Button>
+            </span>
+            <span className="text-sm ml-2">
+              {isAppliedToExchange() ?
+                <>
+                  $ <span className="line-through mr-1">{formatAmount(payment.amount_usd)}</span>
+                  <span style={{color: "green"}}>{formatAmount(payment.amount_usd - calculateAppliedAmount())}</span>
+                </>
+              :
+                "$ " + formatAmount(payment.amount_usd)
+              }
+            </span>
+          </TableRow>
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        {payment.status == 1 && <ContextMenuItem disabled={inProgress} onClick={() => runContextAction(onDeletePaymentClick)}>Delete payment</ContextMenuItem>}
+        {payment.status == 3 && <ContextMenuItem disabled={inProgress} onClick={() => runContextAction(onUnprocessPaymentClick)}>Unprocess payment</ContextMenuItem>}
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }
 
