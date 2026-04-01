@@ -56,12 +56,32 @@ class PaymentService:
             transactions = [self.store.get_transaction(session, super_user, tx_id) for tx_id in transaction_ids]
         else:
             transactions = self._guess_transactions_to_process(session, payment)
-        
-        self._process_payment(session, payment, transactions)
-    
-        if super_user == payment.account.user:
-            self.data_export.update_transactions(session, super_user, payment.account.id, transactions)
-        self.data_export.export_payment(session, super_user, payment.account.id, payment)
+
+        actual_payment_id = None
+        original_actual_ids = {tx.id: tx.actual_id for tx in transactions}
+
+        try:
+            self._process_payment(session, payment, transactions)
+
+            if super_user == payment.account.user:
+                self.data_export.update_transactions(session, super_user, payment.account.id, transactions)
+            actual_payment_id = self.data_export.export_payment(session, super_user, payment.account.id, payment)
+            session.commit()
+        except Exception:
+            created_transaction_actual_ids = {
+                tx.id: tx.actual_id for tx in transactions
+                if original_actual_ids.get(tx.id) is None and tx.actual_id is not None
+            }
+            session.rollback()
+            self._persist_transaction_actual_ids(session, created_transaction_actual_ids)
+
+            if actual_payment_id is not None:
+                try:
+                    self.data_export.delete_payment(super_user, actual_payment_id)
+                except Exception:
+                    pass
+
+            raise
     
     def unprocess_payment(self, session: Session, super_user: User, payment_id: int):
         if not super_user.super_user:
@@ -111,6 +131,21 @@ class PaymentService:
 
         return process_tx
 
+    def _persist_transaction_actual_ids(self, session: Session, actual_ids: dict[int, str]):
+        if not actual_ids:
+            return
+
+        with Session(session.get_bind()) as persist_session:
+            for tx_id, actual_id in actual_ids.items():
+                tx = persist_session.get(Transaction, tx_id)
+                if tx is None or tx.actual_id is not None:
+                    continue
+
+                tx.actual_id = actual_id
+                persist_session.add(tx)
+
+            persist_session.commit()
+
     def _process_payment(self, session: Session, payment: Payment, transactions: List[Transaction]):
         if any(tx.amount_eur is None for tx in transactions):
             raise Exception("Error: All transactions must have amount_eur set!")
@@ -146,8 +181,6 @@ class PaymentService:
         largest_tx = max(transactions, key=lambda tx: tx.amount_eur or 0)
         largest_tx.fees_and_risk_eur += eur_err
         session.add(largest_tx)
-        session.commit()
-
     def _calc_fees_and_risk(self, session: Session, tx: Transaction, payment: Payment, exchange_payments: List[ExchangePayment], payment_amount_eur: Decimal) -> int:
         neutral_sum = self._calc_neutral_sum(exchange_payments)
         eur_usd_exchanged = Decimal(payment.amount_usd - neutral_sum) / payment_amount_eur

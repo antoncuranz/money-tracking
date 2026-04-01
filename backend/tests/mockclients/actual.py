@@ -6,15 +6,37 @@ from models import config, Account, Transaction, User
 
 
 class MockActualClient(IActualClient):
+    fail_on_transaction_create_call = None
+    fail_on_patch_call = None
+    fail_on_payment_create = False
+    patch_calls = []
+    created_transactions = []
+    deleted_transactions = []
+
+    @classmethod
+    def reset(cls):
+        cls.fail_on_transaction_create_call = None
+        cls.fail_on_patch_call = None
+        cls.fail_on_payment_create = False
+        cls.patch_calls = []
+        cls.created_transactions = []
+        cls.deleted_transactions = []
+
     def create_transaction(self, account: Account, transaction: openapi.Transaction):
-        pass
+        self.created_transactions.append(transaction)
+        if self.fail_on_transaction_create_call == len(self.created_transactions):
+            raise Exception("Actual transaction export failed")
+        if self.fail_on_payment_create and transaction.imported_id and transaction.imported_id.startswith("import_test_pm_"):
+            raise Exception("Actual payment export failed")
     
     def create_transaction_super_misc(self, super_user: User, transaction: openapi.Transaction):
-        pass
+        self.created_transactions.append(transaction)
+        if self.fail_on_payment_create and transaction.imported_id and transaction.imported_id.startswith("import_test_pm_"):
+            raise Exception("Actual payment export failed")
 
     def get_transaction(self, account: Account, tx: Transaction) -> Optional[openapi.Transaction]:
         return openapi.Transaction(
-            id="1",
+            id=tx.actual_id or "1",
             date="2024-01-01",
             amount=-1200,
             payee="c5647552-a5b1-4fea-a2bd-4aa2e4d03938",
@@ -38,10 +60,12 @@ class MockActualClient(IActualClient):
         )
 
     def patch_transaction(self, account: Account, actual_tx: openapi.Transaction, updated_fields):
-        pass
+        self.patch_calls.append((actual_tx.id, updated_fields))
+        if self.fail_on_patch_call == len(self.patch_calls):
+            raise Exception("Actual transaction update failed")
 
     def delete_transaction(self, user: User, actual_id: str):
-        pass
+        self.deleted_transactions.append(actual_id)
 
     def get_payees(self, user: User) -> List[openapi.Payee]:
         return [

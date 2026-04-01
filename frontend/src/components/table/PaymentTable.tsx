@@ -41,8 +41,8 @@ export default function PaymentTable({
 
     if (!response.ok)
       toast({
-        title: "Error processing Payment",
-        description: response.statusText
+        title: "Payment processing failed",
+        description: "Changes were not saved and were reverted."
       })
 
     router.refresh()

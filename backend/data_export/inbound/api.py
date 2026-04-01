@@ -17,3 +17,4 @@ def export_transactions_to_actual(user: Annotated[User, Depends(get_current_user
                                   account_id: int):
     data_export.export_transactions(session, user, account_id)
     data_export.update_transactions(session, user, account_id)
+    session.commit()
