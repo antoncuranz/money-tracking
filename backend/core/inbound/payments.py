@@ -58,3 +58,11 @@ def unprocess_payment(user: Annotated[User, Depends(get_current_user)],
                       payment_service: Annotated[PaymentService, Depends()],
                       payment_id: int):
     payment_service.unprocess_payment(session, user, payment_id)
+
+
+@router.delete("/{payment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_payment(user: Annotated[User, Depends(get_current_user)],
+                   session: Annotated[Session, Depends(get_session)],
+                   payment_service: Annotated[PaymentService, Depends()],
+                   payment_id: int):
+    payment_service.delete_payment(session, user, payment_id)
