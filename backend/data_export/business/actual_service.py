@@ -45,7 +45,6 @@ class ActualService:
 
         tx.actual_id = id
         session.add(tx)
-        session.commit()
 
     def update_transactions(self, session: Session, user: User, account_id: int,
                             transactions: List[Transaction] | None = None):
@@ -101,7 +100,8 @@ class ActualService:
 
         payment.actual_id = id
         session.add(payment)
-        session.commit()
+
+        return id
 
     def delete_payment(self, super_user: User, actual_id: str):
         self.actual.delete_transaction(super_user, actual_id)
