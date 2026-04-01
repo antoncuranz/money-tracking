@@ -1,3 +1,5 @@
+import datetime
+
 from models import *
 from tests.fixtures import *
 
@@ -5,9 +7,13 @@ from sqlmodel import Session, select, func
 from fastapi.testclient import TestClient
 import pytest
 
+from tests.mockclients.actual import MockActualClient
+
 
 @pytest.fixture(autouse=True)
-def setup(session: Session):
+def setup(request):
+    fixture_name = "sqlite_session" if "sqlite_session" in request.fixturenames else "session"
+    session = request.getfixturevalue(fixture_name)
     session.add_all([User(**ALICE_USER), BankAccount(**BANK_ACCOUNT_1), Account(**ACCOUNT_1)])
 
 
@@ -295,17 +301,95 @@ def test_delete_pending_payment_rejects_processed_payment(session: Session, clie
     assert response.status_code == 400
 
 
+def test_payment_processing_rolls_back_on_actual_update_failure(sqlite_engine, sqlite_session: Session, sqlite_client):
+    payment, _ = _setup_tables(sqlite_session, [
+        {"date": "2024-01-01", "amount_eur": 1000, "amount_usd": 1015, "rate": 1.01},
+        {"date": "2024-01-02", "amount_eur": 10000, "amount_usd": 10250, "rate": 1.02},
+    ], exchange_rate=1.1)
+    _set_transaction_actual_ids(sqlite_session, [1, 2])
+
+    MockActualClient.fail_on_patch_call = 1
+
+    response = sqlite_client.post(f"/api/payments/{payment.id}/process", headers=ALICE_AUTH)
+
+    assert response.status_code == 500
+    assert len(MockActualClient.patch_calls) == 1
+    assert MockActualClient.deleted_transactions == []
+    _assert_payment_not_processed(sqlite_engine, payment.id, [1, 2])
+
+
+def test_payment_processing_persists_new_transaction_actual_id_on_actual_update_failure(sqlite_engine, sqlite_session: Session, sqlite_client):
+    payment, _ = _setup_tables(sqlite_session, [
+        {"date": "2024-01-01", "amount_eur": 1000, "amount_usd": 1015, "rate": 1.01},
+        {"date": "2024-01-02", "amount_eur": 10000, "amount_usd": 10250, "rate": 1.02},
+    ], exchange_rate=1.1)
+    _set_transaction_actual_ids(sqlite_session, [1])
+
+    MockActualClient.fail_on_patch_call = 4
+
+    response = sqlite_client.post(f"/api/payments/{payment.id}/process", headers=ALICE_AUTH)
+
+    assert response.status_code == 500
+    assert len(MockActualClient.created_transactions) == 1
+    _assert_payment_not_processed(sqlite_engine, payment.id, [1, 2])
+    _assert_transaction_actual_ids(sqlite_engine, {
+        1: "actual-tx-1",
+        2: MockActualClient.created_transactions[0].id,
+    })
+
+
+def test_payment_processing_rolls_back_on_payment_export_failure(sqlite_engine, sqlite_session: Session, sqlite_client):
+    payment, _ = _setup_tables(sqlite_session, [
+        {"date": "2024-01-01", "amount_eur": 1000, "amount_usd": 1015, "rate": 1.01},
+        {"date": "2024-01-02", "amount_eur": 10000, "amount_usd": 10250, "rate": 1.02},
+    ], exchange_rate=1.1)
+    _set_transaction_actual_ids(sqlite_session, [1, 2])
+
+    MockActualClient.fail_on_payment_create = True
+
+    response = sqlite_client.post(f"/api/payments/{payment.id}/process", headers=ALICE_AUTH)
+
+    assert response.status_code == 500
+    assert len(MockActualClient.patch_calls) > 0
+    assert MockActualClient.deleted_transactions == []
+    _assert_payment_not_processed(sqlite_engine, payment.id, [1, 2])
+
+
+def test_payment_processing_deletes_actual_payment_on_final_commit_failure(sqlite_engine, sqlite_session: Session, sqlite_client, monkeypatch):
+    payment, _ = _setup_tables(sqlite_session, [
+        {"date": "2024-01-01", "amount_eur": 1000, "amount_usd": 1015, "rate": 1.01},
+        {"date": "2024-01-02", "amount_eur": 10000, "amount_usd": 10250, "rate": 1.02},
+    ], exchange_rate=1.1)
+    _set_transaction_actual_ids(sqlite_session, [1, 2])
+
+    original_commit = sqlite_session.commit
+
+    def fail_commit():
+        raise Exception("Final DB commit failed")
+
+    monkeypatch.setattr(sqlite_session, "commit", fail_commit)
+
+    response = sqlite_client.post(f"/api/payments/{payment.id}/process", headers=ALICE_AUTH)
+
+    monkeypatch.setattr(sqlite_session, "commit", original_commit)
+
+    assert response.status_code == 500
+    assert len(MockActualClient.created_transactions) == 1
+    assert MockActualClient.deleted_transactions == [MockActualClient.created_transactions[0].id]
+    _assert_payment_not_processed(sqlite_engine, payment.id, [1, 2])
+
+
 def _setup_tables(session: Session, transactions, credits=[], exchange_rate=1.0):
     for i, tx in enumerate(transactions):
         session.add(Transaction(
-            id=i+1, account_id=1, import_id=f"import_test_tx_{i}", date=tx["date"], counterparty="counterparty", status=2,
+            id=i+1, account_id=1, import_id=f"import_test_tx_{i}", date=_parse_date(tx["date"]), counterparty="counterparty", status=2,
             description="description", category="category", amount_usd=tx["amount_usd"], amount_eur=tx["amount_eur"]
         ))
-        session.add(ExchangeRate(date=tx["date"], source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=tx["rate"]))
+        session.add(ExchangeRate(date=_parse_date(tx["date"]), source=ExchangeRate.Source.EXCHANGERATESIO.value, exchange_rate=tx["rate"]))
 
     for i, credit in enumerate(credits):
         model = Credit(
-            id=i+1, account_id=1, import_id=f"import_test_credit_{i}", date=credit["date"], counterparty="counterparty",
+            id=i+1, account_id=1, import_id=f"import_test_credit_{i}", date=_parse_date(credit["date"]), counterparty="counterparty",
             description="description", category="category", amount_usd=credit["amount_usd"]
         )
         session.add(model)
@@ -313,14 +397,14 @@ def _setup_tables(session: Session, transactions, credits=[], exchange_rate=1.0)
 
     sum_usd = sum(tx["amount_usd"] for tx in transactions) - sum(credit["amount_usd"] for credit in credits)
 
-    exchange = Exchange(**EXCHANGE_1)
+    exchange = Exchange(**(EXCHANGE_1 | {"date": _parse_date(EXCHANGE_1["date"])}))
 
     exchange.amount_usd = sum_usd
     exchange.exchange_rate = Decimal(exchange_rate)
     exchange.amount_eur = round(Decimal(exchange.amount_usd) / exchange.exchange_rate)
     session.add(exchange)
 
-    payment = Payment(**PAYMENT_1)
+    payment = Payment(**(PAYMENT_1 | {"date": _parse_date(PAYMENT_1["date"])}))
 
     payment.amount_usd = sum_usd
     session.add(payment)
@@ -333,6 +417,37 @@ def _setup_tables(session: Session, transactions, credits=[], exchange_rate=1.0)
     return payment, exchange
 
 
+def _set_transaction_actual_ids(session: Session, transaction_ids):
+    for tx_id in transaction_ids:
+        tx = session.exec(select(Transaction).where(Transaction.id == tx_id)).one()
+        tx.actual_id = f"actual-tx-{tx_id}"
+        session.add(tx)
+
+    session.commit()
+
+
+def _assert_payment_not_processed(engine, payment_id: int, transaction_ids):
+    with Session(engine) as session:
+        payment = session.exec(select(Payment).where(Payment.id == payment_id)).one()
+        transactions = session.exec(select(Transaction).where(Transaction.id.in_(transaction_ids))).all()
+
+        assert payment.status_enum == Payment.Status.POSTED
+        assert payment.amount_eur is None
+        assert payment.actual_id is None
+
+        for tx in transactions:
+            assert tx.status_enum == Transaction.Status.POSTED
+            assert tx.payment_id is None
+            assert tx.fees_and_risk_eur is None
+
+
+def _assert_transaction_actual_ids(engine, transaction_actual_ids):
+    with Session(engine) as session:
+        for tx_id, actual_id in transaction_actual_ids.items():
+            tx = session.exec(select(Transaction).where(Transaction.id == tx_id)).one()
+            assert tx.actual_id == actual_id
+
+
 def _get_sum_eur_usd_and_payment(session: Session, payment_id: int):
     sum_eur = session.exec(
         select(func.sum(Transaction.amount_eur + Transaction.fees_and_risk_eur))
@@ -342,3 +457,10 @@ def _get_sum_eur_usd_and_payment(session: Session, payment_id: int):
     payment = session.exec(select(Payment)).one()
     
     return sum_eur, sum_usd, payment
+
+
+def _parse_date(value: str | datetime.date):
+    if isinstance(value, datetime.date):
+        return value
+
+    return datetime.date.fromisoformat(value)

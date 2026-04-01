@@ -35,13 +35,13 @@ export default function PaymentTable({
       router.refresh()
   }
 
-  async function mutatePayment(url: string, method: "POST" | "DELETE", title: string) {
+  async function mutatePayment(url: string, method: "POST" | "DELETE", title: string, description?: string) {
     const response = await fetch(url, {method})
 
     if (!response.ok)
       toast({
         title,
-        description: await response.text() || response.statusText
+        description: description || await response.text() || response.statusText
       })
 
     if (response.ok)
@@ -49,7 +49,12 @@ export default function PaymentTable({
   }
 
   async function processPayment(payment: Payment) {
-    await mutatePayment("/api/payments/" + payment.id + "/process", "POST", "Error processing payment")
+    await mutatePayment(
+      "/api/payments/" + payment.id + "/process",
+      "POST",
+      "Payment processing failed",
+      "Changes were not saved and were reverted."
+    )
   }
 
   async function unprocessPayment(payment: Payment) {

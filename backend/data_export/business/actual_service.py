@@ -26,6 +26,7 @@ class ActualService:
 
         for tx in transactions:
             self.export_transaction(session, user, account_id, tx)
+            session.commit()
 
     def export_transaction(self, session: Session, user: User, account_id: int, tx: Transaction):
         account = self.repository.get_account(session, user, account_id)
@@ -45,7 +46,6 @@ class ActualService:
 
         tx.actual_id = id
         session.add(tx)
-        session.commit()
 
     def update_transactions(self, session: Session, user: User, account_id: int,
                             transactions: List[Transaction] | None = None):
@@ -101,7 +101,8 @@ class ActualService:
 
         payment.actual_id = id
         session.add(payment)
-        session.commit()
+
+        return id
 
     def delete_payment(self, super_user: User, actual_id: str):
         self.actual.delete_transaction(super_user, actual_id)

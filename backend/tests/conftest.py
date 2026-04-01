@@ -2,6 +2,7 @@ from time import sleep
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel, Session, create_engine
 from testcontainers.postgres import PostgresContainer
 
@@ -41,12 +42,30 @@ def engine_fixture(postgres_container: PostgresContainer):
     
     yield engine
 
+
+@pytest.fixture(scope="session")
+def sqlite_engine():
+    return create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+
 @pytest.fixture(name="session")  
 def session_fixture(engine):
     SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
     
     with Session(engine) as session:
+        yield session
+
+
+@pytest.fixture(name="sqlite_session")
+def sqlite_session_fixture(sqlite_engine):
+    SQLModel.metadata.drop_all(sqlite_engine)
+    SQLModel.metadata.create_all(sqlite_engine)
+
+    with Session(sqlite_engine) as session:
         yield session
 
 @pytest.fixture(name="client")
@@ -68,6 +87,32 @@ def client_fixture(session: Session):
     app.dependency_overrides.clear()
 
 
+@pytest.fixture(name="sqlite_client")
+def sqlite_client_fixture(sqlite_session: Session):
+    from main import app
+
+    def get_session_override():
+        return sqlite_session
+
+    app.dependency_overrides = {
+        get_session: get_session_override,
+        ActualClient: MockActualClient,
+        MastercardClient: MockExchangeRateClient,
+        ExchangeratesApiIoClient: MockExchangeRateClient,
+        QuilttClient: MockQuilttClient,
+    }
+
+    yield TestClient(app, raise_server_exceptions=False)
+    app.dependency_overrides.clear()
+
+
 @pytest.fixture()
 def balance_service():
     return BalanceService(Store(AccountRepository(), TransactionRepository(), CreditRepository(), PaymentRepository(), ExchangeRepository()), None, None)
+
+
+@pytest.fixture(autouse=True)
+def reset_mock_actual_client():
+    MockActualClient.reset()
+    yield
+    MockActualClient.reset()
