@@ -38,7 +38,7 @@ class PlaidImporter(AbstractImporter):
                             session.add(created_tx)
                             
                 elif not tx["pending"]:
-                    payment_strings = ["AUTOPAY PAYMENT", "AUTOPAY PYMT", "MOBILE PAYMENT", "MOBILE PYMT", "PAYMENT THANK YOU"]
+                    payment_strings = ["AUTOPAY PAYMENT", "AUTOPAY PYMT", "MOBILE PAYMENT", "MOBILE PYMT", "PAYMENT THANK YOU", "AUTOMATIC PAYMENT"]
                     if any(payment_string in tx["name"].upper() for payment_string in payment_strings):
                         self._process_payment(session, account, tx)
                     else:
