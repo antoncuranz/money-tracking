@@ -46,12 +46,18 @@ async function fetchData(url: string) {
 }
 
 export async function getCurrentUser(): Promise<string> {
-  const usernameFromHeader = (await headers()).get(usernameHeader)
+  const requestHeaders = await headers()
+  const usernameFromHeader = requestHeaders.get(usernameHeader)
   if (usernameFromHeader)
     return usernameFromHeader
+
+  const authorization = requestHeaders.get(authorizationHeader)
   
   // get user from backend call (only for development)
-  const response = await fetch(process.env.BACKEND_URL + "/api/username", {cache: "no-cache"})
+  const response = await fetch(process.env.BACKEND_URL + "/api/username", {
+    headers: authorization ? {[authorizationHeader]: authorization} : undefined,
+    cache: "no-cache"
+  })
   
   if (response.ok)
     return await response.json()
