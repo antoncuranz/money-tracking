@@ -26,10 +26,15 @@ export async function hideIfUnauthorized(func: () => Promise<React.ReactElement>
 }
 
 const usernameHeader = "X-Auth-Request-Preferred-Username"
+const authorizationHeader = "Authorization"
 
 async function fetchData(url: string) {
+  const requestHeaders = await headers()
+  const authorization = requestHeaders.get(authorizationHeader)
   const response = await fetch(process.env.BACKEND_URL + url, {
-    headers: {[usernameHeader]: await getCurrentUser()},
+    headers: authorization
+      ? {[authorizationHeader]: authorization}
+      : {[usernameHeader]: await getCurrentUser()},
     cache: "no-cache"
   })
   if (response.status == 401) {
