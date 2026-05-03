@@ -1,3 +1,5 @@
+import base64
+import json
 import os
 import traceback
 from typing import Annotated
@@ -10,8 +12,35 @@ from models import User, get_session
 
 # TODO: make async
 
+
+def _extract_username(request: Request) -> str | None:
+    username = os.getenv("OVERWRITE_USER_HEADER")
+    if username:
+        return username
+
+    authorization = request.headers.get("Authorization")
+    if authorization:
+        scheme, _, token = authorization.partition(" ")
+        if scheme != "Bearer" or not token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized: Bearer token is required.")
+
+        try:
+            _, payload, _ = token.split(".")
+            padding = "=" * (-len(payload) % 4)
+            claims = json.loads(base64.urlsafe_b64decode(payload + padding))
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized: Invalid bearer token.")
+
+        username = claims.get("preferred_username")
+        if not username:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized: Username is required.")
+
+        return username
+
+    return request.headers.get("X-Auth-Request-Preferred-Username")
+
 def get_current_user(request: Request, session: Annotated[Session, Depends(get_session)]):
-    username = os.getenv("OVERWRITE_USER_HEADER") or request.headers.get("X-Auth-Request-Preferred-Username")
+    username = _extract_username(request)
     if not username:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized: Username is required.")
 
