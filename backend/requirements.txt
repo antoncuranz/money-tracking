@@ -15,3 +15,6 @@ sqlmodel
 plaid_python
 alembic
 prometheus-client
+openai
+pypdf
+python-multipart

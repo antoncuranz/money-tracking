@@ -27,4 +27,9 @@ class Config(BaseSettings):
 
     exchangeratesio_access_key: str | None = None
 
+    statement_match_api_key: str | None = None
+    statement_match_base_url: str | None = None
+    statement_match_model: str | None = None
+    statement_match_max_tokens: int = 30000
+
 config = Config()

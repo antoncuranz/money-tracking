@@ -17,6 +17,9 @@ export default function Navigation(){
           <Link href="/archive">
             <span className="text-muted-foreground transition-colors hover:text-foreground">Archive</span>
           </Link>
+          <Link href="/statement-match">
+            <span className="text-muted-foreground transition-colors hover:text-foreground">Statement Match</span>
+          </Link>
           <Link href="/accounts">
             <span className="text-muted-foreground transition-colors hover:text-foreground">Accounts</span>
           </Link>

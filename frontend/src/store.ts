@@ -1,5 +1,5 @@
 import {create, StateCreator} from 'zustand'
-import {Account, Credit} from "@/types.ts";
+import {Account, Credit, TransactionAmountMap} from "@/types.ts";
 
 type SelectionSlice = {
   currentAccount: Account | null;
@@ -27,7 +27,7 @@ const createSelectionSlice: StateCreator<
 })
 
 type TransactionAmountSlice = {
-  changedTransactionAmounts: {[id: number]: number|null};
+  changedTransactionAmounts: TransactionAmountMap;
   clearTransactionAmounts: () => void,
   clearTransactionAmount: (id: number) => void,
   putTransactionAmount: (id: number, amount: number|null) => void,

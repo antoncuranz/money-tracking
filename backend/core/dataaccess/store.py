@@ -72,6 +72,9 @@ class Store:
 
     def get_posted_transactions_by_account(self, session: Session, account_id: int) -> List[Transaction]:
         return self.transaction_repository.get_posted_transactions_by_account(session, account_id)
+
+    def get_posted_transactions_missing_amount_eur_by_account(self, session: Session, account_id: int) -> List[Transaction]:
+        return self.transaction_repository.get_posted_transactions_missing_amount_eur_by_account(session, account_id)
     
     def get_posted_transaction_amount(self, session: Session, account_id: int) -> int:
         return self.transaction_repository.get_posted_transaction_amount(session, account_id)

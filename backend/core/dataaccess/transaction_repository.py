@@ -38,6 +38,14 @@ class TransactionRepository:
         ).order_by(Transaction.date, Transaction.id)
         return session.exec(stmt).all()
 
+    def get_posted_transactions_missing_amount_eur_by_account(self, session: Session, account_id: int) -> List[Transaction]:
+        stmt = select(Transaction).where(
+            (Transaction.status == Transaction.Status.POSTED.value) &
+            (Transaction.account_id == account_id) &
+            Transaction.amount_eur.is_(None)
+        ).order_by(Transaction.date, Transaction.id)
+        return session.exec(stmt).all()
+
     def get_posted_transaction_amount(self, session: Session, account_id: int) -> int:
         stmt = select(func.sum(Transaction.amount_usd)).where(
             (Transaction.account_id == account_id) & (Transaction.status != Transaction.Status.PENDING.value)

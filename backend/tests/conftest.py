@@ -19,7 +19,10 @@ from exchangerate.adapter.exchangerates_client import MastercardClient, Exchange
 from models import get_session
 from tests.mockclients.actual import MockActualClient
 from tests.mockclients.exchangerates import MockExchangeRateClient
+from statement_match.adapter.llm_client import StatementMatchLlmClient
+from statement_match.adapter.pdf_extractor import PdfExtractor
 from tests.mockclients.quiltt import MockQuilttClient
+from tests.mockclients.statement_match import MockPdfExtractor, MockStatementMatchLlmClient
 
 
 @pytest.fixture(scope="session")
@@ -112,7 +115,22 @@ def balance_service():
 
 
 @pytest.fixture(autouse=True)
-def reset_mock_actual_client():
+def reset_mock_clients():
     MockActualClient.reset()
+    MockPdfExtractor.reset()
+    MockStatementMatchLlmClient.reset()
     yield
     MockActualClient.reset()
+    MockPdfExtractor.reset()
+    MockStatementMatchLlmClient.reset()
+
+
+@pytest.fixture()
+def override_statement_match_dependencies(client: TestClient):
+    from main import app
+
+    app.dependency_overrides[PdfExtractor] = MockPdfExtractor
+    app.dependency_overrides[StatementMatchLlmClient] = MockStatementMatchLlmClient
+    yield MockPdfExtractor, MockStatementMatchLlmClient
+    app.dependency_overrides.pop(PdfExtractor, None)
+    app.dependency_overrides.pop(StatementMatchLlmClient, None)

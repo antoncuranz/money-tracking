@@ -68,6 +68,40 @@ export type Transaction = {
   exchange_rate: number | null;
 };
 
+export type TransactionAmountMap = Record<number, number | null>;
+
+export type StatementMatchResult = {
+  transaction_id: number;
+  date: string;
+  amount_usd: number;
+  amount_eur: number | null;
+  guessed_amount_eur: number | null;
+  counterparty: string;
+  description: string;
+  matched: boolean;
+  confidence: number;
+  statement_excerpt: string | null;
+  reason: string;
+};
+
+export type StatementMatchResponse = {
+  account_id: number;
+  results: StatementMatchResult[];
+};
+
+export type StatementMatchTabStatus = "loading" | "ready" | "error";
+
+export type StatementMatchTab = {
+  id: string;
+  accountId: number;
+  accountName: string;
+  fileName: string;
+  status: StatementMatchTabStatus;
+  rows: StatementMatchResult[];
+  draftAmounts: TransactionAmountMap;
+  error?: string;
+};
+
 export type Exchange = {
   id: number;
   actual_id: number | null;
