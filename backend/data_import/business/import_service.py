@@ -41,6 +41,10 @@ class ImportService:
         for account in self.repository.get_all_accounts(session):
             print("Importing transactions for Account {} {} ({})".format(account.institution, account.name, str(account.id)))
 
+            if account.plaid_account is None:
+                print("Skipping Account {} {} ({}): not linked to Plaid".format(account.institution, account.name, str(account.id)))
+                continue
+
             try:
                 self._import_account_transactions(session, account)
             except Exception as e:
@@ -62,6 +66,10 @@ class ImportService:
 
         for bank_account in self.repository.get_all_bank_accounts(session):
             print("Importing balances for BankAccount " + str(bank_account.id))
+
+            if bank_account.plaid_account is None:
+                print("Skipping BankAccount {} ({}): not linked to Plaid".format(bank_account.name, str(bank_account.id)))
+                continue
 
             try:
                 self.importer.update_bank_account_balance(session, bank_account)
